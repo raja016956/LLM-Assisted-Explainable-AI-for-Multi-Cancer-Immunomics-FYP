@@ -45,10 +45,37 @@ function Login() {
     setGoogleLoading(true);
 
     try {
-      await signInWithGoogle();
+      console.log("========================================");
+      console.log("[ImmunoXAI] Google sign-in started");
+      console.log("[ImmunoXAI] Current URL:", window.location.href);
+      console.log("[ImmunoXAI] Current origin:", window.location.origin);
+      console.log("========================================");
+
+      const result = await signInWithGoogle();
+
+      console.log("[ImmunoXAI] Google authentication successful");
+      console.log("[ImmunoXAI] User:", result.user.email);
+      console.log("[ImmunoXAI] UID:", result.user.uid);
+
       await navigate({ to: "/dashboard" });
-    } catch (err) {
-      console.error(err);
+    } catch (err: unknown) {
+      console.error("========================================");
+      console.error("[ImmunoXAI] Google sign-in FAILED");
+      console.error("[ImmunoXAI] Full error:", err);
+
+      if (err instanceof Error) {
+        console.error("[ImmunoXAI] Error message:", err.message);
+        console.error("[ImmunoXAI] Error stack:", err.stack);
+      }
+
+      if (typeof err === "object" && err !== null && "code" in err) {
+        console.error(
+          "[ImmunoXAI] Firebase error code:",
+          (err as { code?: unknown }).code,
+        );
+      }
+
+      console.error("========================================");
 
       setError(getAuthErrorMessage(err));
     } finally {
@@ -66,10 +93,16 @@ function Login() {
     setLoading(true);
 
     try {
-      await signInWithEmail(email, password);
+      console.log("[ImmunoXAI] Email sign-in started");
+
+      const result = await signInWithEmail(email, password);
+
+      console.log("[ImmunoXAI] Email authentication successful");
+      console.log("[ImmunoXAI] User:", result.user.email);
+
       await navigate({ to: "/dashboard" });
-    } catch (err) {
-      console.error(err);
+    } catch (err: unknown) {
+      console.error("[ImmunoXAI] Email sign-in failed:", err);
 
       setError(getAuthErrorMessage(err));
     } finally {
@@ -92,8 +125,8 @@ function Login() {
       setMessage(
         "Password reset email sent. Please check your inbox.",
       );
-    } catch (err) {
-      console.error(err);
+    } catch (err: unknown) {
+      console.error("[ImmunoXAI] Password reset failed:", err);
 
       setError(getAuthErrorMessage(err));
     }
@@ -337,12 +370,34 @@ function getAuthErrorMessage(error: unknown): string {
       case "auth/too-many-requests":
         return "Too many attempts. Please wait a while and try again.";
 
-      default:
-        return "Unable to sign in. Please try again.";
+      case "auth/unauthorized-domain":
+        return "Firebase rejected this website domain. Check Firebase Authentication → Settings → Authorized domains.";
+
+      case "auth/operation-not-allowed":
+        return "Google sign-in is not enabled in Firebase Authentication.";
+
+      case "auth/account-exists-with-different-credential":
+        return "An account already exists with a different sign-in method.";
+
+      case "auth/internal-error":
+        return "Firebase returned an internal authentication error. Check the browser console for details.";
+
+      default: {
+        const message =
+          error instanceof Error
+            ? error.message
+            : String(error);
+
+        return `Firebase authentication error (${code || "unknown"}): ${message}`;
+      }
     }
   }
 
-  return "Unable to sign in. Please try again.";
+  if (error instanceof Error) {
+    return `Authentication error: ${error.message}`;
+  }
+
+  return `Authentication error: ${String(error)}`;
 }
 
 function GoogleIcon() {
