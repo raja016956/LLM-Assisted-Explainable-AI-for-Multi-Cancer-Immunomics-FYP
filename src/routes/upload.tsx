@@ -6,6 +6,7 @@ import {
   ChevronDown,
   AlertCircle,
   Loader2,
+  FileText,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -19,12 +20,193 @@ export const Route = createFileRoute("/upload")({
       {
         name: "description",
         content:
-          "Upload a gene expression CSV, validate it, and run immune phenotype analysis.",
+          "Upload and validate gene expression datasets for immune phenotype analysis.",
       },
     ],
   }),
   component: UploadPage,
 });
+
+type FileFormat =
+  | "csv"
+  | "tsv"
+  | "txt"
+  | "csv.gz"
+  | "tsv.gz"
+  | "txt.gz";
+
+type DatasetType = "expression" | "single-cell-umi";
+
+function getFileFormat(fileName: string): FileFormat | null {
+  const name = fileName.toLowerCase();
+
+  if (name.endsWith(".csv.gz")) return "csv.gz";
+  if (name.endsWith(".tsv.gz")) return "tsv.gz";
+  if (name.endsWith(".txt.gz")) return "txt.gz";
+
+  if (name.endsWith(".csv")) return "csv";
+  if (name.endsWith(".tsv")) return "tsv";
+  if (name.endsWith(".txt")) return "txt";
+
+  return null;
+}
+
+function isGzipFormat(format: FileFormat) {
+  return format.endsWith(".gz");
+}
+
+function getBaseFormat(format: FileFormat) {
+  return format.replace(".gz", "") as "csv" | "tsv" | "txt";
+}
+
+function formatFileSize(bytes: number) {
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+
+  if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+
+  if (bytes < 1024 * 1024 * 1024) {
+    return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+  }
+
+  return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
+}
+
+async function validateGzip(file: File) {
+  const header = new Uint8Array(await file.slice(0, 2).arrayBuffer());
+
+  // gzip magic bytes: 1F 8B
+  if (header.length < 2 || header[0] !== 0x1f || header[1] !== 0x8b) {
+    throw new Error(
+      "The file has a .gz extension but does not contain a valid gzip header.",
+    );
+  }
+}
+
+async function validateTextFile(file: File) {
+  const sampleSize = Math.min(file.size, 1024 * 1024);
+
+  const sample = await file.slice(0, sampleSize).text();
+
+  if (!sample.trim()) {
+    throw new Error("The uploaded file appears to be empty.");
+  }
+
+  const lines = sample
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length < 2) {
+    throw new Error(
+      "The file does not appear to contain a matrix with multiple rows.",
+    );
+  }
+
+  return {
+    linesChecked: lines.length,
+    sampleSize,
+  };
+}
+
+async function validateGzipTextFile(file: File) {
+  if (typeof DecompressionStream === "undefined") {
+    throw new Error(
+      "This browser does not support gzip decompression. Please use a modern version of Chrome, Edge, Firefox, or Safari.",
+    );
+  }
+
+  const stream = file
+    .stream()
+    .pipeThrough(new DecompressionStream("gzip"));
+
+  const reader = stream.getReader();
+
+  let received = 0;
+  const chunks: Uint8Array[] = [];
+
+  const MAX_SAMPLE_BYTES = 1024 * 1024;
+
+  while (received < MAX_SAMPLE_BYTES) {
+    const { done, value } = await reader.read();
+
+    if (done) {
+      break;
+    }
+
+    if (!value) {
+      continue;
+    }
+
+    const remaining = MAX_SAMPLE_BYTES - received;
+    const chunk = value.slice(0, remaining);
+
+    chunks.push(chunk);
+    received += chunk.length;
+
+    if (received >= MAX_SAMPLE_BYTES) {
+      try {
+        await reader.cancel();
+      } catch {
+        // Ignore cancellation errors.
+      }
+
+      break;
+    }
+  }
+
+  const combined = new Uint8Array(received);
+
+  let offset = 0;
+
+  for (const chunk of chunks) {
+    combined.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  const text = new TextDecoder().decode(combined);
+
+  if (!text.trim()) {
+    throw new Error("The compressed dataset appears to be empty.");
+  }
+
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (lines.length < 2) {
+    throw new Error(
+      "The compressed file does not appear to contain a valid expression matrix.",
+    );
+  }
+
+  return {
+    linesChecked: lines.length,
+    decompressedSampleBytes: received,
+  };
+}
+
+function detectDatasetType(fileName: string): DatasetType {
+  const name = fileName.toLowerCase();
+
+  if (
+    name.includes("raw_umi") ||
+    name.includes("raw-count") ||
+    name.includes("raw_count") ||
+    name.includes("single-cell") ||
+    name.includes("single_cell") ||
+    name.includes("scrna") ||
+    name.includes("sc_rna")
+  ) {
+    return "single-cell-umi";
+  }
+
+  return "expression";
+}
 
 function UploadPage() {
   const navigate = useNavigate();
@@ -39,11 +221,20 @@ function UploadPage() {
 
   const [file, setFile] = useState<File | null>(null);
 
+  const [fileFormat, setFileFormat] = useState<FileFormat | null>(
+    null,
+  );
+
+  const [datasetType, setDatasetType] =
+    useState<DatasetType>("expression");
+
   const [status, setStatus] = useState<
     "idle" | "validating" | "success" | "error"
   >("idle");
 
   const [error, setError] = useState("");
+
+  const [validationMessage, setValidationMessage] = useState("");
 
   const [analysisMessage, setAnalysisMessage] = useState("");
 
@@ -57,25 +248,50 @@ function UploadPage() {
     }
 
     setError("");
+    setValidationMessage("");
+    setAnalysisMessage("");
     setStatus("validating");
-    setFile(selectedFile);
 
-    if (!selectedFile.name.toLowerCase().endsWith(".csv")) {
+    const format = getFileFormat(selectedFile.name);
+
+    if (!format) {
+      setFile(null);
+      setFileFormat(null);
       setStatus("error");
-      setError("Please upload a CSV file.");
+
+      setError(
+        "Unsupported file format. Please upload CSV, TSV, TXT, or a gzip-compressed CSV/TSV/TXT file.",
+      );
+
       return;
     }
 
-    try {
-      const text = await selectedFile.text();
+    setFile(selectedFile);
+    setFileFormat(format);
 
-      // Test the dataset structure immediately.
-      analyzeCSV(
-        text,
-        datasetName,
-        cancerType,
-        model,
-      );
+    const detectedType = detectDatasetType(selectedFile.name);
+    setDatasetType(detectedType);
+
+    try {
+      if (isGzipFormat(format)) {
+        await validateGzip(selectedFile);
+
+        const result = await validateGzipTextFile(selectedFile);
+
+        setValidationMessage(
+          `Gzip archive is valid. Checked ${formatFileSize(
+            result.decompressedSampleBytes,
+          )} of decompressed data.`,
+        );
+      } else {
+        const result = await validateTextFile(selectedFile);
+
+        setValidationMessage(
+          `Text matrix detected. Checked approximately ${formatFileSize(
+            result.sampleSize,
+          )} of the file.`,
+        );
+      }
 
       setStatus("success");
     } catch (err) {
@@ -90,14 +306,41 @@ function UploadPage() {
   }
 
   async function handleAnalyze() {
-    if (!file) {
-      setError("Please select a CSV dataset first.");
+    if (!file || !fileFormat) {
+      setError("Please select a dataset first.");
       return;
     }
 
     setError("");
+    setAnalysisMessage("");
     setStatus("validating");
-    setAnalysisMessage("Processing dataset...");
+
+    /*
+     * The current analysis engine is CSV-based.
+     *
+     * We therefore only send uncompressed CSV files to analyzeCSV()
+     * for now. Single-cell UMI matrices such as GSE131907 will be
+     * handled by the dedicated single-cell processing pipeline.
+     */
+    if (
+      datasetType === "single-cell-umi" ||
+      isGzipFormat(fileFormat) ||
+      getBaseFormat(fileFormat) !== "csv"
+    ) {
+      setStatus("success");
+
+      setAnalysisMessage(
+        "Dataset validated successfully. This single-cell/raw UMI dataset will be processed by the single-cell analysis pipeline.",
+      );
+
+      /*
+       * We intentionally do not call analyzeCSV() here.
+       *
+       * The next implementation step will connect this dataset
+       * to the single-cell processing pipeline.
+       */
+      return;
+    }
 
     try {
       const text = await file.text();
@@ -115,6 +358,7 @@ function UploadPage() {
       );
 
       setStatus("success");
+
       setAnalysisMessage(
         `${result.totalSamples} samples and ${result.totalGenes} genes analyzed.`,
       );
@@ -133,6 +377,15 @@ function UploadPage() {
     }
   }
 
+  function clearFile() {
+    setFile(null);
+    setFileFormat(null);
+    setStatus("idle");
+    setError("");
+    setValidationMessage("");
+    setAnalysisMessage("");
+  }
+
   return (
     <AppLayout
       title="Upload Dataset"
@@ -145,7 +398,8 @@ function UploadPage() {
           </h2>
 
           <p className="mt-1 text-sm text-muted-foreground">
-            Upload a gene-expression CSV and provide the dataset metadata.
+            Upload a gene-expression or single-cell expression
+            matrix and provide the dataset metadata.
           </p>
 
           <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -183,7 +437,7 @@ function UploadPage() {
 
             <div className="md:col-span-2">
               <label className="text-xs font-medium text-foreground">
-                Model
+                Analysis Model
               </label>
 
               <SelectField
@@ -200,7 +454,7 @@ function UploadPage() {
 
           <div className="mt-8">
             <label className="text-xs font-medium text-foreground">
-              Expression Matrix (CSV)
+              Expression Matrix
             </label>
 
             <label className="mt-1.5 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border bg-primary-soft/40 px-6 py-12 text-center transition-colors hover:bg-primary-soft/70">
@@ -213,46 +467,88 @@ function UploadPage() {
               </div>
 
               <div className="mt-4 text-sm font-medium text-foreground">
-                Drag & drop CSV, or{" "}
+                Drag & drop dataset, or{" "}
                 <span className="text-primary">
                   browse
                 </span>
               </div>
 
               <div className="mt-1 text-xs text-muted-foreground">
-                Genes × samples matrix · CSV format
+                CSV · TSV · TXT · CSV.GZ · TSV.GZ · TXT.GZ
+              </div>
+
+              <div className="mt-1 text-xs text-muted-foreground">
+                Genes × cells/samples expression matrix
               </div>
 
               <input
                 type="file"
-                accept=".csv,text/csv"
+                accept=".csv,.tsv,.txt,.csv.gz,.tsv.gz,.txt.gz"
                 className="hidden"
                 onChange={handleFileChange}
               />
             </label>
 
-            {file && (
-              <div className="mt-4 flex items-center gap-3 rounded-lg border border-border bg-background p-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary-soft text-primary">
-                  <FileSpreadsheet className="h-5 w-5" />
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-medium text-foreground">
-                    {file.name}
+            {file && fileFormat && (
+              <div className="mt-4 rounded-lg border border-border bg-background p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary-soft text-primary">
+                    {isGzipFormat(fileFormat) ? (
+                      <FileText className="h-5 w-5" />
+                    ) : (
+                      <FileSpreadsheet className="h-5 w-5" />
+                    )}
                   </div>
 
-                  <div className="text-xs text-muted-foreground">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium text-foreground">
+                      {file.name}
+                    </div>
+
+                    <div className="mt-0.5 text-xs text-muted-foreground">
+                      {formatFileSize(file.size)} ·{" "}
+                      {fileFormat.toUpperCase()}
+                    </div>
                   </div>
+
+                  {status === "success" && (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-[oklch(0.5_0.14_155)]">
+                      <CheckCircle2 className="h-4 w-4" />
+                      Validated
+                    </span>
+                  )}
                 </div>
 
-                {status === "success" && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-[oklch(0.5_0.14_155)]">
-                    <CheckCircle2 className="h-4 w-4" />
-                    Validated
-                  </span>
-                )}
+                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <div className="rounded-md bg-muted/40 p-2.5">
+                    <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                      Format
+                    </div>
+
+                    <div className="mt-0.5 text-sm font-medium text-foreground">
+                      {fileFormat.toUpperCase()}
+                    </div>
+                  </div>
+
+                  <div className="rounded-md bg-muted/40 p-2.5">
+                    <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                      Dataset type
+                    </div>
+
+                    <div className="mt-0.5 text-sm font-medium text-foreground">
+                      {datasetType === "single-cell-umi"
+                        ? "Single-cell raw UMI"
+                        : "Expression matrix"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {validationMessage && status === "success" && (
+              <div className="mt-3 flex items-start gap-2 rounded-lg border border-green-500/20 bg-green-500/5 p-3 text-sm text-muted-foreground">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[oklch(0.5_0.14_155)]" />
+                <span>{validationMessage}</span>
               </div>
             )}
 
@@ -273,11 +569,7 @@ function UploadPage() {
           <div className="mt-8 flex items-center justify-end gap-3 border-t border-border pt-6">
             <button
               type="button"
-              onClick={() => {
-                setFile(null);
-                setStatus("idle");
-                setError("");
-              }}
+              onClick={clearFile}
               className="h-10 rounded-lg border border-border bg-card px-4 text-sm font-medium text-foreground hover:bg-muted"
             >
               Clear
@@ -290,8 +582,8 @@ function UploadPage() {
               className="inline-flex h-10 items-center rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {status === "validating"
-                ? "Analyzing..."
-                : "Analyze Dataset"}
+                ? "Validating..."
+                : "Continue"}
             </button>
           </div>
         </div>
@@ -319,7 +611,7 @@ function SelectField({
         className="h-11 w-full appearance-none rounded-lg border border-input bg-background px-3 pr-9 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
       >
         {options.map((option) => (
-          <option key={option}>
+          <option key={option} value={option}>
             {option}
           </option>
         ))}
