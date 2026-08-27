@@ -31,6 +31,11 @@ export const Route = createFileRoute("/upload")({
   component: UploadPage,
 });
 
+
+// ============================================================
+// ANALYSIS PIPELINE STEPS
+// ============================================================
+
 type AnalysisStep = {
   id: string;
   label: string;
@@ -42,154 +47,238 @@ const ANALYSIS_STEPS: AnalysisStep[] = [
   {
     id: "validation",
     label: "Dataset validation",
-    description: "Checking file format, dimensions, genes, and samples.",
+    description:
+      "Checking file format, dimensions, genes, and samples.",
     icon: Database,
   },
   {
     id: "loading",
     label: "Loading expression matrix",
-    description: "Reading the expression data into the analysis pipeline.",
+    description:
+      "Reading the expression data into the analysis pipeline.",
     icon: FileText,
   },
   {
     id: "qc",
     label: "Quality control",
-    description: "Evaluating sequencing quality and filtering low-quality cells.",
+    description:
+      "Evaluating sequencing quality and filtering low-quality cells.",
     icon: FlaskConical,
   },
   {
     id: "normalization",
     label: "Normalization",
-    description: "Normalizing counts and applying log transformation.",
+    description:
+      "Normalizing counts and applying log transformation.",
     icon: BarChart3,
   },
   {
     id: "features",
     label: "Feature selection",
-    description: "Identifying informative genes for downstream analysis.",
+    description:
+      "Identifying informative genes for downstream analysis.",
     icon: Dna,
   },
   {
     id: "embedding",
     label: "Dimensionality reduction",
-    description: "Computing PCA and low-dimensional representations.",
+    description:
+      "Computing PCA and low-dimensional representations.",
     icon: BarChart3,
   },
   {
     id: "clustering",
     label: "Cell-state analysis",
-    description: "Identifying transcriptionally distinct cellular populations.",
+    description:
+      "Identifying transcriptionally distinct cellular populations.",
     icon: Dna,
   },
   {
     id: "immune",
     label: "Immune-state scoring",
-    description: "Calculating T-cell, PD-L1/myeloid, and immune-state scores.",
+    description:
+      "Calculating T-cell, PD-L1/myeloid, and immune-state scores.",
     icon: FlaskConical,
   },
   {
     id: "de",
     label: "Differential expression",
-    description: "Identifying genes associated with immune states.",
+    description:
+      "Identifying genes associated with immune states.",
     icon: BarChart3,
   },
   {
     id: "enrichment",
     label: "Functional enrichment",
-    description: "Characterizing biological pathways and processes.",
+    description:
+      "Characterizing biological pathways and processes.",
     icon: FlaskConical,
   },
   {
     id: "ml",
     label: "Machine learning",
-    description: "Training and evaluating the immune-state classifier.",
+    description:
+      "Training and evaluating the immune-state classifier.",
     icon: BrainCircuit,
   },
   {
     id: "xai",
     label: "Explainable AI",
-    description: "Generating model feature importance and explanations.",
+    description:
+      "Generating model feature importance and explanations.",
     icon: BrainCircuit,
   },
   {
     id: "report",
     label: "Report generation",
-    description: "Assembling the complete analysis summary.",
+    description:
+      "Assembling the complete analysis summary.",
     icon: FileText,
   },
 ];
 
-type AnalysisStatus = "idle" | "ready" | "running" | "error";
+
+// ============================================================
+// TYPES
+// ============================================================
+
+type AnalysisStatus =
+  | "idle"
+  | "ready"
+  | "running"
+  | "error";
+
+
+// ============================================================
+// SHARED TIME FORMATTER
+// IMPORTANT:
+// This must be OUTSIDE UploadPage so AnalysisProgressCard
+// can also use it.
+// ============================================================
+
+function formatTime(seconds: number | null) {
+  if (seconds === null) {
+    return "Calculating...";
+  }
+
+  const safeSeconds = Math.max(
+    0,
+    Math.round(seconds),
+  );
+
+  const minutes = Math.floor(
+    safeSeconds / 60,
+  );
+
+  const remaining = safeSeconds % 60;
+
+  if (minutes === 0) {
+    return `${remaining}s`;
+  }
+
+  return `${minutes}m ${remaining
+    .toString()
+    .padStart(2, "0")}s`;
+}
+
+
+// ============================================================
+// UPLOAD PAGE
+// ============================================================
 
 function UploadPage() {
   const navigate = useNavigate();
 
-  const [file, setFile] = useState<File | null>(null);
-  const [status, setStatus] = useState<AnalysisStatus>("idle");
-  const [error, setError] = useState("");
+  const [file, setFile] =
+    useState<File | null>(null);
 
-  const [currentStep, setCurrentStep] = useState(0);
-  const [progress, setProgress] = useState(0);
+  const [status, setStatus] =
+    useState<AnalysisStatus>("idle");
 
-  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [error, setError] =
+    useState("");
+
+  const [currentStep, setCurrentStep] =
+    useState(0);
+
+  const [progress, setProgress] =
+    useState(0);
+
+  const [elapsedSeconds, setElapsedSeconds] =
+    useState(0);
+
   const [estimatedTotalSeconds, setEstimatedTotalSeconds] =
     useState<number | null>(null);
 
-  /*
-   * For now this is a frontend simulation so we can build and verify
-   * the complete UI before connecting the real FastAPI analysis job.
-   *
-   * IMPORTANT:
-   * The real backend will replace this simulation and report actual
-   * progress from the Python pipeline.
-   */
-  const isRunning = status === "running";
+
+  // ==========================================================
+  // RUNNING STATE
+  // ==========================================================
+
+  const isRunning =
+    status === "running";
+
+
+  // ==========================================================
+  // ELAPSED TIMER
+  // ==========================================================
 
   useEffect(() => {
     if (!isRunning) {
       return;
     }
 
-    const interval = window.setInterval(() => {
-      setElapsedSeconds((seconds) => seconds + 1);
-    }, 1000);
+    const interval =
+      window.setInterval(() => {
+        setElapsedSeconds(
+          (seconds) => seconds + 1,
+        );
+      }, 1000);
 
-    return () => window.clearInterval(interval);
+    return () =>
+      window.clearInterval(interval);
   }, [isRunning]);
 
-  const remainingSeconds = useMemo(() => {
-    if (!estimatedTotalSeconds || progress <= 0) {
-      return null;
-    }
 
-    const estimatedElapsed =
-      estimatedTotalSeconds * (progress / 100);
+  // ==========================================================
+  // REMAINING TIME ESTIMATE
+  // ==========================================================
 
-    return Math.max(
-      0,
-      Math.round(estimatedTotalSeconds - estimatedElapsed),
-    );
-  }, [estimatedTotalSeconds, progress]);
+  const remainingSeconds =
+    useMemo(() => {
+      if (
+        !estimatedTotalSeconds ||
+        progress <= 0
+      ) {
+        return null;
+      }
 
-  function formatTime(seconds: number | null) {
-    if (seconds === null) {
-      return "Calculating...";
-    }
+      const estimatedElapsed =
+        estimatedTotalSeconds *
+        (progress / 100);
 
-    const minutes = Math.floor(seconds / 60);
-    const remaining = seconds % 60;
+      return Math.max(
+        0,
+        Math.round(
+          estimatedTotalSeconds -
+            estimatedElapsed,
+        ),
+      );
+    }, [
+      estimatedTotalSeconds,
+      progress,
+    ]);
 
-    if (minutes === 0) {
-      return `${remaining}s`;
-    }
 
-    return `${minutes}m ${remaining.toString().padStart(2, "0")}s`;
-  }
+  // ==========================================================
+  // FILE SELECTION
+  // ==========================================================
 
   function handleFileChange(
     event: React.ChangeEvent<HTMLInputElement>,
   ) {
-    const selectedFile = event.target.files?.[0];
+    const selectedFile =
+      event.target.files?.[0];
 
     if (!selectedFile) {
       return;
@@ -197,7 +286,8 @@ function UploadPage() {
 
     setError("");
 
-    const lowerName = selectedFile.name.toLowerCase();
+    const lowerName =
+      selectedFile.name.toLowerCase();
 
     const supported =
       lowerName.endsWith(".csv") ||
@@ -208,9 +298,11 @@ function UploadPage() {
     if (!supported) {
       setFile(null);
       setStatus("error");
+
       setError(
         "Unsupported file format. Upload a CSV, TSV, TXT, or GZ expression matrix.",
       );
+
       return;
     }
 
@@ -221,6 +313,11 @@ function UploadPage() {
     setElapsedSeconds(0);
     setEstimatedTotalSeconds(null);
   }
+
+
+  // ==========================================================
+  // CLEAR DATASET
+  // ==========================================================
 
   function clearFile() {
     if (isRunning) {
@@ -236,9 +333,27 @@ function UploadPage() {
     setEstimatedTotalSeconds(null);
   }
 
+
+  // ==========================================================
+  // ANALYZE DATASET
+  // ==========================================================
+  //
+  // CURRENTLY THIS IS STILL THE FRONTEND SIMULATION.
+  //
+  // We will replace this with:
+  //
+  // POST /api/analysis/run
+  //
+  // followed by polling of the real analysis job.
+  //
+  // ==========================================================
+
   async function handleAnalyze() {
     if (!file) {
-      setError("Please upload a dataset first.");
+      setError(
+        "Please upload a dataset first.",
+      );
+
       return;
     }
 
@@ -248,58 +363,78 @@ function UploadPage() {
     setProgress(2);
     setElapsedSeconds(0);
 
-    /*
-     * Temporary estimate.
-     *
-     * Later the backend will return a real estimate based on:
-     * - number of cells
-     * - number of genes
-     * - file size
-     * - analysis stage
-     */
-    const estimatedSeconds = estimateAnalysisTime(file);
 
-    setEstimatedTotalSeconds(estimatedSeconds);
+    // ----------------------------------------------------------
+    // Temporary estimate
+    // ----------------------------------------------------------
 
-    /*
-     * TEMPORARY FRONTEND PIPELINE
-     *
-     * This lets us verify the UX before connecting FastAPI.
-     * We will replace this entire block with:
-     *
-     * POST /api/analysis
-     *
-     * followed by job-progress polling / SSE.
-     */
-    for (let i = 0; i < ANALYSIS_STEPS.length; i++) {
+    const estimatedSeconds =
+      estimateAnalysisTime(file);
+
+    setEstimatedTotalSeconds(
+      estimatedSeconds,
+    );
+
+
+    // ----------------------------------------------------------
+    // Temporary frontend pipeline
+    // ----------------------------------------------------------
+
+    for (
+      let i = 0;
+      i < ANALYSIS_STEPS.length;
+      i++
+    ) {
       setCurrentStep(i);
 
       const stepProgress =
-        Math.round((i / ANALYSIS_STEPS.length) * 92) + 4;
+        Math.round(
+          (i /
+            ANALYSIS_STEPS.length) *
+            92,
+        ) + 4;
 
-      setProgress(Math.min(stepProgress, 96));
+      setProgress(
+        Math.min(
+          stepProgress,
+          96,
+        ),
+      );
 
-      await wait(getStepDelay(i));
+      await wait(
+        getStepDelay(i),
+      );
     }
 
+
+    // ----------------------------------------------------------
+    // Complete
+    // ----------------------------------------------------------
+
     setProgress(100);
-    setCurrentStep(ANALYSIS_STEPS.length - 1);
+
+    setCurrentStep(
+      ANALYSIS_STEPS.length - 1,
+    );
 
     await wait(700);
 
-    /*
-     * We are deliberately NOT navigating to /results yet.
-     *
-     * Once the backend is connected, the response will contain
-     * an analysis ID and results payload. Then we will navigate
-     * to the real results page.
-     */
+
+    // ----------------------------------------------------------
+    // TEMPORARY
+    // ----------------------------------------------------------
+
     setStatus("ready");
 
     setError(
       "Analysis interface is ready. The next step is connecting this progress screen to the Python/FastAPI analysis pipeline.",
     );
   }
+
+
+  // ==========================================================
+  // RENDER
+  // ==========================================================
 
   return (
     <AppLayout
@@ -312,23 +447,38 @@ function UploadPage() {
             file={file}
             status={status}
             error={error}
-            onFileChange={handleFileChange}
+            onFileChange={
+              handleFileChange
+            }
             onClear={clearFile}
-            onAnalyze={handleAnalyze}
+            onAnalyze={
+              handleAnalyze
+            }
           />
         ) : (
           <AnalysisProgressCard
             file={file}
-            currentStep={currentStep}
+            currentStep={
+              currentStep
+            }
             progress={progress}
-            elapsedSeconds={elapsedSeconds}
-            remainingSeconds={remainingSeconds}
+            elapsedSeconds={
+              elapsedSeconds
+            }
+            remainingSeconds={
+              remainingSeconds
+            }
           />
         )}
       </div>
     </AppLayout>
   );
 }
+
+
+// ============================================================
+// UPLOAD CARD
+// ============================================================
 
 function UploadCard({
   file,
@@ -341,16 +491,20 @@ function UploadCard({
   file: File | null;
   status: AnalysisStatus;
   error: string;
+
   onFileChange: (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => void;
+
   onClear: () => void;
   onAnalyze: () => void;
 }) {
   return (
     <div className="rounded-2xl border border-border bg-card shadow-sm">
+
       <div className="border-b border-border p-8">
         <div className="flex items-start gap-4">
+
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
             <Dna className="h-6 w-6" />
           </div>
@@ -361,17 +515,22 @@ function UploadCard({
             </h2>
 
             <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Upload a single-cell gene expression matrix. ImmunoXAI
-              will automatically validate the dataset and run the
-              appropriate analysis workflow.
+              Upload a single-cell gene expression matrix.
+              ImmunoXAI will automatically validate the
+              dataset and run the appropriate analysis workflow.
             </p>
           </div>
+
         </div>
       </div>
 
+
       <div className="p-8">
+
         {!file ? (
+
           <label className="group flex min-h-[300px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-primary-soft/30 px-6 text-center transition hover:border-primary/50 hover:bg-primary-soft/60">
+
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-card text-primary shadow-sm transition group-hover:scale-105">
               <UploadCloud className="h-8 w-8" />
             </div>
@@ -394,22 +553,31 @@ function UploadCard({
               className="hidden"
               onChange={onFileChange}
             />
+
           </label>
+
         ) : (
+
           <div className="rounded-2xl border border-border bg-background p-5">
+
             <div className="flex items-center gap-4">
+
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
                 <FileText className="h-6 w-6" />
               </div>
 
               <div className="min-w-0 flex-1">
+
                 <div className="truncate text-sm font-semibold text-foreground">
                   {file.name}
                 </div>
 
                 <div className="mt-1 text-xs text-muted-foreground">
-                  {formatFileSize(file.size)}
+                  {formatFileSize(
+                    file.size,
+                  )}
                 </div>
+
               </div>
 
               {status === "ready" && (
@@ -427,9 +595,12 @@ function UploadCard({
               >
                 <X className="h-4 w-4" />
               </button>
+
             </div>
 
+
             <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+
               <InfoItem
                 label="Input"
                 value="Expression matrix"
@@ -444,18 +615,29 @@ function UploadCard({
                 label="Analysis"
                 value="Full pipeline"
               />
+
             </div>
+
           </div>
+
         )}
+
 
         {error && (
           <div className="mt-5 flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>{error}</span>
+
+            <span>
+              {error}
+            </span>
+
           </div>
         )}
 
+
         <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+
           {file && (
             <button
               type="button"
@@ -475,11 +657,18 @@ function UploadCard({
             <FlaskConical className="h-4 w-4" />
             Analyze Dataset
           </button>
+
         </div>
+
       </div>
     </div>
   );
 }
+
+
+// ============================================================
+// ANALYSIS PROGRESS CARD
+// ============================================================
 
 function AnalysisProgressCard({
   file,
@@ -496,21 +685,30 @@ function AnalysisProgressCard({
 }) {
   const activeStep =
     ANALYSIS_STEPS[
-      Math.min(currentStep, ANALYSIS_STEPS.length - 1)
+      Math.min(
+        currentStep,
+        ANALYSIS_STEPS.length - 1,
+      )
     ];
 
-  const ActiveIcon = activeStep.icon;
+  const ActiveIcon =
+    activeStep.icon;
 
   return (
     <div className="rounded-2xl border border-border bg-card shadow-sm">
+
       <div className="border-b border-border p-8">
+
         <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+
           <div className="flex min-w-0 items-start gap-4">
+
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
 
             <div className="min-w-0">
+
               <h2 className="text-xl font-semibold text-foreground">
                 Analyzing dataset
               </h2>
@@ -518,21 +716,33 @@ function AnalysisProgressCard({
               <p className="mt-1 truncate text-sm text-muted-foreground">
                 {file?.name}
               </p>
+
             </div>
+
           </div>
 
+
           <div className="flex shrink-0 items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
+
             <Clock3 className="h-4 w-4" />
+
             <span>
               {remainingSeconds === null
                 ? "Estimating..."
-                : `~${formatTime(remainingSeconds)} remaining`}
+                : `~${formatTime(
+                    remainingSeconds,
+                  )} remaining`}
             </span>
+
           </div>
+
         </div>
 
+
         <div className="mt-8">
+
           <div className="mb-2 flex items-center justify-between text-xs">
+
             <span className="font-medium text-foreground">
               Overall progress
             </span>
@@ -540,20 +750,31 @@ function AnalysisProgressCard({
             <span className="font-medium text-primary">
               {progress}%
             </span>
+
           </div>
+
 
           <div className="h-2 overflow-hidden rounded-full bg-muted">
+
             <div
               className="h-full rounded-full bg-primary transition-all duration-700"
-              style={{ width: `${progress}%` }}
+              style={{
+                width: `${progress}%`,
+              }}
             />
+
           </div>
+
         </div>
 
+
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+
           <StatBox
             label="Elapsed"
-            value={formatTime(elapsedSeconds)}
+            value={formatTime(
+              elapsedSeconds,
+            )}
           />
 
           <StatBox
@@ -565,17 +786,24 @@ function AnalysisProgressCard({
             label="Pipeline"
             value="Automated"
           />
+
         </div>
+
       </div>
 
+
       <div className="p-8">
+
         <div className="rounded-xl border border-primary/20 bg-primary-soft/30 p-5">
+
           <div className="flex items-start gap-4">
+
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
               <ActiveIcon className="h-5 w-5" />
             </div>
 
             <div className="min-w-0">
+
               <div className="text-xs font-semibold uppercase tracking-wider text-primary">
                 Current step
               </div>
@@ -587,105 +815,147 @@ function AnalysisProgressCard({
               <p className="mt-1 text-sm text-muted-foreground">
                 {activeStep.description}
               </p>
+
             </div>
+
           </div>
+
         </div>
 
+
         <div className="mt-7">
+
           <div className="mb-4 text-sm font-semibold text-foreground">
             Analysis pipeline
           </div>
 
+
           <div className="space-y-1">
-            {ANALYSIS_STEPS.map((step, index) => {
-              const Icon = step.icon;
 
-              const completed = index < currentStep;
-              const active = index === currentStep;
+            {ANALYSIS_STEPS.map(
+              (step, index) => {
+                const Icon =
+                  step.icon;
 
-              return (
-                <div
-                  key={step.id}
-                  className={[
-                    "flex items-center gap-3 rounded-lg px-3 py-3 transition",
-                    active
-                      ? "bg-primary-soft"
-                      : "bg-transparent",
-                  ].join(" ")}
-                >
+                const completed =
+                  index <
+                  currentStep;
+
+                const active =
+                  index ===
+                  currentStep;
+
+                return (
                   <div
+                    key={step.id}
                     className={[
-                      "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-                      completed
-                        ? "bg-[oklch(0.65_0.16_155)] text-white"
-                        : active
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground",
+                      "flex items-center gap-3 rounded-lg px-3 py-3 transition",
+                      active
+                        ? "bg-primary-soft"
+                        : "bg-transparent",
                     ].join(" ")}
                   >
-                    {completed ? (
-                      <CheckCircle2 className="h-4 w-4" />
-                    ) : active ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Icon className="h-4 w-4" />
-                    )}
-                  </div>
 
-                  <div className="min-w-0 flex-1">
                     <div
                       className={[
-                        "text-sm font-medium",
-                        completed || active
-                          ? "text-foreground"
-                          : "text-muted-foreground",
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                        completed
+                          ? "bg-[oklch(0.65_0.16_155)] text-white"
+                          : active
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground",
                       ].join(" ")}
                     >
-                      {step.label}
+
+                      {completed ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : active ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Icon className="h-4 w-4" />
+                      )}
+
                     </div>
 
-                    {active && (
-                      <div className="mt-0.5 text-xs text-muted-foreground">
-                        {step.description}
-                      </div>
-                    )}
-                  </div>
 
-                  <div className="text-xs text-muted-foreground">
-                    {completed
-                      ? "Complete"
-                      : active
-                        ? "Running"
-                        : "Waiting"}
+                    <div className="min-w-0 flex-1">
+
+                      <div
+                        className={[
+                          "text-sm font-medium",
+                          completed ||
+                          active
+                            ? "text-foreground"
+                            : "text-muted-foreground",
+                        ].join(" ")}
+                      >
+                        {step.label}
+                      </div>
+
+
+                      {active && (
+                        <div className="mt-0.5 text-xs text-muted-foreground">
+                          {step.description}
+                        </div>
+                      )}
+
+                    </div>
+
+
+                    <div className="text-xs text-muted-foreground">
+
+                      {completed
+                        ? "Complete"
+                        : active
+                          ? "Running"
+                          : "Waiting"}
+
+                    </div>
+
                   </div>
-                </div>
-              );
-            })}
+                );
+              },
+            )}
+
           </div>
+
         </div>
 
+
         <div className="mt-7 rounded-xl border border-border bg-muted/30 p-4">
+
           <div className="flex items-start gap-3">
+
             <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
 
             <div>
+
               <div className="text-xs font-medium text-foreground">
                 Analysis time
               </div>
 
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                The remaining-time estimate will become dynamic once
-                the Python analysis service is connected. It will use
-                actual processing progress rather than a fixed
-                countdown.
+                The remaining-time estimate will become
+                dynamic once the Python analysis service
+                is connected. It will use actual processing
+                progress rather than a fixed countdown.
               </p>
+
             </div>
+
           </div>
+
         </div>
+
       </div>
     </div>
   );
 }
+
+
+// ============================================================
+// INFO ITEM
+// ============================================================
 
 function InfoItem({
   label,
@@ -696,6 +966,7 @@ function InfoItem({
 }) {
   return (
     <div className="rounded-lg border border-border bg-card px-3 py-2.5">
+
       <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
         {label}
       </div>
@@ -703,9 +974,15 @@ function InfoItem({
       <div className="mt-0.5 text-xs font-medium text-foreground">
         {value}
       </div>
+
     </div>
   );
 }
+
+
+// ============================================================
+// STAT BOX
+// ============================================================
 
 function StatBox({
   label,
@@ -716,6 +993,7 @@ function StatBox({
 }) {
   return (
     <div className="rounded-lg border border-border bg-background p-3">
+
       <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
         {label}
       </div>
@@ -723,28 +1001,59 @@ function StatBox({
       <div className="mt-1 text-sm font-semibold text-foreground">
         {value}
       </div>
+
     </div>
   );
 }
 
-function formatFileSize(bytes: number) {
+
+// ============================================================
+// FILE SIZE
+// ============================================================
+
+function formatFileSize(
+  bytes: number,
+) {
   if (bytes < 1024) {
     return `${bytes} B`;
   }
 
-  if (bytes < 1024 * 1024) {
-    return `${(bytes / 1024).toFixed(1)} KB`;
+  if (
+    bytes <
+    1024 * 1024
+  ) {
+    return `${(
+      bytes / 1024
+    ).toFixed(1)} KB`;
   }
 
-  if (bytes < 1024 * 1024 * 1024) {
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  if (
+    bytes <
+    1024 * 1024 * 1024
+  ) {
+    return `${(
+      bytes /
+      (1024 * 1024)
+    ).toFixed(2)} MB`;
   }
 
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+  return `${(
+    bytes /
+    (1024 * 1024 * 1024)
+  ).toFixed(2)} GB`;
 }
 
-function estimateAnalysisTime(file: File) {
-  const sizeMB = file.size / (1024 * 1024);
+
+// ============================================================
+// TEMPORARY ANALYSIS TIME ESTIMATE
+// ============================================================
+
+function estimateAnalysisTime(
+  file: File,
+) {
+  const sizeMB =
+    file.size /
+    (1024 * 1024);
 
   if (sizeMB < 20) {
     return 90;
@@ -765,7 +1074,14 @@ function estimateAnalysisTime(file: File) {
   return 720;
 }
 
-function getStepDelay(index: number) {
+
+// ============================================================
+// TEMPORARY STEP DELAYS
+// ============================================================
+
+function getStepDelay(
+  index: number,
+) {
   const delays = [
     700,
     900,
@@ -782,11 +1098,25 @@ function getStepDelay(index: number) {
     900,
   ];
 
-  return delays[index] ?? 1000;
+  return (
+    delays[index] ?? 1000
+  );
 }
 
-function wait(ms: number) {
-  return new Promise<void>((resolve) => {
-    window.setTimeout(resolve, ms);
-  });
+
+// ============================================================
+// WAIT
+// ============================================================
+
+function wait(
+  ms: number,
+) {
+  return new Promise<void>(
+    (resolve) => {
+      window.setTimeout(
+        resolve,
+        ms,
+      );
+    },
+  );
 }

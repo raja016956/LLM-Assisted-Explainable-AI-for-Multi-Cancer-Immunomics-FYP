@@ -1,0 +1,996 @@
+from __future__ import annotations
+
+import time
+from pathlib import Path
+from typing import Any
+from uuid import uuid4
+
+from fastapi import APIRouter, File, HTTPException, UploadFile
+
+from app.pipeline.io import (
+    inspect_expression_matrix,
+    validate_expression_matrix,
+)
+
+from app.pipeline.qc import (
+    QCConfig,
+    calculate_streaming_qc,
+)
+
+from app.pipeline.normalization import (
+    run_memory_safe_normalization,
+)
+
+
+router = APIRouter(
+    prefix="/analysis",
+    tags=["Analysis"],
+)
+
+
+# ============================================================
+# DIRECTORIES
+# ============================================================
+
+BASE_DIR = Path(__file__).resolve().parents[2]
+
+UPLOAD_DIR = (
+    BASE_DIR
+    / "backend_data"
+    / "uploads"
+)
+
+ANALYSIS_DIR = (
+    BASE_DIR
+    / "backend_data"
+    / "analysis"
+)
+
+UPLOAD_DIR.mkdir(
+    parents=True,
+    exist_ok=True,
+)
+
+ANALYSIS_DIR.mkdir(
+    parents=True,
+    exist_ok=True,
+)
+
+
+# ============================================================
+# HELPERS
+# ============================================================
+
+def _safe_int(
+    value: Any,
+    default: int = 0,
+) -> int:
+
+    try:
+        return int(value)
+
+    except (
+        TypeError,
+        ValueError,
+    ):
+        return default
+
+
+def _safe_float(
+    value: Any,
+    default: float = 0.0,
+) -> float:
+
+    try:
+        return float(value)
+
+    except (
+        TypeError,
+        ValueError,
+    ):
+        return default
+
+
+def _get_nested(
+    data: dict[str, Any],
+    section: str,
+    key: str,
+    default: Any = None,
+) -> Any:
+
+    section_data = data.get(
+        section,
+        {},
+    )
+
+    if not isinstance(
+        section_data,
+        dict,
+    ):
+        return default
+
+    return section_data.get(
+        key,
+        default,
+    )
+
+
+# ============================================================
+# QC RESPONSE NORMALIZATION
+# ============================================================
+
+def _build_qc_response(
+    qc_result: dict[str, Any],
+    qc_config: QCConfig,
+) -> dict[str, Any]:
+    """
+    Convert the internal QC result into a stable API response.
+
+    The QC pipeline uses nested sections such as:
+
+        cells
+        expression
+        mitochondrial
+        filtering
+
+    The API exposes a clean, frontend-friendly structure.
+    """
+
+    # --------------------------------------------------------
+    # CELL SUMMARY
+    # --------------------------------------------------------
+
+    cells_before = _safe_int(
+        _get_nested(
+            qc_result,
+            "cells",
+            "before",
+            0,
+        )
+    )
+
+    cells_after = _safe_int(
+        _get_nested(
+            qc_result,
+            "cells",
+            "after",
+            0,
+        )
+    )
+
+    cells_removed = _safe_int(
+        _get_nested(
+            qc_result,
+            "cells",
+            "removed",
+            cells_before - cells_after,
+        )
+    )
+
+    retained_fraction = _safe_float(
+        _get_nested(
+            qc_result,
+            "cells",
+            "retained_fraction",
+            (
+                cells_after / cells_before
+                if cells_before > 0
+                else 0.0
+            ),
+        )
+    )
+
+    # --------------------------------------------------------
+    # EXPRESSION SUMMARY
+    # --------------------------------------------------------
+
+    genes = _safe_int(
+        _get_nested(
+            qc_result,
+            "expression",
+            "genes",
+            0,
+        )
+    )
+
+    total_umis = _safe_int(
+        _get_nested(
+            qc_result,
+            "expression",
+            "total_umis",
+            0,
+        )
+    )
+
+    median_umis = _safe_float(
+        _get_nested(
+            qc_result,
+            "expression",
+            "median_umis_per_cell",
+            0,
+        )
+    )
+
+    mean_umis = _safe_float(
+        _get_nested(
+            qc_result,
+            "expression",
+            "mean_umis_per_cell",
+            0,
+        )
+    )
+
+    median_genes = _safe_float(
+        _get_nested(
+            qc_result,
+            "expression",
+            "median_genes_per_cell",
+            0,
+        )
+    )
+
+    mean_genes = _safe_float(
+        _get_nested(
+            qc_result,
+            "expression",
+            "mean_genes_per_cell",
+            0,
+        )
+    )
+
+    # --------------------------------------------------------
+    # MITOCHONDRIAL SUMMARY
+    # --------------------------------------------------------
+
+    mitochondrial_umis = _safe_int(
+        _get_nested(
+            qc_result,
+            "mitochondrial",
+            "umis",
+            0,
+        )
+    )
+
+    mitochondrial_fraction = _safe_float(
+        _get_nested(
+            qc_result,
+            "mitochondrial",
+            "fraction",
+            0,
+        )
+    )
+
+    # --------------------------------------------------------
+    # FILTERING
+    # --------------------------------------------------------
+
+    filtering = qc_result.get(
+        "filtering",
+        {},
+    )
+
+    if not isinstance(
+        filtering,
+        dict,
+    ):
+        filtering = {}
+
+    threshold_diagnostics = (
+        qc_result.get(
+            "threshold_diagnostics",
+            {},
+        )
+    )
+
+    if not isinstance(
+        threshold_diagnostics,
+        dict,
+    ):
+        threshold_diagnostics = {}
+
+    # --------------------------------------------------------
+    # RETAINED CELLS
+    # --------------------------------------------------------
+
+    keep_indices = qc_result.get(
+        "keep_cell_indices",
+        [],
+    )
+
+    if keep_indices is None:
+        keep_indices = []
+
+    keep_indices = [
+        _safe_int(index)
+        for index in keep_indices
+    ]
+
+    return {
+
+        "cells_before":
+            cells_before,
+
+        "cells_after":
+            cells_after,
+
+        "cells_removed":
+            cells_removed,
+
+        "retained_fraction":
+            retained_fraction,
+
+        "genes":
+            genes,
+
+        "total_umis":
+            total_umis,
+
+        "median_umis_per_cell":
+            median_umis,
+
+        "mean_umis_per_cell":
+            mean_umis,
+
+        "median_genes_per_cell":
+            median_genes,
+
+        "mean_genes_per_cell":
+            mean_genes,
+
+        "mitochondrial_umis":
+            mitochondrial_umis,
+
+        "mitochondrial_fraction":
+            mitochondrial_fraction,
+
+        "threshold_diagnostics": {
+
+            "below_min_umis":
+                _safe_int(
+                    threshold_diagnostics.get(
+                        "below_min_umis",
+                        0,
+                    )
+                ),
+
+            "below_min_genes":
+                _safe_int(
+                    threshold_diagnostics.get(
+                        "below_min_genes",
+                        0,
+                    )
+                ),
+
+            "above_max_mito":
+                _safe_int(
+                    threshold_diagnostics.get(
+                        "above_max_mito",
+                        0,
+                    )
+                ),
+        },
+
+        "thresholds": {
+
+            "min_umis":
+                _safe_int(
+                    filtering.get(
+                        "min_umis",
+                        qc_config.min_umis,
+                    )
+                ),
+
+            "min_genes":
+                _safe_int(
+                    filtering.get(
+                        "min_genes",
+                        qc_config.min_genes,
+                    )
+                ),
+
+            "max_mito_fraction":
+                _safe_float(
+                    filtering.get(
+                        "max_mito_fraction",
+                        qc_config.max_mito_fraction,
+                    )
+                ),
+        },
+
+        "retained_cell_count":
+            len(keep_indices),
+
+        "retained_cell_indices":
+            keep_indices,
+    }
+
+
+# ============================================================
+# HEALTH
+# ============================================================
+
+@router.get("/health")
+async def analysis_health() -> dict[str, str]:
+
+    return {
+        "status": "ok",
+        "service": "analysis",
+    }
+
+
+# ============================================================
+# RUN ANALYSIS
+# ============================================================
+
+@router.post("/run")
+async def run_analysis(
+    file: UploadFile = File(...),
+) -> dict[str, Any]:
+
+    start_time = time.perf_counter()
+
+    # ========================================================
+    # FILE VALIDATION
+    # ========================================================
+
+    if not file.filename:
+
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "No dataset filename "
+                "was provided."
+            ),
+        )
+
+    filename = Path(
+        file.filename
+    ).name
+
+    # ========================================================
+    # CREATE JOB
+    # ========================================================
+
+    job_id = str(
+        uuid4()
+    )
+
+    job_dir = (
+        ANALYSIS_DIR
+        / job_id
+    )
+
+    job_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    dataset_path = (
+        job_dir
+        / filename
+    )
+
+    # ========================================================
+    # SAVE UPLOADED DATASET
+    # ========================================================
+
+    try:
+
+        with dataset_path.open(
+            "wb"
+        ) as output:
+
+            while True:
+
+                chunk = await file.read(
+                    1024 * 1024
+                )
+
+                if not chunk:
+                    break
+
+                output.write(
+                    chunk
+                )
+
+    except Exception as exc:
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Failed to save uploaded "
+                f"dataset: {exc}"
+            ),
+        )
+
+    # ========================================================
+    # STEP 1 — STRUCTURAL VALIDATION
+    # ========================================================
+
+    try:
+
+        validation = (
+            validate_expression_matrix(
+                dataset_path
+            )
+        )
+
+    except Exception as exc:
+
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Dataset validation failed: "
+                f"{exc}"
+            ),
+        )
+
+    if not validation.get(
+        "valid",
+        False,
+    ):
+
+        runtime = (
+            time.perf_counter()
+            - start_time
+        )
+
+        return {
+
+            "job_id":
+                job_id,
+
+            "status":
+                "failed",
+
+            "filename":
+                filename,
+
+            "message":
+                "Dataset validation failed.",
+
+            "runtime_seconds":
+                round(
+                    runtime,
+                    2,
+                ),
+
+            "validation":
+                validation,
+        }
+
+    # ========================================================
+    # STEP 2 — MATRIX INSPECTION
+    # ========================================================
+
+    try:
+
+        info = inspect_expression_matrix(
+            dataset_path
+        )
+
+    except Exception as exc:
+
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Matrix inspection failed: "
+                f"{exc}"
+            ),
+        )
+
+    # ========================================================
+    # STEP 3 — QUALITY CONTROL
+    # ========================================================
+
+    qc_config = QCConfig(
+
+        min_umis=1000,
+
+        min_genes=200,
+
+        max_mito_fraction=0.20,
+    )
+
+    try:
+
+        qc_raw = (
+            calculate_streaming_qc(
+                dataset_path,
+                config=qc_config,
+            )
+        )
+
+    except Exception as exc:
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Quality control failed: "
+                f"{exc}"
+            ),
+        )
+
+    qc_result = _build_qc_response(
+        qc_raw,
+        qc_config,
+    )
+
+    keep_cell_indices = (
+        qc_result[
+            "retained_cell_indices"
+        ]
+    )
+
+    # ========================================================
+    # STEP 4 — NORMALIZATION
+    # ========================================================
+
+    normalization_dir = (
+        job_dir
+        / "normalization"
+    )
+
+    try:
+
+        normalization_result = (
+            run_memory_safe_normalization(
+
+                dataset_path,
+
+                normalization_dir,
+
+                chunk_cells=250,
+
+                target_sum=10_000,
+
+                keep_cell_indices=(
+                    keep_cell_indices
+                ),
+            )
+        )
+
+    except Exception as exc:
+
+        raise HTTPException(
+            status_code=500,
+            detail=(
+                "Normalization failed: "
+                f"{exc}"
+            ),
+        )
+
+    # ========================================================
+    # NORMALIZATION OUTPUT
+    # ========================================================
+
+    raw_result = (
+        normalization_result.get(
+            "raw",
+            {},
+        )
+    )
+
+    normalized_result = (
+        normalization_result.get(
+            "normalized",
+            {},
+        )
+    )
+
+    if not isinstance(
+        raw_result,
+        dict,
+    ):
+        raw_result = {}
+
+    if not isinstance(
+        normalized_result,
+        dict,
+    ):
+        normalized_result = {}
+
+    original_cells = _safe_int(
+        raw_result.get(
+            "original_cells",
+            info.n_cells,
+        ),
+        info.n_cells,
+    )
+
+    retained_cells = _safe_int(
+        raw_result.get(
+            "cells",
+            len(keep_cell_indices),
+        ),
+        len(keep_cell_indices),
+    )
+
+    removed_cells = _safe_int(
+        raw_result.get(
+            "cells_removed",
+            original_cells
+            - retained_cells,
+        ),
+        original_cells
+        - retained_cells,
+    )
+
+    normalization_genes = _safe_int(
+        raw_result.get(
+            "genes",
+            info.n_genes,
+        ),
+        info.n_genes,
+    )
+
+    nonzero_entries = _safe_int(
+        raw_result.get(
+            "nonzero_entries",
+            0,
+        )
+    )
+
+    raw_output = raw_result.get(
+        "output_file"
+    )
+
+    normalized_output = (
+        normalized_result.get(
+            "output_file"
+        )
+    )
+
+    # ========================================================
+    # RUNTIME
+    # ========================================================
+
+    runtime = (
+        time.perf_counter()
+        - start_time
+    )
+
+    # ========================================================
+    # RESPONSE
+    # ========================================================
+
+    return {
+
+        "job_id":
+            job_id,
+
+        "status":
+            "completed",
+
+        "filename":
+            filename,
+
+        "message": (
+            "Dataset successfully "
+            "validated, quality-controlled "
+            "and normalized."
+        ),
+
+        "runtime_seconds":
+            round(
+                runtime,
+                2,
+            ),
+
+        # ====================================================
+        # DATASET
+        # ====================================================
+
+        "dataset": {
+
+            "genes":
+                _safe_int(
+                    info.n_genes
+                ),
+
+            "cells":
+                _safe_int(
+                    info.n_cells
+                ),
+
+            "gene_column":
+                info.gene_column,
+
+            "compression":
+                info.compression,
+
+            "format":
+                info.format,
+        },
+
+        # ====================================================
+        # VALIDATION
+        # ====================================================
+
+        "validation": {
+
+            "valid":
+                bool(
+                    validation.get(
+                        "valid",
+                        False,
+                    )
+                ),
+
+            "warnings":
+                validation.get(
+                    "warnings",
+                    [],
+                ),
+        },
+
+        # ====================================================
+        # QC
+        # ====================================================
+
+        "qc": {
+
+            "cells_before":
+                qc_result[
+                    "cells_before"
+                ],
+
+            "cells_after":
+                qc_result[
+                    "cells_after"
+                ],
+
+            "cells_removed":
+                qc_result[
+                    "cells_removed"
+                ],
+
+            "retained_fraction":
+                qc_result[
+                    "retained_fraction"
+                ],
+
+            "genes":
+                qc_result[
+                    "genes"
+                ],
+
+            "total_umis":
+                qc_result[
+                    "total_umis"
+                ],
+
+            "median_umis_per_cell":
+                qc_result[
+                    "median_umis_per_cell"
+                ],
+
+            "mean_umis_per_cell":
+                qc_result[
+                    "mean_umis_per_cell"
+                ],
+
+            "median_genes_per_cell":
+                qc_result[
+                    "median_genes_per_cell"
+                ],
+
+            "mean_genes_per_cell":
+                qc_result[
+                    "mean_genes_per_cell"
+                ],
+
+            "mitochondrial_umis":
+                qc_result[
+                    "mitochondrial_umis"
+                ],
+
+            "mitochondrial_fraction":
+                qc_result[
+                    "mitochondrial_fraction"
+                ],
+
+            "threshold_diagnostics":
+                qc_result[
+                    "threshold_diagnostics"
+                ],
+
+            "thresholds":
+                qc_result[
+                    "thresholds"
+                ],
+
+            "retained_cell_count":
+                qc_result[
+                    "retained_cell_count"
+                ],
+        },
+
+        # ====================================================
+        # NORMALIZATION
+        # ====================================================
+
+        "normalization": {
+
+            "method": (
+                "Library-size normalization "
+                "followed by log1p "
+                "transformation"
+            ),
+
+            "target_sum":
+                10_000,
+
+            "chunk_cells":
+                250,
+
+            "genes":
+                normalization_genes,
+
+            "original_cells":
+                original_cells,
+
+            "retained_cells":
+                retained_cells,
+
+            "removed_cells":
+                removed_cells,
+
+            "nonzero_entries":
+                nonzero_entries,
+
+            "raw_output":
+                (
+                    str(raw_output)
+                    if raw_output
+                    else None
+                ),
+
+            "normalized_output":
+                (
+                    str(normalized_output)
+                    if normalized_output
+                    else None
+                ),
+        },
+
+        # ====================================================
+        # PIPELINE STATUS
+        # ====================================================
+
+        "pipeline": {
+
+            "structural_validation":
+                "completed",
+
+            "matrix_inspection":
+                "completed",
+
+            "quality_control":
+                "completed",
+
+            "normalization":
+                "completed",
+
+            "feature_selection":
+                "pending",
+
+            "pca":
+                "pending",
+
+            "umap":
+                "pending",
+
+            "clustering":
+                "pending",
+
+            "immune_state_scoring":
+                "pending",
+
+            "machine_learning":
+                "pending",
+
+            "xai":
+                "pending",
+        },
+    }
