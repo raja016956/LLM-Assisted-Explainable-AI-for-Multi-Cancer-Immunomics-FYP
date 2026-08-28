@@ -1,0 +1,4802 @@
+﻿
+
+============================================================
+
+FILE: .\backend\app\main.py
+
+============================================================
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.routes.upload import router as upload_router
+from app.routes.analysis import router as analysis_router
+
+
+app = FastAPI(
+    title="ImmunoXAI Analysis API",
+    description="Backend API for single-cell immune-state analysis.",
+    version="1.0.0",
+)
+
+
+# ---------------------------------------------------------
+# CORS
+# ---------------------------------------------------------
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# ---------------------------------------------------------
+# Routes
+# ---------------------------------------------------------
+
+app.include_router(
+    upload_router,
+    prefix="/api",
+)
+
+app.include_router(
+    analysis_router,
+    prefix="/api",
+)
+
+
+# ---------------------------------------------------------
+# Health check
+# ---------------------------------------------------------
+
+@app.get("/")
+async def root():
+    return {
+        "name": "ImmunoXAI Analysis API",
+        "status": "running",
+        "version": "1.0.0",
+    }
+
+
+@app.get("/health")
+async def health():
+    return {
+        "status": "healthy",
+    }
+
+
+============================================================
+
+FILE: .\backend\app\models.py
+
+============================================================
+
+from pydantic import BaseModel
+from typing import Optional
+
+
+class UploadResponse(BaseModel):
+    job_id: str
+    filename: str
+    file_size: int
+    status: str
+    message: str
+
+
+class AnalysisProgress(BaseModel):
+    job_id: str
+    status: str
+    step: str
+    step_number: int
+    total_steps: int
+    progress: float
+    message: str
+    elapsed_seconds: float
+    estimated_remaining_seconds: Optional[float] = None
+
+
+class AnalysisResult(BaseModel):
+    job_id: str
+    status: str
+    filename: str
+
+    total_cells: Optional[int] = None
+    total_genes: Optional[int] = None
+
+    qc_cells_before: Optional[int] = None
+    qc_cells_after: Optional[int] = None
+
+    qc_genes_before: Optional[int] = None
+    qc_genes_after: Optional[int] = None
+
+    normalization: Optional[str] = None
+
+    immune_states: Optional[dict] = None
+
+    model_name: Optional[str] = None
+
+    accuracy: Optional[float] = None
+    precision: Optional[float] = None
+    recall: Optional[float] = None
+    f1_score: Optional[float] = None
+
+    runtime_seconds: Optional[float] = None
+
+    message: Optional[str] = None
+
+
+============================================================
+
+FILE: .\backend\app\routes\upload.py
+
+============================================================
+
+from pathlib import Path
+from uuid import uuid4
+
+from fastapi import APIRouter, UploadFile, File, HTTPException
+
+from app.models import UploadResponse
+
+
+router = APIRouter(
+    prefix="/upload",
+    tags=["Upload"],
+)
+
+
+UPLOAD_DIR = Path("backend_data/uploads")
+UPLOAD_DIR.mkdir(
+    parents=True,
+    exist_ok=True,
+)
+
+
+ALLOWED_EXTENSIONS = (
+    ".csv",
+    ".tsv",
+    ".txt",
+    ".gz",
+)
+
+
+@router.post(
+    "",
+    response_model=UploadResponse,
+)
+async def upload_dataset(
+    file: UploadFile = File(...),
+):
+    if not file.filename:
+        raise HTTPException(
+            status_code=400,
+            detail="No filename was provided.",
+        )
+
+    filename = file.filename
+
+    lower_filename = filename.lower()
+
+    if not lower_filename.endswith(ALLOWED_EXTENSIONS):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Unsupported dataset format. "
+                "Supported formats: CSV, TSV, TXT, GZ."
+            ),
+        )
+
+    job_id = str(uuid4())
+
+    job_dir = UPLOAD_DIR / job_id
+    job_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    destination = job_dir / filename
+
+    total_size = 0
+
+    try:
+        with destination.open("wb") as output:
+
+            while True:
+                chunk = await file.read(1024 * 1024)
+
+                if not chunk:
+                    break
+
+                output.write(chunk)
+                total_size += len(chunk)
+
+    except Exception as exc:
+
+        if destination.exists():
+            destination.unlink()
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to save dataset: {exc}",
+        )
+
+    return UploadResponse(
+        job_id=job_id,
+        filename=filename,
+        file_size=total_size,
+        status="uploaded",
+        message="Dataset uploaded successfully.",
+    )
+
+
+============================================================
+
+FILE: .\backend\app\routes\analysis.py
+
+============================================================
+
+from __future__ import annotations
+
+import json
+import shutil
+import threading
+import traceback
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+
+from app.pipeline.analysis_runner import run_full_analysis
+
+
+# ============================================================
+# ROUTER
+# ============================================================
+
+router = APIRouter(
+    prefix="/analysis",
+    tags=["analysis"],
+)
+
+
+# ============================================================
+# PATHS
+# ============================================================
+
+# backend/
+BACKEND_DIR = Path(__file__).resolve().parents[2]
+
+# backend/analysis_data/
+ANALYSIS_DATA_DIR = BACKEND_DIR / "analysis_data"
+
+# backend/backend_data/uploads/
+UPLOADS_DIR = BACKEND_DIR / "backend_data" / "uploads"
+
+
+ANALYSIS_DATA_DIR.mkdir(
+    parents=True,
+    exist_ok=True,
+)
+
+UPLOADS_DIR.mkdir(
+    parents=True,
+    exist_ok=True,
+)
+
+
+# ============================================================
+# PIPELINE CONFIGURATION
+# ============================================================
+
+TOTAL_STEPS = 16
+
+
+STEP_NAMES = [
+    "dataset_inspection",
+    "validation",
+    "quality_control",
+    "normalization",
+    "feature_selection",
+    "pca",
+    "umap",
+    "clustering",
+    "immune_state_scoring",
+    "immune_state_assignment",
+    "machine_learning",
+    "explainable_ai",
+    "pathway_scoring",
+    "pathway_immune_integration",
+    "final_analysis",
+    "llm_reasoning",
+]
+
+
+# ============================================================
+# IN-MEMORY JOB STORE
+# ============================================================
+
+JOBS: Dict[str, Dict[str, Any]] = {}
+
+JOBS_LOCK = threading.Lock()
+
+
+# ============================================================
+# REQUEST MODELS
+# ============================================================
+
+class AnalysisRunRequest(BaseModel):
+    job_id: str
+
+
+# ============================================================
+# UTILITY FUNCTIONS
+# ============================================================
+
+def utc_now() -> str:
+    """
+    Return current UTC timestamp in ISO format.
+    """
+
+    return datetime.now(timezone.utc).isoformat()
+
+
+def get_job(job_id: str) -> Dict[str, Any] | None:
+    """
+    Safely retrieve an analysis job.
+    """
+
+    with JOBS_LOCK:
+
+        job = JOBS.get(job_id)
+
+        if job is None:
+            return None
+
+        return dict(job)
+
+
+def update_job(
+    job_id: str,
+    **updates: Any,
+) -> None:
+    """
+    Safely update an analysis job.
+    """
+
+    with JOBS_LOCK:
+
+        if job_id in JOBS:
+
+            JOBS[job_id].update(updates)
+
+
+def create_job(
+    job_id: str,
+    dataset_path: Path,
+    analysis_dir: Path,
+) -> None:
+    """
+    Create a new analysis job.
+    """
+
+    with JOBS_LOCK:
+
+        JOBS[job_id] = {
+
+            "job_id": job_id,
+
+            "status": "queued",
+
+            "step": None,
+
+            "step_number": 0,
+
+            "total_steps": TOTAL_STEPS,
+
+            "progress": 0.0,
+
+            "message": "Analysis queued.",
+
+            "dataset": str(dataset_path),
+
+            "analysis_dir": str(analysis_dir),
+
+            "started_at": None,
+
+            "completed_at": None,
+
+            "error": None,
+
+            "result": None,
+        }
+
+
+# ============================================================
+# PROGRESS CALLBACK
+# ============================================================
+
+def make_progress_callback(job_id: str):
+    """
+    Create a callback that converts pipeline progress
+    into API job progress.
+    """
+
+    def progress_callback(
+        step_number: int,
+        total_steps: int,
+        step: str,
+        message: str,
+    ) -> None:
+
+        if total_steps <= 0:
+
+            progress = 0.0
+
+        else:
+
+            progress = (
+                step_number
+                / total_steps
+                * 100.0
+            )
+
+        update_job(
+
+            job_id,
+
+            status="running",
+
+            step=step,
+
+            step_number=step_number,
+
+            total_steps=total_steps,
+
+            progress=round(
+                progress,
+                2,
+            ),
+
+            message=message,
+        )
+
+    return progress_callback
+
+
+# ============================================================
+# BACKGROUND PIPELINE
+# ============================================================
+
+def run_analysis_background(
+    job_id: str,
+    dataset_path: Path,
+    analysis_dir: Path,
+) -> None:
+    """
+    Execute the complete IMMUNO-XAI pipeline in a
+    background thread.
+    """
+
+    update_job(
+
+        job_id,
+
+        status="running",
+
+        started_at=utc_now(),
+
+        step=None,
+
+        step_number=0,
+
+        total_steps=TOTAL_STEPS,
+
+        progress=0.0,
+
+        message="Starting IMMUNO-XAI analysis.",
+    )
+
+    try:
+
+        # ----------------------------------------------------
+        # PROGRESS CALLBACK
+        # ----------------------------------------------------
+
+        progress_callback = make_progress_callback(
+            job_id
+        )
+
+        # ----------------------------------------------------
+        # RUN COMPLETE PIPELINE
+        # ----------------------------------------------------
+
+        result = run_full_analysis(
+
+            dataset_path=dataset_path,
+
+            analysis_dir=analysis_dir,
+
+            progress_callback=progress_callback,
+        )
+
+        # ----------------------------------------------------
+        # SUCCESS
+        # ----------------------------------------------------
+
+        update_job(
+
+            job_id,
+
+            status="completed",
+
+            step="llm_reasoning",
+
+            step_number=TOTAL_STEPS,
+
+            total_steps=TOTAL_STEPS,
+
+            progress=100.0,
+
+            message=(
+                "IMMUNO-XAI analysis "
+                "completed successfully."
+            ),
+
+            completed_at=utc_now(),
+
+            result=result,
+        )
+
+        print()
+        print("=" * 70)
+        print(
+            f"IMMUNO-XAI JOB COMPLETED: {job_id}"
+        )
+        print("=" * 70)
+        print()
+
+    except Exception as exc:
+
+        traceback_text = traceback.format_exc()
+
+        print()
+        print("=" * 70)
+        print(
+            f"IMMUNO-XAI JOB FAILED: {job_id}"
+        )
+        print("=" * 70)
+        print(traceback_text)
+        print("=" * 70)
+        print()
+
+        update_job(
+
+            job_id,
+
+            status="failed",
+
+            completed_at=utc_now(),
+
+            message=(
+                f"Analysis failed: {exc}"
+            ),
+
+            error={
+
+                "type": type(exc).__name__,
+
+                "message": str(exc),
+
+                "traceback": traceback_text,
+            },
+        )
+
+
+# ============================================================
+# START ANALYSIS
+# ============================================================
+
+@router.post("/run")
+def start_analysis(
+    request: AnalysisRunRequest,
+):
+    """
+    Start the complete IMMUNO-XAI pipeline.
+
+    The endpoint returns immediately with a job ID.
+    The actual analysis runs in a background thread.
+    """
+
+    job_id = request.job_id.strip()
+
+    # --------------------------------------------------------
+    # VALIDATE JOB ID
+    # --------------------------------------------------------
+
+    if not job_id:
+
+        raise HTTPException(
+
+            status_code=400,
+
+            detail="job_id is required.",
+        )
+
+    # --------------------------------------------------------
+    # FIND UPLOAD DIRECTORY
+    # --------------------------------------------------------
+
+    upload_dir = UPLOADS_DIR / job_id
+
+    if not upload_dir.exists():
+
+        raise HTTPException(
+
+            status_code=404,
+
+            detail=(
+                f"Upload job not found: {job_id}"
+            ),
+        )
+
+    if not upload_dir.is_dir():
+
+        raise HTTPException(
+
+            status_code=400,
+
+            detail=(
+                f"Upload path is not a directory: "
+                f"{upload_dir}"
+            ),
+        )
+
+    # --------------------------------------------------------
+    # FIND DATASET
+    # --------------------------------------------------------
+
+    supported_extensions = (
+
+        ".txt",
+        ".txt.gz",
+
+        ".csv",
+        ".csv.gz",
+
+        ".tsv",
+        ".tsv.gz",
+    )
+
+    dataset_files = [
+
+        path
+
+        for path in upload_dir.iterdir()
+
+        if path.is_file()
+
+        and path.name.lower().endswith(
+            supported_extensions
+        )
+    ]
+
+    # --------------------------------------------------------
+    # NO DATASET
+    # --------------------------------------------------------
+
+    if not dataset_files:
+
+        raise HTTPException(
+
+            status_code=404,
+
+            detail=(
+                "No supported expression "
+                "matrix was found in the upload."
+            ),
+        )
+
+    # --------------------------------------------------------
+    # MULTIPLE DATASETS
+    # --------------------------------------------------------
+
+    if len(dataset_files) > 1:
+
+        raise HTTPException(
+
+            status_code=400,
+
+            detail=(
+                "Multiple expression datasets "
+                "were found. Please upload "
+                "exactly one dataset."
+            ),
+        )
+
+    dataset_path = dataset_files[0]
+
+    # --------------------------------------------------------
+    # PREVENT DUPLICATE RUN
+    # --------------------------------------------------------
+
+    existing_job = get_job(job_id)
+
+    if existing_job is not None:
+
+        existing_status = existing_job["status"]
+
+        if existing_status in {
+            "queued",
+            "running",
+        }:
+
+            return {
+
+                "success": True,
+
+                "job_id": job_id,
+
+                "status": existing_status,
+
+                "message": (
+                    "Analysis is already running."
+                ),
+            }
+
+        if existing_status == "completed":
+
+            return {
+
+                "success": True,
+
+                "job_id": job_id,
+
+                "status": "completed",
+
+                "progress": 100.0,
+
+                "message": (
+                    "Analysis already completed."
+                ),
+            }
+
+    # --------------------------------------------------------
+    # CREATE JOB-SPECIFIC ANALYSIS DIRECTORY
+    # --------------------------------------------------------
+
+    analysis_dir = (
+        ANALYSIS_DATA_DIR / job_id
+    )
+
+    # Remove previous incomplete output
+    if analysis_dir.exists():
+
+        shutil.rmtree(
+            analysis_dir
+        )
+
+    analysis_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    # --------------------------------------------------------
+    # CREATE JOB
+    # --------------------------------------------------------
+
+    create_job(
+
+        job_id=job_id,
+
+        dataset_path=dataset_path,
+
+        analysis_dir=analysis_dir,
+    )
+
+    # --------------------------------------------------------
+    # START BACKGROUND THREAD
+    # --------------------------------------------------------
+
+    worker = threading.Thread(
+
+        target=run_analysis_background,
+
+        kwargs={
+
+            "job_id": job_id,
+
+            "dataset_path": dataset_path,
+
+            "analysis_dir": analysis_dir,
+        },
+
+        daemon=True,
+
+        name=f"immuno-xai-{job_id}",
+    )
+
+    worker.start()
+
+    # --------------------------------------------------------
+    # RETURN IMMEDIATELY
+    # --------------------------------------------------------
+
+    return {
+
+        "success": True,
+
+        "job_id": job_id,
+
+        "status": "queued",
+
+        "message": (
+            "IMMUNO-XAI analysis started."
+        ),
+
+        "total_steps": TOTAL_STEPS,
+    }
+
+
+# ============================================================
+# GET ANALYSIS STATUS
+# ============================================================
+
+@router.get("/{job_id}/status")
+def get_analysis_status(
+    job_id: str,
+):
+    """
+    Return the current analysis progress.
+    """
+
+    job = get_job(job_id)
+
+    if job is None:
+
+        raise HTTPException(
+
+            status_code=404,
+
+            detail=(
+                f"Analysis job not found: {job_id}"
+            ),
+        )
+
+    response = {
+
+        "success": True,
+
+        "job_id": job["job_id"],
+
+        "status": job["status"],
+
+        "step": job["step"],
+
+        "step_number": job["step_number"],
+
+        "total_steps": job["total_steps"],
+
+        "progress": job["progress"],
+
+        "message": job["message"],
+
+        "started_at": job["started_at"],
+
+        "completed_at": job["completed_at"],
+    }
+
+    # --------------------------------------------------------
+    # ERROR INFORMATION
+    # --------------------------------------------------------
+
+    if job["status"] == "failed":
+
+        response["error"] = job["error"]
+
+    return response
+
+
+# ============================================================
+# GET ANALYSIS RESULT
+# ============================================================
+
+@router.get("/{job_id}/result")
+def get_analysis_result(
+    job_id: str,
+):
+    """
+    Return complete analysis results after the pipeline
+    has finished.
+    """
+
+    job = get_job(job_id)
+
+    if job is None:
+
+        raise HTTPException(
+
+            status_code=404,
+
+            detail=(
+                f"Analysis job not found: {job_id}"
+            ),
+        )
+
+    # --------------------------------------------------------
+    # QUEUED
+    # --------------------------------------------------------
+
+    if job["status"] == "queued":
+
+        return {
+
+            "success": True,
+
+            "job_id": job_id,
+
+            "status": "queued",
+
+            "message": (
+                "Analysis is queued."
+            ),
+        }
+
+    # --------------------------------------------------------
+    # RUNNING
+    # --------------------------------------------------------
+
+    if job["status"] == "running":
+
+        return {
+
+            "success": True,
+
+            "job_id": job_id,
+
+            "status": "running",
+
+            "step": job["step"],
+
+            "step_number": job["step_number"],
+
+            "total_steps": job["total_steps"],
+
+            "progress": job["progress"],
+
+            "message": job["message"],
+        }
+
+    # --------------------------------------------------------
+    # FAILED
+    # --------------------------------------------------------
+
+    if job["status"] == "failed":
+
+        raise HTTPException(
+
+            status_code=500,
+
+            detail={
+
+                "job_id": job_id,
+
+                "message": job["message"],
+
+                "error": job["error"],
+            },
+        )
+
+    # --------------------------------------------------------
+    # COMPLETED
+    # --------------------------------------------------------
+
+    analysis_dir = Path(
+        job["analysis_dir"]
+    )
+
+    final_analysis_path = (
+        analysis_dir
+        / "final_analysis"
+        / "final_analysis.json"
+    )
+
+    interpretation_path = (
+        analysis_dir
+        / "llm_reasoning"
+        / "biological_interpretation.json"
+    )
+
+    report_path = (
+        analysis_dir
+        / "llm_reasoning"
+        / "biological_report.md"
+    )
+
+    metadata_path = (
+        analysis_dir
+        / "llm_reasoning"
+        / "llm_reasoning_metadata.json"
+    )
+
+    response: Dict[str, Any] = {
+
+        "success": True,
+
+        "job_id": job_id,
+
+        "status": "completed",
+
+        "progress": 100.0,
+
+        "message": (
+            "Analysis completed successfully."
+        ),
+
+        "result": job["result"],
+    }
+
+    # ========================================================
+    # FINAL ANALYSIS
+    # ========================================================
+
+    if final_analysis_path.exists():
+
+        try:
+
+            with open(
+                final_analysis_path,
+                "r",
+                encoding="utf-8",
+            ) as handle:
+
+                response["final_analysis"] = json.load(
+                    handle
+                )
+
+        except Exception as exc:
+
+            response[
+                "final_analysis_error"
+            ] = str(exc)
+
+    # ========================================================
+    # BIOLOGICAL INTERPRETATION
+    # ========================================================
+
+    if interpretation_path.exists():
+
+        try:
+
+            with open(
+                interpretation_path,
+                "r",
+                encoding="utf-8",
+            ) as handle:
+
+                response[
+                    "biological_interpretation"
+                ] = json.load(handle)
+
+        except Exception as exc:
+
+            response[
+                "biological_interpretation_error"
+            ] = str(exc)
+
+    # ========================================================
+    # BIOLOGICAL REPORT
+    # ========================================================
+
+    if report_path.exists():
+
+        try:
+
+            response[
+                "biological_report"
+            ] = report_path.read_text(
+                encoding="utf-8"
+            )
+
+        except Exception as exc:
+
+            response[
+                "biological_report_error"
+            ] = str(exc)
+
+    # ========================================================
+    # LLM METADATA
+    # ========================================================
+
+    if metadata_path.exists():
+
+        try:
+
+            with open(
+                metadata_path,
+                "r",
+                encoding="utf-8",
+            ) as handle:
+
+                response[
+                    "llm_reasoning_metadata"
+                ] = json.load(handle)
+
+        except Exception as exc:
+
+            response[
+                "llm_reasoning_metadata_error"
+            ] = str(exc)
+
+    return response
+
+
+# ============================================================
+# LIST ANALYSIS JOBS
+# ============================================================
+
+@router.get("/")
+def list_analysis_jobs():
+    """
+    Return all analysis jobs known to this API process.
+    """
+
+    with JOBS_LOCK:
+
+        jobs = [
+
+            {
+
+                "job_id": job["job_id"],
+
+                "status": job["status"],
+
+                "step": job["step"],
+
+                "step_number": job["step_number"],
+
+                "total_steps": job["total_steps"],
+
+                "progress": job["progress"],
+
+                "message": job["message"],
+
+                "started_at": job["started_at"],
+
+                "completed_at": job["completed_at"],
+            }
+
+            for job in JOBS.values()
+        ]
+
+    return {
+
+        "success": True,
+
+        "count": len(jobs),
+
+        "jobs": jobs,
+    }
+
+
+============================================================
+
+FILE: .\backend\app\pipeline\analysis_runner.py
+
+============================================================
+
+from __future__ import annotations
+
+import json
+import time
+from pathlib import Path
+from typing import Any, Callable
+
+from app.pipeline.io import (
+    inspect_expression_matrix,
+    validate_expression_matrix,
+)
+
+from app.pipeline.qc import (
+    QCConfig,
+    calculate_streaming_qc,
+)
+
+from app.pipeline.normalization import (
+    run_memory_safe_normalization,
+)
+
+from app.pipeline.feature_selection import (
+    FeatureSelectionConfig,
+    select_highly_variable_genes,
+)
+
+from app.pipeline.pca import (
+    PCAConfig,
+    run_pca,
+)
+
+from app.pipeline.umap import (
+    UMAPConfig,
+    run_umap,
+)
+
+from app.pipeline.clustering import (
+    ClusteringConfig,
+    run_clustering,
+)
+
+from app.pipeline.immune_state_scoring import (
+    ImmuneStateScoringConfig,
+    run_immune_state_scoring,
+)
+
+from app.pipeline.immune_state_assignment import (
+    ImmuneStateAssignmentConfig,
+    run_immune_state_assignment,
+)
+
+from app.pipeline.ml import (
+    MLConfig,
+    run_ml,
+)
+
+from app.pipeline.xai import (
+    XAIConfig,
+    run_xai,
+)
+
+from app.pipeline.pathway_scoring import (
+    PathwayScoringConfig,
+    run_pathway_scoring,
+)
+
+from app.pipeline.pathway_immune_integration import (
+    PathwayImmuneIntegrationConfig,
+    run_pathway_immune_integration,
+)
+
+from app.pipeline.final_analysis import (
+    run_final_analysis,
+)
+
+from app.pipeline.llm_reasoning import (
+    LLMReasoningConfig,
+    run_llm_reasoning,
+)
+
+
+# ============================================================
+# TYPES
+# ============================================================
+
+ProgressCallback = Callable[
+    [int, int, str, str],
+    None,
+]
+
+
+# ============================================================
+# PIPELINE CONFIGURATION
+# ============================================================
+
+DEFAULT_QC_CONFIG = QCConfig(
+    min_umis=1000,
+    min_genes=200,
+    max_mito_fraction=0.20,
+)
+
+
+DEFAULT_NORMALIZATION_CHUNK_CELLS = 250
+DEFAULT_NORMALIZATION_TARGET_SUM = 10_000
+
+
+DEFAULT_FEATURE_SELECTION_CONFIG = FeatureSelectionConfig(
+    n_top_genes=2000,
+    min_cells=3,
+)
+
+
+DEFAULT_PCA_CONFIG = PCAConfig(
+    n_components=50,
+    random_state=42,
+)
+
+
+DEFAULT_UMAP_CONFIG = UMAPConfig(
+    n_components=2,
+    n_neighbors=15,
+    min_dist=0.5,
+    metric="euclidean",
+    random_state=42,
+)
+
+
+DEFAULT_CLUSTERING_CONFIG = ClusteringConfig(
+    n_clusters=10,
+    random_state=42,
+    n_init=20,
+)
+
+
+DEFAULT_IMMUNE_SCORING_CONFIG = ImmuneStateScoringConfig()
+
+
+DEFAULT_IMMUNE_ASSIGNMENT_CONFIG = (
+    ImmuneStateAssignmentConfig(
+        minimum_supported_signatures=2,
+        minimum_signal=0.005,
+        dominance_ratio=1.25,
+        suppression_ratio=1.25,
+        inflammatory_ratio=1.15,
+        antigen_presentation_threshold=0.01,
+    )
+)
+
+
+DEFAULT_ML_CONFIG = MLConfig()
+
+
+DEFAULT_XAI_CONFIG = XAIConfig(
+    top_n_features=20,
+    max_explanation_cells=200,
+    random_state=42,
+)
+
+
+DEFAULT_PATHWAY_SCORING_CONFIG = (
+    PathwayScoringConfig()
+)
+
+
+DEFAULT_PATHWAY_IMMUNE_CONFIG = (
+    PathwayImmuneIntegrationConfig(
+        minimum_cells_per_state=2,
+        minimum_cells_per_cluster=2,
+        minimum_state_fraction=0.01,
+        correlation_method="pearson",
+    )
+)
+
+
+DEFAULT_LLM_CONFIG = LLMReasoningConfig(
+    provider="groq",
+    model="groq/compound-mini",
+    temperature=0.2,
+    max_tokens=4000,
+)
+
+
+# ============================================================
+# HELPERS
+# ============================================================
+
+
+def _emit_progress(
+    callback: ProgressCallback | None,
+    step_number: int,
+    total_steps: int,
+    step: str,
+    message: str,
+) -> None:
+
+    if callback is None:
+        return
+
+    callback(
+        step_number,
+        total_steps,
+        step,
+        message,
+    )
+
+
+def _require_file(
+    path: str | Path,
+    description: str,
+) -> Path:
+
+    path = Path(path)
+
+    if not path.exists():
+
+        raise FileNotFoundError(
+            f"{description} not found: {path}"
+        )
+
+    if not path.is_file():
+
+        raise ValueError(
+            f"{description} is not a file: {path}"
+        )
+
+    return path
+
+
+def _write_json(
+    path: Path,
+    data: Any,
+) -> None:
+
+    path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    with open(
+        path,
+        "w",
+        encoding="utf-8",
+    ) as handle:
+
+        json.dump(
+            data,
+            handle,
+            indent=2,
+            ensure_ascii=False,
+        )
+
+
+# ============================================================
+# MAIN PIPELINE
+# ============================================================
+
+
+def run_full_analysis(
+    dataset_path: str | Path,
+    analysis_dir: str | Path,
+    progress_callback: ProgressCallback | None = None,
+    *,
+    qc_config: QCConfig | None = None,
+    normalization_chunk_cells: int = DEFAULT_NORMALIZATION_CHUNK_CELLS,
+    normalization_target_sum: float = DEFAULT_NORMALIZATION_TARGET_SUM,
+    feature_selection_config: FeatureSelectionConfig | None = None,
+    pca_config: PCAConfig | None = None,
+    umap_config: UMAPConfig | None = None,
+    clustering_config: ClusteringConfig | None = None,
+    immune_scoring_config: ImmuneStateScoringConfig | None = None,
+    immune_assignment_config: ImmuneStateAssignmentConfig | None = None,
+    ml_config: MLConfig | None = None,
+    xai_config: XAIConfig | None = None,
+    pathway_scoring_config: PathwayScoringConfig | None = None,
+    pathway_immune_config: PathwayImmuneIntegrationConfig | None = None,
+    llm_config: LLMReasoningConfig | None = None,
+) -> dict[str, Any]:
+    """
+    Run the complete IMMUNO-XAI analysis pipeline.
+
+    Workflow:
+
+        1. Dataset inspection
+        2. Dataset validation
+        3. Quality control
+        4. Memory-safe normalization
+        5. Highly variable gene selection
+        6. PCA
+        7. UMAP
+        8. K-means clustering
+        9. Immune-state scoring
+        10. Immune-state assignment
+        11. Machine learning
+        12. Explainable AI / SHAP
+        13. Pathway scoring
+        14. Pathway-immune integration
+        15. Final analysis package
+        16. LLM biological reasoning
+
+    The scientific modules themselves remain unchanged.
+    This function only orchestrates them.
+    """
+
+    start_time = time.perf_counter()
+
+    dataset_path = _require_file(
+        dataset_path,
+        "Dataset",
+    )
+
+    analysis_dir = Path(
+        analysis_dir
+    )
+
+    analysis_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    # --------------------------------------------------------
+    # CONFIGURATION
+    # --------------------------------------------------------
+
+    qc_config = (
+        qc_config
+        or DEFAULT_QC_CONFIG
+    )
+
+    feature_selection_config = (
+        feature_selection_config
+        or DEFAULT_FEATURE_SELECTION_CONFIG
+    )
+
+    pca_config = (
+        pca_config
+        or DEFAULT_PCA_CONFIG
+    )
+
+    umap_config = (
+        umap_config
+        or DEFAULT_UMAP_CONFIG
+    )
+
+    clustering_config = (
+        clustering_config
+        or DEFAULT_CLUSTERING_CONFIG
+    )
+
+    immune_scoring_config = (
+        immune_scoring_config
+        or DEFAULT_IMMUNE_SCORING_CONFIG
+    )
+
+    immune_assignment_config = (
+        immune_assignment_config
+        or DEFAULT_IMMUNE_ASSIGNMENT_CONFIG
+    )
+
+    ml_config = (
+        ml_config
+        or DEFAULT_ML_CONFIG
+    )
+
+    xai_config = (
+        xai_config
+        or DEFAULT_XAI_CONFIG
+    )
+
+    pathway_scoring_config = (
+        pathway_scoring_config
+        or DEFAULT_PATHWAY_SCORING_CONFIG
+    )
+
+    pathway_immune_config = (
+        pathway_immune_config
+        or DEFAULT_PATHWAY_IMMUNE_CONFIG
+    )
+
+    llm_config = (
+        llm_config
+        or DEFAULT_LLM_CONFIG
+    )
+
+    total_steps = 16
+
+    results: dict[str, Any] = {}
+
+    # ========================================================
+    # STEP 1 â€” DATASET INSPECTION
+    # ========================================================
+
+    step = 1
+
+    _emit_progress(
+        progress_callback,
+        step,
+        total_steps,
+        "dataset_inspection",
+        "Inspecting expression matrix.",
+    )
+
+    print()
+    print("=" * 70)
+    print("STEP 1 â€” DATASET INSPECTION")
+    print("=" * 70)
+
+    info = inspect_expression_matrix(
+        dataset_path
+    )
+
+    results["dataset"] = {
+        "filename": info.filename,
+        "format": info.format,
+        "compression": info.compression,
+        "genes": int(info.n_genes),
+        "cells": int(info.n_cells),
+        "gene_column": info.gene_column,
+        "preview_genes": info.first_genes,
+        "preview_cells": info.first_cells,
+    }
+
+    print(
+        f"Genes: {info.n_genes:,}"
+    )
+
+    print(
+        f"Cells: {info.n_cells:,}"
+    )
+
+    # ========================================================
+    # STEP 2 â€” VALIDATION
+    # ========================================================
+
+    step = 2
+
+    _emit_progress(
+        progress_callback,
+        step,
+        total_steps,
+        "validation",
+        "Validating expression matrix.",
+    )
+
+    print()
+    print("=" * 70)
+    print("STEP 2 â€” DATASET VALIDATION")
+    print("=" * 70)
+
+    validation = validate_expression_matrix(
+        dataset_path
+    )
+
+    if not validation["valid"]:
+
+        raise ValueError(
+            "Dataset validation failed: "
+            + "; ".join(
+                validation.get(
+                    "errors",
+                    [],
+                )
+            )
+        )
+
+    results["validation"] = validation
+
+    print(
+        "Dataset validation: PASSED"
+    )
+
+    # ========================================================
+    # STEP 3 â€” QUALITY CONTROL
+    # ========================================================
+
+    step = 3
+
+    _emit_progress(
+        progress_callback,
+        step,
+        total_steps,
+        "quality_control",
+        "Calculating single-cell quality-control metrics.",
+    )
+
+    print()
+    print("=" * 70)
+    print("STEP 3 â€” QUALITY CONTROL")
+    print("=" * 70)
+
+    qc_result = calculate_streaming_qc(
+        dataset_path,
+        config=qc_config,
+    )
+
+    keep_cell_indices = qc_result[
+        "keep_cell_indices"
+    ]
+
+    results["qc"] = {
+        key: value
+        for key, value in qc_result.items()
+        if key not in {
+            "keep_cells",
+            "keep_cell_indices",
+            "keep_cell_names",
+        }
+    }
+
+    results["qc"]["cells_before"] = int(
+        qc_result["cells"]["before"]
+    )
+
+    results["qc"]["cells_after"] = int(
+        qc_result["cells"]["after"]
+    )
+
+    results["qc"]["cells_removed"] = int(
+        qc_result["cells"]["removed"]
+    )
+
+    print(
+        f"Cells before QC: "
+        f"{qc_result['cells']['before']:,}"
+    )
+
+    print(
+        f"Cells after QC:  "
+        f"{qc_result['cells']['after']:,}"
+    )
+
+    print(
+        f"Cells removed:   "
+        f"{qc_result['cells']['removed']:,}"
+    )
+
+    # ========================================================
+    # STEP 4 â€” NORMALIZATION
+    # ========================================================
+
+    step = 4
+
+    _emit_progress(
+        progress_callback,
+        step,
+        total_steps,
+        "normalization",
+        "Normalizing QC-retained cells.",
+    )
+
+    print()
+    print("=" * 70)
+    print("STEP 4 â€” NORMALIZATION")
+    print("=" * 70)
+
+    normalization_dir = (
+        analysis_dir
+        / "normalization"
+    )
+
+    normalization_result = (
+        run_memory_safe_normalization(
+            dataset_path,
+            normalization_dir,
+            chunk_cells=normalization_chunk_cells,
+            target_sum=normalization_target_sum,
+            keep_cell_indices=keep_cell_indices,
+        )
+    )
+
+    normalized_output = Path(
+        normalization_result[
+            "normalized"
+        ][
+            "output_file"
+        ]
+    )
+
+    genes_output = (
+        normalization_dir
+        / "genes.json"
+    )
+
+    _require_file(
+        normalized_output,
+        "Normalized expression matrix",
+    )
+
+    _require_file(
+        genes_output,
+        "Gene metadata",
+    )
+
+    results["normalization"] = (
+        normalization_result
+    )
+
+    results["paths"] = {
+        "normalized_expression": str(
+            normalized_output
+        ),
+        "genes": str(
+            genes_output
+        ),
+    }
+
+    print(
+        "Normalized matrix:",
+        normalized_output,
+    )
+
+    # ========================================================
+    # STEP 5 â€” FEATURE SELECTION
+    # ========================================================
+
+    step = 5
+
+    _emit_progress(
+        progress_callback,
+        step,
+        total_steps,
+        "feature_selection",
+        "Selecting highly variable genes.",
+    )
+
+    print()
+    print("=" * 70)
+    print("STEP 5 â€” HIGHLY VARIABLE GENE SELECTION")
+    print("=" * 70)
+
+    feature_dir = (
+        analysis_dir
+        / "feature_selection"
+    )
+
+    feature_result = (
+        select_highly_variable_genes(
+            normalized_output,
+            feature_dir,
+            config=feature_selection_config,
+        )
+    )
+
+    selected_output = Path(
+        feature_result[
+            "matrix_output"
+        ]
+    )
+
+    _require_file(
+        selected_output,
+        "Selected feature matrix",
+    )
+
+    results["feature_selection"] = (
+        feature_result
+    )
+
+    print(
+        f"Selected genes: "
+        f"{feature_result['selected_genes']:,}"
+    )
+
+    # ========================================================
+    # STEP 6 â€” PCA
+    # ========================================================
+
+    step = 6
+
+    _emit_progress(
+        progress_callback,
+        step,
+        total_steps,
+        "pca",
+        "Computing principal components.",
+    )
+
+    print()
+    print("=" * 70)
+    print("STEP 6 â€” PCA")
+    print("=" * 70)
+
+    pca_dir = (
+        analysis_dir
+        / "pca"
+    )
+
+    pca_result = run_pca(
+        selected_output,
+        pca_dir,
+        config=pca_config,
+    )
+
+    pca_output = Path(
+        pca_result[
+            "embeddings_output"
+        ]
+    )
+
+    _require_file(
+        pca_output,
+        "PCA coordinates",
+    )
+
+    results["pca"] = pca_result
+
+    print(
+        "PCA embedding:",
+        pca_result["embedding_shape"],
+    )
+
+    # ========================================================
+    # STEP 7 â€” UMAP
+    # ========================================================
+
+    step = 7
+
+    _emit_progress(
+        progress_callback,
+        step,
+        total_steps,
+        "umap",
+        "Computing UMAP embedding.",
+    )
+
+    print()
+    print("=" * 70)
+    print("STEP 7 â€” UMAP")
+    print("=" * 70)
+
+    umap_dir = (
+        analysis_dir
+        / "umap"
+    )
+
+    umap_result = run_umap(
+        pca_output,
+        umap_dir,
+        config=umap_config,
+    )
+
+    umap_output = Path(
+        umap_result[
+            "embedding_output"
+        ]
+    )
+
+    _require_file(
+        umap_output,
+        "UMAP coordinates",
+    )
+
+    results["umap"] = umap_result
+
+    # ========================================================
+    # STEP 8 â€” CLUSTERING
+    # ========================================================
+
+    step = 8
+
+    _emit_progress(
+        progress_callback,
+        step,
+        total_steps,
+        "clustering",
+        "Clustering cells using PCA representations.",
+    )
+
+    print()
+    print("=" * 70)
+    print("STEP 8 â€” CLUSTERING")
+    print("=" * 70)
+
+    clustering_dir = (
+        analysis_dir
+        / "clustering"
+    )
+
+    clustering_result = run_clustering(
+        pca_output,
+        clustering_dir,
+        config=clustering_config,
+    )
+
+    cluster_labels_output = Path(
+        clustering_result[
+            "labels_output"
+        ]
+    )
+
+    _require_file(
+        cluster_labels_output,
+        "Cluster labels",
+    )
+
+    results["clustering"] = (
+        clustering_result
+    )
+
+    print(
+        "Clusters:",
+        clustering_result[
+            "n_clusters"
+        ],
+    )
+
+    # ========================================================
+    # STEP 9 â€” IMMUNE STATE SCORING
+    # ========================================================
+
+    step = 9
+
+    _emit_progress(
+        progress_callback,
+        step,
+        total_steps,
+        "immune_state_scoring",
+        "Calculating immune-state gene-set scores.",
+    )
+
+    print()
+    print("=" * 70)
+    print("STEP 9 â€” IMMUNE-STATE SCORING")
+    print("=" * 70)
+
+    immune_scoring_dir = (
+        analysis_dir
+        / "immune_state_scoring"
+    )
+
+    immune_scoring_result = (
+        run_immune_state_scoring(
+            expression_path=normalized_output,
+            genes_path=genes_output,
+            cluster_labels_path=cluster_labels_output,
+            output_dir=immune_scoring_dir,
+            config=immune_scoring_config,
+        )
+    )
+
+    immune_scores_output = Path(
+        immune_scoring_result[
+            "score_matrix_output"
+        ]
+    )
+
+    immune_score_names_output = Path(
+        immune_scoring_result[
+            "score_names_output"
+        ]
+    )
+
+    _require_file(
+        immune_scores_output,
+        "Immune score matrix",
+    )
+
+    _require_file(
+        immune_score_names_output,
+        "Immune score names",
+    )
+
+    results["immune_state_scoring"] = (
+        immune_scoring_result
+    )
+
+    # ========================================================
+    # STEP 10 â€” IMMUNE STATE ASSIGNMENT
+    # ========================================================
+
+    step = 10
+
+    _emit_progress(
+        progress_callback,
+        step,
+        total_steps,
+        "immune_state_assignment",
+        "Assigning evidence-aware immune states.",
+    )
+
+    print()
+    print("=" * 70)
+    print("STEP 10 â€” IMMUNE-STATE ASSIGNMENT")
+    print("=" * 70)
+
+    immune_assignment_dir = (
+        analysis_dir
+        / "immune_state_assignment"
+    )
+
+    immune_assignment_result = (
+        run_immune_state_assignment(
+            immune_scores_path=immune_scores_output,
+            score_names_path=immune_score_names_output,
+            cluster_labels_path=cluster_labels_output,
+            output_dir=immune_assignment_dir,
+            config=immune_assignment_config,
+        )
+    )
+
+    cell_states_output = Path(
+        immune_assignment_dir
+        / "cell_immune_states.json"
+    )
+
+    cluster_states_output = Path(
+        immune_assignment_dir
+        / "cluster_immune_states.json"
+    )
+
+    _require_file(
+        cell_states_output,
+        "Cell immune states",
+    )
+
+    _require_file(
+        cluster_states_output,
+        "Cluster immune states",
+    )
+
+    results["immune_state_assignment"] = (
+        immune_assignment_result
+    )
+
+    # ========================================================
+    # STEP 11 â€” MACHINE LEARNING
+    # ========================================================
+
+    step = 11
+
+    _emit_progress(
+        progress_callback,
+        step,
+        total_steps,
+        "machine_learning",
+        "Training immune-state machine-learning models.",
+    )
+
+    print()
+    print("=" * 70)
+    print("STEP 11 â€” MACHINE LEARNING")
+    print("=" * 70)
+
+    ml_dir = (
+        analysis_dir
+        / "ml"
+    )
+
+    ml_result = run_ml(
+        pca_coordinates_path=pca_output,
+        immune_scores_path=immune_scores_output,
+        cell_states_path=cell_states_output,
+        output_dir=ml_dir,
+        config=ml_config,
+    )
+
+    ml_model_output = Path(
+        ml_result[
+            "model_output"
+        ]
+    )
+
+    ml_features_output = Path(
+        ml_result[
+            "features_output"
+        ]
+    )
+
+    ml_predictions_output = Path(
+        ml_result[
+            "predictions_output"
+        ]
+    )
+
+    _require_file(
+        ml_model_output,
+        "Random Forest model",
+    )
+
+    _require_file(
+        ml_features_output,
+        "ML feature matrix",
+    )
+
+    _require_file(
+        ml_predictions_output,
+        "ML predictions",
+    )
+
+    results["machine_learning"] = (
+        ml_result
+    )
+
+    # ========================================================
+    # STEP 12 â€” XAI
+    # ========================================================
+
+    step = 12
+
+    _emit_progress(
+        progress_callback,
+        step,
+        total_steps,
+        "explainable_ai",
+        "Generating SHAP explanations.",
+    )
+
+    print()
+    print("=" * 70)
+    print("STEP 12 â€” EXPLAINABLE AI")
+    print("=" * 70)
+
+    xai_dir = (
+        analysis_dir
+        / "xai"
+    )
+
+    xai_result = run_xai(
+        model_path=ml_model_output,
+        features_path=ml_features_output,
+        score_names_path=immune_score_names_output,
+        predictions_path=ml_predictions_output,
+        output_dir=xai_dir,
+        config=xai_config,
+    )
+
+    xai_global_output = Path(
+        xai_result[
+            "global_output"
+        ]
+    )
+
+    _require_file(
+        xai_global_output,
+        "Global XAI importance",
+    )
+
+    results["xai"] = xai_result
+
+    # ========================================================
+    # STEP 13 â€” PATHWAY SCORING
+    # ========================================================
+
+    step = 13
+
+    _emit_progress(
+        progress_callback,
+        step,
+        total_steps,
+        "pathway_scoring",
+        "Calculating metabolic and inflammatory pathway scores.",
+    )
+
+    print()
+    print("=" * 70)
+    print("STEP 13 â€” PATHWAY SCORING")
+    print("=" * 70)
+
+    pathway_dir = (
+        analysis_dir
+        / "pathway_scoring"
+    )
+
+    pathway_result = run_pathway_scoring(
+        expression_path=normalized_output,
+        genes_path=genes_output,
+        output_dir=pathway_dir,
+        config=pathway_scoring_config,
+    )
+
+    pathway_scores_output = Path(
+        pathway_result[
+            "scores_output"
+        ]
+    )
+
+    pathway_names_output = Path(
+        pathway_result[
+            "names_output"
+        ]
+    )
+
+    _require_file(
+        pathway_scores_output,
+        "Pathway scores",
+    )
+
+    _require_file(
+        pathway_names_output,
+        "Pathway names",
+    )
+
+    results["pathway_scoring"] = (
+        pathway_result
+    )
+
+    # ========================================================
+    # STEP 14 â€” PATHWAY / IMMUNE INTEGRATION
+    # ========================================================
+
+    step = 14
+
+    _emit_progress(
+        progress_callback,
+        step,
+        total_steps,
+        "pathway_immune_integration",
+        "Integrating pathway activity with immune states.",
+    )
+
+    print()
+    print("=" * 70)
+    print("STEP 14 â€” PATHWAY / IMMUNE INTEGRATION")
+    print("=" * 70)
+
+    pathway_immune_dir = (
+        analysis_dir
+        / "pathway_immune_integration"
+    )
+
+    pathway_immune_result = (
+        run_pathway_immune_integration(
+            pathway_scores_path=pathway_scores_output,
+            pathway_names_path=pathway_names_output,
+            immune_scores_path=immune_scores_output,
+            immune_score_names_path=immune_score_names_output,
+            cell_states_path=cell_states_output,
+            cluster_labels_path=cluster_labels_output,
+            output_dir=pathway_immune_dir,
+            config=pathway_immune_config,
+        )
+    )
+
+    results["pathway_immune_integration"] = (
+        pathway_immune_result
+    )
+
+    # ========================================================
+    # STEP 15 â€” FINAL ANALYSIS
+    # ========================================================
+
+    step = 15
+
+    _emit_progress(
+        progress_callback,
+        step,
+        total_steps,
+        "final_analysis",
+        "Building integrated computational analysis package.",
+    )
+
+    print()
+    print("=" * 70)
+    print("STEP 15 â€” FINAL ANALYSIS")
+    print("=" * 70)
+
+    final_analysis_dir = (
+        analysis_dir
+        / "final_analysis"
+    )
+
+    final_analysis_result = run_final_analysis(
+        cell_states_path=cell_states_output,
+        cluster_states_path=cluster_states_output,
+        immune_scores_path=immune_scores_output,
+        immune_score_names_path=immune_score_names_output,
+        ml_predictions_path=ml_predictions_output,
+        pathway_scores_path=pathway_scores_output,
+        pathway_names_path=pathway_names_output,
+        xai_global_importance_path=xai_global_output,
+        output_dir=final_analysis_dir,
+    )
+
+    final_analysis_output = Path(
+        final_analysis_dir
+        / "final_analysis.json"
+    )
+
+    llm_input_output = Path(
+        final_analysis_dir
+        / "llm_reasoning_input.json"
+    )
+
+    _require_file(
+        final_analysis_output,
+        "Final analysis JSON",
+    )
+
+    _require_file(
+        llm_input_output,
+        "LLM reasoning input",
+    )
+
+    results["final_analysis"] = (
+        final_analysis_result
+    )
+
+    # ========================================================
+    # STEP 16 â€” LLM BIOLOGICAL REASONING
+    # ========================================================
+
+    step = 16
+
+    _emit_progress(
+        progress_callback,
+        step,
+        total_steps,
+        "llm_reasoning",
+        "Generating biological interpretation.",
+    )
+
+    print()
+    print("=" * 70)
+    print("STEP 16 â€” LLM BIOLOGICAL REASONING")
+    print("=" * 70)
+
+    llm_dir = (
+        analysis_dir
+        / "llm_reasoning"
+    )
+
+    llm_result = run_llm_reasoning(
+        analysis_input_path=llm_input_output,
+        output_dir=llm_dir,
+        config=llm_config,
+    )
+
+    biological_interpretation_output = (
+        llm_dir
+        / "biological_interpretation.json"
+    )
+
+    biological_report_output = (
+        llm_dir
+        / "biological_report.md"
+    )
+
+    llm_metadata_output = (
+        llm_dir
+        / "llm_reasoning_metadata.json"
+    )
+
+    _require_file(
+        biological_interpretation_output,
+        "Biological interpretation",
+    )
+
+    _require_file(
+        biological_report_output,
+        "Biological report",
+    )
+
+    _require_file(
+        llm_metadata_output,
+        "LLM metadata",
+    )
+
+    results["llm_reasoning"] = (
+        llm_result
+    )
+
+    # ========================================================
+    # FINAL METADATA
+    # ========================================================
+
+    runtime_seconds = (
+        time.perf_counter()
+        - start_time
+    )
+
+    results["runtime_seconds"] = (
+        float(runtime_seconds)
+    )
+
+    results["paths"].update({
+
+        "final_analysis":
+            str(final_analysis_output),
+
+        "llm_reasoning_input":
+            str(llm_input_output),
+
+        "biological_interpretation":
+            str(biological_interpretation_output),
+
+        "biological_report":
+            str(biological_report_output),
+
+        "llm_metadata":
+            str(llm_metadata_output),
+
+        "umap_coordinates":
+            str(umap_output),
+
+        "cluster_labels":
+            str(cluster_labels_output),
+
+        "immune_scores":
+            str(immune_scores_output),
+
+        "immune_score_names":
+            str(immune_score_names_output),
+
+        "cell_immune_states":
+            str(cell_states_output),
+
+        "cluster_immune_states":
+            str(cluster_states_output),
+
+        "ml_model":
+            str(ml_model_output),
+
+        "ml_features":
+            str(ml_features_output),
+
+        "ml_predictions":
+            str(ml_predictions_output),
+
+        "xai_global_importance":
+            str(xai_global_output),
+
+        "pathway_scores":
+            str(pathway_scores_output),
+
+        "pathway_names":
+            str(pathway_names_output),
+    })
+
+    # ========================================================
+    # SAVE RUN MANIFEST
+    # ========================================================
+
+    manifest_path = (
+        analysis_dir
+        / "analysis_run_manifest.json"
+    )
+
+    manifest = {
+        "pipeline": "IMMUNO-XAI",
+        "status": "completed",
+        "dataset": str(dataset_path),
+        "analysis_dir": str(analysis_dir),
+        "runtime_seconds": float(
+            runtime_seconds
+        ),
+        "steps_completed": total_steps,
+        "total_steps": total_steps,
+        "paths": results["paths"],
+    }
+
+    _write_json(
+        manifest_path,
+        manifest,
+    )
+
+    results["paths"][
+        "run_manifest"
+    ] = str(manifest_path)
+
+    _emit_progress(
+        progress_callback,
+        total_steps,
+        total_steps,
+        "completed",
+        "IMMUNO-XAI analysis completed successfully.",
+    )
+
+    print()
+    print("=" * 70)
+    print("IMMUNO-XAI COMPLETE")
+    print("=" * 70)
+
+    print(
+        f"Runtime: {runtime_seconds:.2f} seconds"
+    )
+
+    print(
+        "Final analysis:",
+        final_analysis_output,
+    )
+
+    print(
+        "Biological report:",
+        biological_report_output,
+    )
+
+    return results
+
+
+============================================================
+
+FILE: .\src\lib\analysis.ts
+
+============================================================
+
+export type ImmuneState = "Inflamed" | "Immune-Excluded";
+
+export interface SampleResult {
+  sample: string;
+  tCellScore: number;
+  myeloidScore: number;
+  immuneState: ImmuneState;
+  confidence: number;
+}
+
+export interface AnalysisResult {
+  datasetName: string;
+  cancerType: string;
+  model: string;
+  totalSamples: number;
+  totalGenes: number;
+  validated: boolean;
+  normalized: boolean;
+  samples: SampleResult[];
+  stateDistribution: {
+    inflamed: number;
+    immuneExcluded: number;
+  };
+  topGenes: {
+    gene: string;
+    importance: number;
+  }[];
+  analyzedAt: string;
+}
+
+const T_CELL_MARKERS = [
+  "CD3D",
+  "CD3E",
+  "GZMB",
+];
+
+const MYELOID_MARKERS = [
+  "CD274",
+  "C1QA",
+  "LST1",
+  "CXCL9",
+];
+
+function parseCSV(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = "";
+  let insideQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === '"' && insideQuotes && next === '"') {
+      cell += '"';
+      i++;
+    } else if (char === '"') {
+      insideQuotes = !insideQuotes;
+    } else if (char === "," && !insideQuotes) {
+      row.push(cell.trim());
+      cell = "";
+    } else if ((char === "\n" || char === "\r") && !insideQuotes) {
+      if (char === "\r" && next === "\n") {
+        i++;
+      }
+
+      row.push(cell.trim());
+      cell = "";
+
+      if (row.some((value) => value !== "")) {
+        rows.push(row);
+      }
+
+      row = [];
+    } else {
+      cell += char;
+    }
+  }
+
+  if (cell !== "" || row.length > 0) {
+    row.push(cell.trim());
+
+    if (row.some((value) => value !== "")) {
+      rows.push(row);
+    }
+  }
+
+  return rows;
+}
+
+function toNumber(value: string | undefined): number {
+  if (!value) return 0;
+
+  const number = Number(value);
+
+  return Number.isFinite(number) ? number : 0;
+}
+
+function normalizeValue(value: number): number {
+  return Math.log1p(Math.max(value, 0));
+}
+
+function calculateScore(
+  geneExpression: Map<string, number>,
+  markers: string[],
+): number {
+  const values = markers
+    .map((gene) => geneExpression.get(gene))
+    .filter((value): value is number => value !== undefined);
+
+  if (values.length === 0) {
+    return 0;
+  }
+
+  const normalizedValues = values.map(normalizeValue);
+
+  return (
+    normalizedValues.reduce((sum, value) => sum + value, 0) /
+    normalizedValues.length
+  );
+}
+
+function calculateConfidence(
+  tCellScore: number,
+  myeloidScore: number,
+): number {
+  const total = tCellScore + myeloidScore;
+
+  if (total === 0) {
+    return 0.5;
+  }
+
+  const strongerScore = Math.max(tCellScore, myeloidScore);
+
+  const confidence = strongerScore / total;
+
+  return Math.min(Math.max(confidence, 0.5), 0.99);
+}
+
+export function analyzeCSV(
+  csvText: string,
+  datasetName: string,
+  cancerType: string,
+  model: string,
+): AnalysisResult {
+  const rows = parseCSV(csvText);
+
+  if (rows.length < 2) {
+    throw new Error("The CSV file does not contain enough data.");
+  }
+
+  const header = rows[0];
+
+  if (header.length < 2) {
+    throw new Error(
+      "The CSV must contain a gene column and at least one sample column.",
+    );
+  }
+
+  const geneColumn = header[0];
+
+  if (!geneColumn) {
+    throw new Error("The first CSV column must contain gene identifiers.");
+  }
+
+  const sampleNames = header.slice(1);
+
+  const expression = new Map<string, Map<string, number>>();
+
+  for (const row of rows.slice(1)) {
+    const gene = row[0]?.trim();
+
+    if (!gene) {
+      continue;
+    }
+
+    const values = new Map<string, number>();
+
+    sampleNames.forEach((sample, index) => {
+      values.set(sample, toNumber(row[index + 1]));
+    });
+
+    expression.set(gene.toUpperCase(), values);
+  }
+
+  if (expression.size === 0) {
+    throw new Error("No valid gene-expression rows were found.");
+  }
+
+  const requiredMarkers = [
+    ...T_CELL_MARKERS,
+    ...MYELOID_MARKERS,
+  ];
+
+  const availableMarkers = requiredMarkers.filter((gene) =>
+    expression.has(gene),
+  );
+
+  if (availableMarkers.length === 0) {
+    throw new Error(
+      "The dataset does not contain the required immune marker genes.",
+    );
+  }
+
+  const samples: SampleResult[] = sampleNames.map((sample) => {
+    const geneExpression = new Map<string, number>();
+
+    expression.forEach((sampleValues, gene) => {
+      geneExpression.set(gene, sampleValues.get(sample) ?? 0);
+    });
+
+    const tCellScore = calculateScore(
+      geneExpression,
+      T_CELL_MARKERS,
+    );
+
+    const myeloidScore = calculateScore(
+      geneExpression,
+      MYELOID_MARKERS,
+    );
+
+    const immuneState: ImmuneState =
+      tCellScore >= myeloidScore
+        ? "Inflamed"
+        : "Immune-Excluded";
+
+    const confidence = calculateConfidence(
+      tCellScore,
+      myeloidScore,
+    );
+
+    return {
+      sample,
+      tCellScore,
+      myeloidScore,
+      immuneState,
+      confidence,
+    };
+  });
+
+  const inflamed = samples.filter(
+    (sample) => sample.immuneState === "Inflamed",
+  ).length;
+
+  const immuneExcluded = samples.filter(
+    (sample) => sample.immuneState === "Immune-Excluded",
+  ).length;
+
+  const topGenes = requiredMarkers
+    .filter((gene) => expression.has(gene))
+    .map((gene) => {
+      const values = expression.get(gene)!;
+
+      const mean =
+        Array.from(values.values()).reduce(
+          (sum, value) => sum + normalizeValue(value),
+          0,
+        ) / values.size;
+
+      return {
+        gene,
+        importance: mean,
+      };
+    })
+    .sort((a, b) => b.importance - a.importance)
+    .slice(0, 6);
+
+  return {
+    datasetName,
+    cancerType,
+    model,
+    totalSamples: sampleNames.length,
+    totalGenes: expression.size,
+    validated: true,
+    normalized: true,
+    samples,
+    stateDistribution: {
+      inflamed,
+      immuneExcluded,
+    },
+    topGenes,
+    analyzedAt: new Date().toISOString(),
+  };
+}
+
+
+============================================================
+
+FILE: .\src\lib\scRNA\api.ts
+
+============================================================
+
+
+
+============================================================
+
+FILE: .\src\lib\scRNA\types.ts
+
+============================================================
+
+
+
+============================================================
+
+FILE: .\src\routes\upload.tsx
+
+============================================================
+
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import {
+  UploadCloud,
+  FileText,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  X,
+  Clock3,
+  Database,
+  FlaskConical,
+  BrainCircuit,
+  BarChart3,
+  Dna,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+
+import { AppLayout } from "@/components/AppLayout";
+
+export const Route = createFileRoute("/upload")({
+  head: () => ({
+    meta: [
+      { title: "Analyze Dataset â€” ImmunoXAI" },
+      {
+        name: "description",
+        content:
+          "Upload a single-cell gene expression dataset and run the complete ImmunoXAI analysis pipeline.",
+      },
+    ],
+  }),
+  component: UploadPage,
+});
+
+
+// ============================================================
+// ANALYSIS PIPELINE STEPS
+// ============================================================
+
+type AnalysisStep = {
+  id: string;
+  label: string;
+  description: string;
+  icon: typeof Database;
+};
+
+const ANALYSIS_STEPS: AnalysisStep[] = [
+  {
+    id: "validation",
+    label: "Dataset validation",
+    description:
+      "Checking file format, dimensions, genes, and samples.",
+    icon: Database,
+  },
+  {
+    id: "loading",
+    label: "Loading expression matrix",
+    description:
+      "Reading the expression data into the analysis pipeline.",
+    icon: FileText,
+  },
+  {
+    id: "qc",
+    label: "Quality control",
+    description:
+      "Evaluating sequencing quality and filtering low-quality cells.",
+    icon: FlaskConical,
+  },
+  {
+    id: "normalization",
+    label: "Normalization",
+    description:
+      "Normalizing counts and applying log transformation.",
+    icon: BarChart3,
+  },
+  {
+    id: "features",
+    label: "Feature selection",
+    description:
+      "Identifying informative genes for downstream analysis.",
+    icon: Dna,
+  },
+  {
+    id: "embedding",
+    label: "Dimensionality reduction",
+    description:
+      "Computing PCA and low-dimensional representations.",
+    icon: BarChart3,
+  },
+  {
+    id: "clustering",
+    label: "Cell-state analysis",
+    description:
+      "Identifying transcriptionally distinct cellular populations.",
+    icon: Dna,
+  },
+  {
+    id: "immune",
+    label: "Immune-state scoring",
+    description:
+      "Calculating T-cell, PD-L1/myeloid, and immune-state scores.",
+    icon: FlaskConical,
+  },
+  {
+    id: "de",
+    label: "Differential expression",
+    description:
+      "Identifying genes associated with immune states.",
+    icon: BarChart3,
+  },
+  {
+    id: "enrichment",
+    label: "Functional enrichment",
+    description:
+      "Characterizing biological pathways and processes.",
+    icon: FlaskConical,
+  },
+  {
+    id: "ml",
+    label: "Machine learning",
+    description:
+      "Training and evaluating the immune-state classifier.",
+    icon: BrainCircuit,
+  },
+  {
+    id: "xai",
+    label: "Explainable AI",
+    description:
+      "Generating model feature importance and explanations.",
+    icon: BrainCircuit,
+  },
+  {
+    id: "report",
+    label: "Report generation",
+    description:
+      "Assembling the complete analysis summary.",
+    icon: FileText,
+  },
+];
+
+
+// ============================================================
+// TYPES
+// ============================================================
+
+type AnalysisStatus =
+  | "idle"
+  | "ready"
+  | "running"
+  | "error";
+
+
+// ============================================================
+// SHARED TIME FORMATTER
+// IMPORTANT:
+// This must be OUTSIDE UploadPage so AnalysisProgressCard
+// can also use it.
+// ============================================================
+
+function formatTime(seconds: number | null) {
+  if (seconds === null) {
+    return "Calculating...";
+  }
+
+  const safeSeconds = Math.max(
+    0,
+    Math.round(seconds),
+  );
+
+  const minutes = Math.floor(
+    safeSeconds / 60,
+  );
+
+  const remaining = safeSeconds % 60;
+
+  if (minutes === 0) {
+    return `${remaining}s`;
+  }
+
+  return `${minutes}m ${remaining
+    .toString()
+    .padStart(2, "0")}s`;
+}
+
+
+// ============================================================
+// UPLOAD PAGE
+// ============================================================
+
+function UploadPage() {
+  const navigate = useNavigate();
+
+  const [file, setFile] =
+    useState<File | null>(null);
+
+  const [status, setStatus] =
+    useState<AnalysisStatus>("idle");
+
+  const [error, setError] =
+    useState("");
+
+  const [currentStep, setCurrentStep] =
+    useState(0);
+
+  const [progress, setProgress] =
+    useState(0);
+
+  const [elapsedSeconds, setElapsedSeconds] =
+    useState(0);
+
+  const [estimatedTotalSeconds, setEstimatedTotalSeconds] =
+    useState<number | null>(null);
+
+
+  // ==========================================================
+  // RUNNING STATE
+  // ==========================================================
+
+  const isRunning =
+    status === "running";
+
+
+  // ==========================================================
+  // ELAPSED TIMER
+  // ==========================================================
+
+  useEffect(() => {
+    if (!isRunning) {
+      return;
+    }
+
+    const interval =
+      window.setInterval(() => {
+        setElapsedSeconds(
+          (seconds) => seconds + 1,
+        );
+      }, 1000);
+
+    return () =>
+      window.clearInterval(interval);
+  }, [isRunning]);
+
+
+  // ==========================================================
+  // REMAINING TIME ESTIMATE
+  // ==========================================================
+
+  const remainingSeconds =
+    useMemo(() => {
+      if (
+        !estimatedTotalSeconds ||
+        progress <= 0
+      ) {
+        return null;
+      }
+
+      const estimatedElapsed =
+        estimatedTotalSeconds *
+        (progress / 100);
+
+      return Math.max(
+        0,
+        Math.round(
+          estimatedTotalSeconds -
+            estimatedElapsed,
+        ),
+      );
+    }, [
+      estimatedTotalSeconds,
+      progress,
+    ]);
+
+
+  // ==========================================================
+  // FILE SELECTION
+  // ==========================================================
+
+  function handleFileChange(
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const selectedFile =
+      event.target.files?.[0];
+
+    if (!selectedFile) {
+      return;
+    }
+
+    setError("");
+
+    const lowerName =
+      selectedFile.name.toLowerCase();
+
+    const supported =
+      lowerName.endsWith(".csv") ||
+      lowerName.endsWith(".tsv") ||
+      lowerName.endsWith(".txt") ||
+      lowerName.endsWith(".gz");
+
+    if (!supported) {
+      setFile(null);
+      setStatus("error");
+
+      setError(
+        "Unsupported file format. Upload a CSV, TSV, TXT, or GZ expression matrix.",
+      );
+
+      return;
+    }
+
+    setFile(selectedFile);
+    setStatus("ready");
+    setCurrentStep(0);
+    setProgress(0);
+    setElapsedSeconds(0);
+    setEstimatedTotalSeconds(null);
+  }
+
+
+  // ==========================================================
+  // CLEAR DATASET
+  // ==========================================================
+
+  function clearFile() {
+    if (isRunning) {
+      return;
+    }
+
+    setFile(null);
+    setStatus("idle");
+    setError("");
+    setCurrentStep(0);
+    setProgress(0);
+    setElapsedSeconds(0);
+    setEstimatedTotalSeconds(null);
+  }
+
+
+  // ==========================================================
+  // ANALYZE DATASET
+  // ==========================================================
+  //
+  // CURRENTLY THIS IS STILL THE FRONTEND SIMULATION.
+  //
+  // We will replace this with:
+  //
+  // POST /api/analysis/run
+  //
+  // followed by polling of the real analysis job.
+  //
+  // ==========================================================
+
+  async function handleAnalyze() {
+    if (!file) {
+      setError(
+        "Please upload a dataset first.",
+      );
+
+      return;
+    }
+
+    setError("");
+    setStatus("running");
+    setCurrentStep(0);
+    setProgress(2);
+    setElapsedSeconds(0);
+
+
+    // ----------------------------------------------------------
+    // Temporary estimate
+    // ----------------------------------------------------------
+
+    const estimatedSeconds =
+      estimateAnalysisTime(file);
+
+    setEstimatedTotalSeconds(
+      estimatedSeconds,
+    );
+
+
+    // ----------------------------------------------------------
+    // Temporary frontend pipeline
+    // ----------------------------------------------------------
+
+    for (
+      let i = 0;
+      i < ANALYSIS_STEPS.length;
+      i++
+    ) {
+      setCurrentStep(i);
+
+      const stepProgress =
+        Math.round(
+          (i /
+            ANALYSIS_STEPS.length) *
+            92,
+        ) + 4;
+
+      setProgress(
+        Math.min(
+          stepProgress,
+          96,
+        ),
+      );
+
+      await wait(
+        getStepDelay(i),
+      );
+    }
+
+
+    // ----------------------------------------------------------
+    // Complete
+    // ----------------------------------------------------------
+
+    setProgress(100);
+
+    setCurrentStep(
+      ANALYSIS_STEPS.length - 1,
+    );
+
+    await wait(700);
+
+
+    // ----------------------------------------------------------
+    // TEMPORARY
+    // ----------------------------------------------------------
+
+    setStatus("ready");
+
+    setError(
+      "Analysis interface is ready. The next step is connecting this progress screen to the Python/FastAPI analysis pipeline.",
+    );
+  }
+
+
+  // ==========================================================
+  // RENDER
+  // ==========================================================
+
+  return (
+    <AppLayout
+      title="Analyze Dataset"
+      subtitle="Run the complete ImmunoXAI single-cell analysis pipeline"
+    >
+      <div className="mx-auto max-w-5xl">
+        {!isRunning ? (
+          <UploadCard
+            file={file}
+            status={status}
+            error={error}
+            onFileChange={
+              handleFileChange
+            }
+            onClear={clearFile}
+            onAnalyze={
+              handleAnalyze
+            }
+          />
+        ) : (
+          <AnalysisProgressCard
+            file={file}
+            currentStep={
+              currentStep
+            }
+            progress={progress}
+            elapsedSeconds={
+              elapsedSeconds
+            }
+            remainingSeconds={
+              remainingSeconds
+            }
+          />
+        )}
+      </div>
+    </AppLayout>
+  );
+}
+
+
+// ============================================================
+// UPLOAD CARD
+// ============================================================
+
+function UploadCard({
+  file,
+  status,
+  error,
+  onFileChange,
+  onClear,
+  onAnalyze,
+}: {
+  file: File | null;
+  status: AnalysisStatus;
+  error: string;
+
+  onFileChange: (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => void;
+
+  onClear: () => void;
+  onAnalyze: () => void;
+}) {
+  return (
+    <div className="rounded-2xl border border-border bg-card shadow-sm">
+
+      <div className="border-b border-border p-8">
+        <div className="flex items-start gap-4">
+
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+            <Dna className="h-6 w-6" />
+          </div>
+
+          <div>
+            <h2 className="text-xl font-semibold text-foreground">
+              Upload your dataset
+            </h2>
+
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
+              Upload a single-cell gene expression matrix.
+              ImmunoXAI will automatically validate the
+              dataset and run the appropriate analysis workflow.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+
+      <div className="p-8">
+
+        {!file ? (
+
+          <label className="group flex min-h-[300px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-primary-soft/30 px-6 text-center transition hover:border-primary/50 hover:bg-primary-soft/60">
+
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-card text-primary shadow-sm transition group-hover:scale-105">
+              <UploadCloud className="h-8 w-8" />
+            </div>
+
+            <div className="mt-5 text-base font-medium text-foreground">
+              Upload expression matrix
+            </div>
+
+            <div className="mt-2 text-sm text-muted-foreground">
+              CSV, TSV, TXT, or compressed GZ files
+            </div>
+
+            <div className="mt-4 rounded-lg border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
+              Raw UMI matrices are supported
+            </div>
+
+            <input
+              type="file"
+              accept=".csv,.tsv,.txt,.gz,text/csv,text/tab-separated-values,text/plain,application/gzip"
+              className="hidden"
+              onChange={onFileChange}
+            />
+
+          </label>
+
+        ) : (
+
+          <div className="rounded-2xl border border-border bg-background p-5">
+
+            <div className="flex items-center gap-4">
+
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                <FileText className="h-6 w-6" />
+              </div>
+
+              <div className="min-w-0 flex-1">
+
+                <div className="truncate text-sm font-semibold text-foreground">
+                  {file.name}
+                </div>
+
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {formatFileSize(
+                    file.size,
+                  )}
+                </div>
+
+              </div>
+
+              {status === "ready" && (
+                <div className="flex items-center gap-1.5 text-xs font-medium text-[oklch(0.5_0.14_155)]">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Ready
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={onClear}
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+                aria-label="Remove dataset"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+            </div>
+
+
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+
+              <InfoItem
+                label="Input"
+                value="Expression matrix"
+              />
+
+              <InfoItem
+                label="Processing"
+                value="Automatic"
+              />
+
+              <InfoItem
+                label="Analysis"
+                value="Full pipeline"
+              />
+
+            </div>
+
+          </div>
+
+        )}
+
+
+        {error && (
+          <div className="mt-5 flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+
+            <span>
+              {error}
+            </span>
+
+          </div>
+        )}
+
+
+        <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+
+          {file && (
+            <button
+              type="button"
+              onClick={onClear}
+              className="h-11 rounded-lg border border-border bg-card px-5 text-sm font-medium text-foreground transition hover:bg-muted"
+            >
+              Change Dataset
+            </button>
+          )}
+
+          <button
+            type="button"
+            disabled={!file}
+            onClick={onAnalyze}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <FlaskConical className="h-4 w-4" />
+            Analyze Dataset
+          </button>
+
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+
+// ============================================================
+// ANALYSIS PROGRESS CARD
+// ============================================================
+
+function AnalysisProgressCard({
+  file,
+  currentStep,
+  progress,
+  elapsedSeconds,
+  remainingSeconds,
+}: {
+  file: File | null;
+  currentStep: number;
+  progress: number;
+  elapsedSeconds: number;
+  remainingSeconds: number | null;
+}) {
+  const activeStep =
+    ANALYSIS_STEPS[
+      Math.min(
+        currentStep,
+        ANALYSIS_STEPS.length - 1,
+      )
+    ];
+
+  const ActiveIcon =
+    activeStep.icon;
+
+  return (
+    <div className="rounded-2xl border border-border bg-card shadow-sm">
+
+      <div className="border-b border-border p-8">
+
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+
+          <div className="flex min-w-0 items-start gap-4">
+
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+
+            <div className="min-w-0">
+
+              <h2 className="text-xl font-semibold text-foreground">
+                Analyzing dataset
+              </h2>
+
+              <p className="mt-1 truncate text-sm text-muted-foreground">
+                {file?.name}
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div className="flex shrink-0 items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
+
+            <Clock3 className="h-4 w-4" />
+
+            <span>
+              {remainingSeconds === null
+                ? "Estimating..."
+                : `~${formatTime(
+                    remainingSeconds,
+                  )} remaining`}
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div className="mt-8">
+
+          <div className="mb-2 flex items-center justify-between text-xs">
+
+            <span className="font-medium text-foreground">
+              Overall progress
+            </span>
+
+            <span className="font-medium text-primary">
+              {progress}%
+            </span>
+
+          </div>
+
+
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-700"
+              style={{
+                width: `${progress}%`,
+              }}
+            />
+
+          </div>
+
+        </div>
+
+
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+
+          <StatBox
+            label="Elapsed"
+            value={formatTime(
+              elapsedSeconds,
+            )}
+          />
+
+          <StatBox
+            label="Current stage"
+            value={`${currentStep + 1}/${ANALYSIS_STEPS.length}`}
+          />
+
+          <StatBox
+            label="Pipeline"
+            value="Automated"
+          />
+
+        </div>
+
+      </div>
+
+
+      <div className="p-8">
+
+        <div className="rounded-xl border border-primary/20 bg-primary-soft/30 p-5">
+
+          <div className="flex items-start gap-4">
+
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <ActiveIcon className="h-5 w-5" />
+            </div>
+
+            <div className="min-w-0">
+
+              <div className="text-xs font-semibold uppercase tracking-wider text-primary">
+                Current step
+              </div>
+
+              <h3 className="mt-1 text-base font-semibold text-foreground">
+                {activeStep.label}
+              </h3>
+
+              <p className="mt-1 text-sm text-muted-foreground">
+                {activeStep.description}
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div className="mt-7">
+
+          <div className="mb-4 text-sm font-semibold text-foreground">
+            Analysis pipeline
+          </div>
+
+
+          <div className="space-y-1">
+
+            {ANALYSIS_STEPS.map(
+              (step, index) => {
+                const Icon =
+                  step.icon;
+
+                const completed =
+                  index <
+                  currentStep;
+
+                const active =
+                  index ===
+                  currentStep;
+
+                return (
+                  <div
+                    key={step.id}
+                    className={[
+                      "flex items-center gap-3 rounded-lg px-3 py-3 transition",
+                      active
+                        ? "bg-primary-soft"
+                        : "bg-transparent",
+                    ].join(" ")}
+                  >
+
+                    <div
+                      className={[
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                        completed
+                          ? "bg-[oklch(0.65_0.16_155)] text-white"
+                          : active
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground",
+                      ].join(" ")}
+                    >
+
+                      {completed ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : active ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Icon className="h-4 w-4" />
+                      )}
+
+                    </div>
+
+
+                    <div className="min-w-0 flex-1">
+
+                      <div
+                        className={[
+                          "text-sm font-medium",
+                          completed ||
+                          active
+                            ? "text-foreground"
+                            : "text-muted-foreground",
+                        ].join(" ")}
+                      >
+                        {step.label}
+                      </div>
+
+
+                      {active && (
+                        <div className="mt-0.5 text-xs text-muted-foreground">
+                          {step.description}
+                        </div>
+                      )}
+
+                    </div>
+
+
+                    <div className="text-xs text-muted-foreground">
+
+                      {completed
+                        ? "Complete"
+                        : active
+                          ? "Running"
+                          : "Waiting"}
+
+                    </div>
+
+                  </div>
+                );
+              },
+            )}
+
+          </div>
+
+        </div>
+
+
+        <div className="mt-7 rounded-xl border border-border bg-muted/30 p-4">
+
+          <div className="flex items-start gap-3">
+
+            <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+
+            <div>
+
+              <div className="text-xs font-medium text-foreground">
+                Analysis time
+              </div>
+
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                The remaining-time estimate will become
+                dynamic once the Python analysis service
+                is connected. It will use actual processing
+                progress rather than a fixed countdown.
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+
+// ============================================================
+// INFO ITEM
+// ============================================================
+
+function InfoItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-lg border border-border bg-card px-3 py-2.5">
+
+      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+        {label}
+      </div>
+
+      <div className="mt-0.5 text-xs font-medium text-foreground">
+        {value}
+      </div>
+
+    </div>
+  );
+}
+
+
+// ============================================================
+// STAT BOX
+// ============================================================
+
+function StatBox({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-lg border border-border bg-background p-3">
+
+      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+        {label}
+      </div>
+
+      <div className="mt-1 text-sm font-semibold text-foreground">
+        {value}
+      </div>
+
+    </div>
+  );
+}
+
+
+// ============================================================
+// FILE SIZE
+// ============================================================
+
+function formatFileSize(
+  bytes: number,
+) {
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+
+  if (
+    bytes <
+    1024 * 1024
+  ) {
+    return `${(
+      bytes / 1024
+    ).toFixed(1)} KB`;
+  }
+
+  if (
+    bytes <
+    1024 * 1024 * 1024
+  ) {
+    return `${(
+      bytes /
+      (1024 * 1024)
+    ).toFixed(2)} MB`;
+  }
+
+  return `${(
+    bytes /
+    (1024 * 1024 * 1024)
+  ).toFixed(2)} GB`;
+}
+
+
+// ============================================================
+// TEMPORARY ANALYSIS TIME ESTIMATE
+// ============================================================
+
+function estimateAnalysisTime(
+  file: File,
+) {
+  const sizeMB =
+    file.size /
+    (1024 * 1024);
+
+  if (sizeMB < 20) {
+    return 90;
+  }
+
+  if (sizeMB < 100) {
+    return 150;
+  }
+
+  if (sizeMB < 500) {
+    return 300;
+  }
+
+  if (sizeMB < 1000) {
+    return 480;
+  }
+
+  return 720;
+}
+
+
+// ============================================================
+// TEMPORARY STEP DELAYS
+// ============================================================
+
+function getStepDelay(
+  index: number,
+) {
+  const delays = [
+    700,
+    900,
+    1300,
+    1100,
+    1000,
+    1000,
+    1200,
+    1400,
+    1100,
+    1100,
+    1300,
+    1000,
+    900,
+  ];
+
+  return (
+    delays[index] ?? 1000
+  );
+}
+
+
+// ============================================================
+// WAIT
+// ============================================================
+
+function wait(
+  ms: number,
+) {
+  return new Promise<void>(
+    (resolve) => {
+      window.setTimeout(
+        resolve,
+        ms,
+      );
+    },
+  );
+}
+
+
+============================================================
+
+FILE: .\src\routes\dashboard.tsx
+
+============================================================
+
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { AppLayout } from "@/components/AppLayout";
+import {
+  Database,
+  FlaskConical,
+  Microscope,
+  FileText,
+  ArrowUpRight,
+  Plus,
+} from "lucide-react";
+
+export const Route = createFileRoute("/dashboard")({
+  head: () => ({
+    meta: [
+      { title: "Dashboard â€” ImmunoXAI" },
+      {
+        name: "description",
+        content:
+          "Overview of your immunomics datasets, analyses, and generated reports on ImmunoXAI.",
+      },
+      { property: "og:title", content: "Dashboard â€” ImmunoXAI" },
+      {
+        property: "og:description",
+        content: "Overview of datasets, analyses and reports.",
+      },
+    ],
+  }),
+  component: Dashboard,
+});
+
+const stats = [
+  {
+    label: "Uploaded Datasets",
+    value: "24",
+    delta: "+3 this week",
+    icon: Database,
+  },
+  {
+    label: "Completed Analyses",
+    value: "18",
+    delta: "+5 this week",
+    icon: FlaskConical,
+  },
+  { label: "Cancer Types", value: "5", delta: "BRCA Â· LUAD Â· COAD Â· SKCM Â· GBM", icon: Microscope },
+  { label: "Generated Reports", value: "12", delta: "4 downloaded", icon: FileText },
+];
+
+const rows = [
+  {
+    name: "TCGA-BRCA Cohort A",
+    type: "BRCA",
+    status: "Completed",
+    date: "Jul 22, 2026",
+  },
+  {
+    name: "TCGA-LUAD Cohort B",
+    type: "LUAD",
+    status: "Completed",
+    date: "Jul 21, 2026",
+  },
+  {
+    name: "TCGA-COAD Cohort C",
+    type: "COAD",
+    status: "Running",
+    date: "Jul 21, 2026",
+  },
+  {
+    name: "TCGA-SKCM Cohort D",
+    type: "SKCM",
+    status: "Completed",
+    date: "Jul 19, 2026",
+  },
+  {
+    name: "TCGA-GBM Cohort E",
+    type: "GBM",
+    status: "Queued",
+    date: "Jul 18, 2026",
+  },
+];
+
+function statusStyle(s: string) {
+  if (s === "Completed") return "bg-[oklch(0.95_0.06_155)] text-[oklch(0.35_0.12_155)]";
+  if (s === "Running") return "bg-primary-soft text-primary";
+  return "bg-muted text-muted-foreground";
+}
+
+function Dashboard() {
+  return (
+    <AppLayout title="Dashboard" subtitle="Overview of your immunomics workspace">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-semibold text-foreground">Welcome back, Elena</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            5 cohorts across 3 cancer types are ready for review.
+          </p>
+        </div>
+        <Link
+          to="/upload"
+          className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+        >
+          <Plus className="h-4 w-4" /> New Analysis
+        </Link>
+      </div>
+
+      <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {stats.map((s) => {
+          const Icon = s.icon;
+          return (
+            <div
+              key={s.label}
+              className="rounded-xl border border-border bg-card p-5 shadow-sm"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="mt-4 text-3xl font-semibold tracking-tight text-foreground">
+                {s.value}
+              </div>
+              <div className="mt-1 text-sm text-foreground">{s.label}</div>
+              <div className="mt-0.5 text-xs text-muted-foreground">{s.delta}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <div className="rounded-xl border border-border bg-card shadow-sm xl:col-span-2">
+          <div className="flex items-center justify-between border-b border-border px-6 py-4">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Recent Analyses</h3>
+              <p className="text-xs text-muted-foreground">
+                Latest cohort runs across your workspace
+              </p>
+            </div>
+            <Link to="/results" className="text-xs font-medium text-primary hover:underline">
+              View all
+            </Link>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
+                  <th className="px-6 py-3 font-medium">Dataset Name</th>
+                  <th className="px-6 py-3 font-medium">Cancer Type</th>
+                  <th className="px-6 py-3 font-medium">Status</th>
+                  <th className="px-6 py-3 font-medium">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r.name} className="border-b border-border last:border-0">
+                    <td className="px-6 py-3.5 font-medium text-foreground">{r.name}</td>
+                    <td className="px-6 py-3.5">
+                      <span className="rounded-md border border-border bg-muted px-2 py-0.5 text-xs font-medium text-foreground">
+                        {r.type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3.5">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyle(
+                          r.status,
+                        )}`}
+                      >
+                        {r.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3.5 text-muted-foreground">{r.date}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+          <h3 className="text-sm font-semibold text-foreground">Cohort Distribution</h3>
+          <p className="text-xs text-muted-foreground">
+            Samples analyzed by cancer type
+          </p>
+          <div className="mt-5 space-y-4">
+            {[
+              { k: "BRCA", v: 42, n: 5240 },
+              { k: "LUAD", v: 24, n: 2980 },
+              { k: "COAD", v: 15, n: 1870 },
+              { k: "SKCM", v: 12, n: 1490 },
+              { k: "GBM", v: 7, n: 900 },
+            ].map((c) => (
+              <div key={c.k}>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-foreground">{c.k}</span>
+                  <span className="text-muted-foreground">{c.n.toLocaleString()} samples</span>
+                </div>
+                <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-primary"
+                    style={{ width: `${c.v * 2}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </AppLayout>
+  );
+}
+
+
+============================================================
+
+FILE: .\src\routes\results.tsx
+
+============================================================
+
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import {
+  Sparkles,
+  FileDown,
+  Activity,
+  Info,
+  ArrowLeft,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { AppLayout } from "@/components/AppLayout";
+import type { AnalysisResult } from "@/lib/analysis";
+
+export const Route = createFileRoute("/results")({
+  head: () => ({
+    meta: [
+      { title: "Analysis Results â€” ImmunoXAI" },
+      {
+        name: "description",
+        content:
+          "Explainable AI results for immune phenotype analysis.",
+      },
+    ],
+  }),
+  component: Results,
+});
+
+function Results() {
+  const navigate = useNavigate();
+
+  const [result, setResult] =
+    useState<AnalysisResult | null>(null);
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem(
+      "immunoxai-analysis",
+    );
+
+    if (!stored) {
+      navigate({ to: "/upload" });
+      return;
+    }
+
+    try {
+      setResult(JSON.parse(stored));
+    } catch {
+      navigate({ to: "/upload" });
+    }
+  }, [navigate]);
+
+  if (!result) {
+    return (
+      <AppLayout
+        title="Analysis Results"
+        subtitle="Loading analysis..."
+      >
+        <div className="rounded-xl border border-border bg-card p-8 text-sm text-muted-foreground">
+          Loading analysis results...
+        </div>
+      </AppLayout>
+    );
+  }
+
+  const firstSample = result.samples[0];
+
+  const inflamedPercentage =
+    result.totalSamples > 0
+      ? (result.stateDistribution.inflamed /
+          result.totalSamples) *
+        100
+      : 0;
+
+  const excludedPercentage =
+    result.totalSamples > 0
+      ? (result.stateDistribution.immuneExcluded /
+          result.totalSamples) *
+        100
+      : 0;
+
+  const maxImportance =
+    result.topGenes.length > 0
+      ? Math.max(
+          ...result.topGenes.map(
+            (gene) => gene.importance,
+          ),
+        )
+      : 1;
+
+  return (
+    <AppLayout
+      title="Analysis Results"
+      subtitle={`${result.datasetName} Â· ${result.model} Â· ${result.totalSamples} samples`}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span className="rounded-md border border-border bg-card px-2 py-0.5 text-xs font-medium text-foreground">
+            {result.cancerType}
+          </span>
+
+          <span>Â·</span>
+
+          <span>
+            {result.totalGenes.toLocaleString()} genes
+          </span>
+
+          <span>Â·</span>
+
+          <span>
+            {new Date(
+              result.analyzedAt,
+            ).toLocaleString()}
+          </span>
+        </div>
+
+        <div className="flex gap-2">
+          <Link
+            to="/upload"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-card px-4 text-sm font-medium text-foreground hover:bg-muted"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            New Analysis
+          </Link>
+
+          <Link
+            to="/reports"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90"
+          >
+            <FileDown className="h-4 w-4" />
+            Generate Report
+          </Link>
+        </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <Activity className="h-3.5 w-3.5" />
+            Prediction
+          </div>
+
+          <div className="mt-4 text-xs text-muted-foreground">
+            Immune State
+          </div>
+
+          <div className="mt-1 text-2xl font-semibold text-foreground">
+            {firstSample?.immuneState ?? "Unavailable"}
+          </div>
+
+          <div className="mt-1 text-sm text-muted-foreground">
+            Based on immune-related expression scores
+          </div>
+
+          <div className="mt-6">
+            <div className="flex items-baseline justify-between">
+              <span className="text-xs text-muted-foreground">
+                Confidence
+              </span>
+
+              <span className="text-2xl font-semibold text-primary">
+                {firstSample
+                  ? `${(
+                      firstSample.confidence * 100
+                    ).toFixed(1)}%`
+                  : "N/A"}
+              </span>
+            </div>
+
+            <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary"
+                style={{
+                  width: firstSample
+                    ? `${firstSample.confidence * 100}%`
+                    : "0%",
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-2 border-t border-border pt-5 text-center">
+            <div className="rounded-lg border border-primary/30 bg-primary-soft px-2 py-3">
+              <div className="text-sm font-semibold text-primary">
+                {inflamedPercentage.toFixed(1)}%
+              </div>
+
+              <div className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                Inflamed
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-border bg-background px-2 py-3">
+              <div className="text-sm font-semibold text-foreground">
+                {excludedPercentage.toFixed(1)}%
+              </div>
+
+              <div className="mt-0.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                Immune-Excluded
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+          <h3 className="text-sm font-semibold text-foreground">
+            Immune Scores
+          </h3>
+
+          <p className="text-xs text-muted-foreground">
+            Scores calculated from immune marker expression
+          </p>
+
+          {firstSample && (
+            <div className="mt-6 space-y-6">
+              <ScoreBar
+                label="T-cell Score"
+                value={firstSample.tCellScore}
+              />
+
+              <ScoreBar
+                label="PD-L1 / Myeloid Score"
+                value={firstSample.myeloidScore}
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+          <h3 className="text-sm font-semibold text-foreground">
+            Dataset Summary
+          </h3>
+
+          <div className="mt-5 space-y-4 text-sm">
+            <SummaryRow
+              label="Samples"
+              value={result.totalSamples.toLocaleString()}
+            />
+
+            <SummaryRow
+              label="Genes"
+              value={result.totalGenes.toLocaleString()}
+            />
+
+            <SummaryRow
+              label="Validation"
+              value="Passed"
+            />
+
+            <SummaryRow
+              label="Preprocessing"
+              value="Completed"
+            />
+
+            <SummaryRow
+              label="Cancer Type"
+              value={result.cancerType}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 rounded-xl border border-border bg-card p-6 shadow-sm">
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">
+              Important Immune Genes
+            </h3>
+
+            <p className="text-xs text-muted-foreground">
+              Highest average transformed expression among the
+              immune marker genes used in this analysis.
+            </p>
+          </div>
+
+          <span className="rounded-md border border-border bg-muted px-2 py-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            Top {result.topGenes.length}
+          </span>
+        </div>
+
+        <div className="mt-6 space-y-3.5">
+          {result.topGenes.map((gene) => (
+            <div
+              key={gene.gene}
+              className="grid grid-cols-[80px_1fr_56px] items-center gap-3"
+            >
+              <div className="text-sm font-medium text-foreground">
+                {gene.gene}
+              </div>
+
+              <div className="h-6 overflow-hidden rounded-md bg-muted">
+                <div
+                  className="h-full rounded-md bg-primary"
+                  style={{
+                    width: `${
+                      (gene.importance /
+                        maxImportance) *
+                      100
+                    }%`,
+                  }}
+                />
+              </div>
+
+              <div className="text-right text-xs font-mono text-muted-foreground">
+                {gene.importance.toFixed(2)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-6 rounded-xl border border-border bg-card p-6 shadow-sm">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-soft text-primary">
+            <Sparkles className="h-4 w-4" />
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">
+              Biological Interpretation
+            </h3>
+
+            <p className="text-xs text-muted-foreground">
+              Analysis summary
+            </p>
+          </div>
+        </div>
+
+        {firstSample && (
+          <p className="mt-5 text-sm leading-relaxed text-foreground">
+            The analysis classified the sample as{" "}
+            <span className="font-semibold text-primary">
+              {firstSample.immuneState}
+            </span>{" "}
+            with an estimated confidence of{" "}
+            <span className="font-semibold">
+              {(
+                firstSample.confidence * 100
+              ).toFixed(1)}
+              %
+            </span>
+            . The calculated T-cell score was{" "}
+            <span className="font-semibold">
+              {firstSample.tCellScore.toFixed(3)}
+            </span>
+            , while the PD-L1 / myeloid score was{" "}
+            <span className="font-semibold">
+              {firstSample.myeloidScore.toFixed(3)}
+            </span>
+            .
+          </p>
+        )}
+
+        <div className="mt-5 flex items-start gap-2 rounded-lg border border-border bg-muted/60 p-3 text-xs text-muted-foreground">
+          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+
+          This prototype analysis is intended for research
+          and software-development validation. The final
+          classification will use the trained machine-learning
+          model specified in the computational pipeline.
+        </div>
+      </div>
+    </AppLayout>
+  );
+}
+
+function ScoreBar({
+  label,
+  value,
+}: {
+  label: string;
+  value: number;
+}) {
+  const percentage = Math.min(
+    Math.max(value * 20, 0),
+    100,
+  );
+
+  return (
+    <div>
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-foreground">
+          {label}
+        </span>
+
+        <span className="font-mono text-sm text-muted-foreground">
+          {value.toFixed(3)}
+        </span>
+      </div>
+
+      <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-primary"
+          style={{
+            width: `${percentage}%`,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function SummaryRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center justify-between border-b border-border pb-3">
+      <span className="text-muted-foreground">
+        {label}
+      </span>
+
+      <span className="font-medium text-foreground">
+        {value}
+      </span>
+    </div>
+  );
+}
+
+
+============================================================
+
+FILE: .\src\routes\reports.tsx
+
+============================================================
+
+import { createFileRoute } from "@tanstack/react-router";
+import { AppLayout } from "@/components/AppLayout";
+import { FileText, Download } from "lucide-react";
+
+export const Route = createFileRoute("/reports")({
+  head: () => ({
+    meta: [
+      { title: "Reports â€” ImmunoXAI" },
+      {
+        name: "description",
+        content:
+          "Download PDF and CSV reports for your ImmunoXAI immune-phenotype analyses.",
+      },
+      { property: "og:title", content: "Reports â€” ImmunoXAI" },
+      { property: "og:description", content: "Download analysis reports." },
+    ],
+  }),
+  component: Reports,
+});
+
+const reports = [
+  {
+    name: "TCGA-BRCA Cohort A",
+    type: "BRCA",
+    phenotype: "Inflamed",
+    date: "Jul 22, 2026",
+  },
+  {
+    name: "TCGA-LUAD Cohort B",
+    type: "LUAD",
+    phenotype: "Immune-Excluded",
+    date: "Jul 21, 2026",
+  },
+  {
+    name: "TCGA-COAD Cohort C",
+    type: "COAD",
+    phenotype: "Immune-Desert",
+    date: "Jul 20, 2026",
+  },
+  {
+    name: "TCGA-SKCM Cohort D",
+    type: "SKCM",
+    phenotype: "Inflamed",
+    date: "Jul 19, 2026",
+  },
+];
+
+function phenoStyle(p: string) {
+  if (p === "Inflamed") return "bg-[oklch(0.95_0.06_155)] text-[oklch(0.4_0.14_155)]";
+  if (p === "Immune-Excluded") return "bg-[oklch(0.96_0.07_75)] text-[oklch(0.45_0.14_65)]";
+  return "bg-muted text-muted-foreground";
+}
+
+function Reports() {
+  return (
+    <AppLayout title="Reports" subtitle="Generated analysis exports and shareable documents">
+      <div className="rounded-xl border border-border bg-card shadow-sm">
+        <div className="flex items-center justify-between border-b border-border px-6 py-4">
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">Generated Reports</h3>
+            <p className="text-xs text-muted-foreground">
+              {reports.length} reports available for download
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <select className="h-9 rounded-lg border border-input bg-background px-3 text-xs outline-none focus:border-ring">
+              <option>All cancer types</option>
+              <option>BRCA</option>
+              <option>LUAD</option>
+              <option>COAD</option>
+              <option>SKCM</option>
+              <option>GBM</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
+                <th className="px-6 py-3 font-medium">Dataset Name</th>
+                <th className="px-6 py-3 font-medium">Predicted Immune Phenotype</th>
+                <th className="px-6 py-3 font-medium">Generation Date</th>
+                <th className="px-6 py-3 text-right font-medium">Download</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reports.map((r) => (
+                <tr key={r.name} className="border-b border-border last:border-0">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                        <FileText className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-foreground">{r.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {r.type} Â· Random Forest
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${phenoStyle(
+                        r.phenotype,
+                      )}`}
+                    >
+                      {r.phenotype}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-muted-foreground">{r.date}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex justify-end gap-2">
+                      <button className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground hover:bg-muted">
+                        <Download className="h-3.5 w-3.5" /> PDF
+                      </button>
+                      <button className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground hover:bg-muted">
+                        <Download className="h-3.5 w-3.5" /> CSV
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </AppLayout>
+  );
+}

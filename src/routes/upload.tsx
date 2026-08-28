@@ -12,15 +12,25 @@ import {
   BrainCircuit,
   BarChart3,
   Dna,
+  Microscope,
+  Network,
+  Sparkles,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { AppLayout } from "@/components/AppLayout";
 
+
+// ============================================================
+// ROUTE
+// ============================================================
+
 export const Route = createFileRoute("/upload")({
   head: () => ({
     meta: [
-      { title: "Analyze Dataset — ImmunoXAI" },
+      {
+        title: "Analyze Dataset — ImmunoXAI",
+      },
       {
         name: "description",
         content:
@@ -33,7 +43,16 @@ export const Route = createFileRoute("/upload")({
 
 
 // ============================================================
-// ANALYSIS PIPELINE STEPS
+// BACKEND API
+// ============================================================
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "http://127.0.0.1:8000";
+
+
+// ============================================================
+// REAL BACKEND PIPELINE STEPS
 // ============================================================
 
 type AnalysisStep = {
@@ -45,95 +64,116 @@ type AnalysisStep = {
 
 const ANALYSIS_STEPS: AnalysisStep[] = [
   {
-    id: "validation",
-    label: "Dataset validation",
+    id: "dataset_inspection",
+    label: "Dataset inspection",
     description:
-      "Checking file format, dimensions, genes, and samples.",
+      "Inspecting the expression matrix structure, genes, and cells.",
     icon: Database,
   },
   {
-    id: "loading",
-    label: "Loading expression matrix",
+    id: "validation",
+    label: "Dataset validation",
     description:
-      "Reading the expression data into the analysis pipeline.",
-    icon: FileText,
+      "Validating the expression matrix and checking data integrity.",
+    icon: CheckCircle2,
   },
   {
-    id: "qc",
+    id: "quality_control",
     label: "Quality control",
     description:
-      "Evaluating sequencing quality and filtering low-quality cells.",
+      "Calculating QC metrics and filtering low-quality cells.",
     icon: FlaskConical,
   },
   {
     id: "normalization",
     label: "Normalization",
     description:
-      "Normalizing counts and applying log transformation.",
+      "Applying library-size normalization and log transformation.",
     icon: BarChart3,
   },
   {
-    id: "features",
+    id: "feature_selection",
     label: "Feature selection",
     description:
-      "Identifying informative genes for downstream analysis.",
+      "Selecting highly variable genes for downstream analysis.",
     icon: Dna,
   },
   {
-    id: "embedding",
-    label: "Dimensionality reduction",
+    id: "pca",
+    label: "PCA",
     description:
-      "Computing PCA and low-dimensional representations.",
+      "Computing principal components from the selected features.",
     icon: BarChart3,
+  },
+  {
+    id: "umap",
+    label: "UMAP",
+    description:
+      "Computing a low-dimensional representation of cellular profiles.",
+    icon: Network,
   },
   {
     id: "clustering",
-    label: "Cell-state analysis",
+    label: "Clustering",
     description:
       "Identifying transcriptionally distinct cellular populations.",
-    icon: Dna,
+    icon: Microscope,
   },
   {
-    id: "immune",
+    id: "immune_state_scoring",
     label: "Immune-state scoring",
     description:
-      "Calculating T-cell, PD-L1/myeloid, and immune-state scores.",
+      "Calculating immune-related gene-set activity scores.",
     icon: FlaskConical,
   },
   {
-    id: "de",
-    label: "Differential expression",
+    id: "immune_state_assignment",
+    label: "Immune-state assignment",
     description:
-      "Identifying genes associated with immune states.",
+      "Assigning evidence-aware immune states to cells and clusters.",
+    icon: Microscope,
+  },
+  {
+    id: "machine_learning",
+    label: "Machine learning",
+    description:
+      "Training the immune-state machine-learning classifier.",
+    icon: BrainCircuit,
+  },
+  {
+    id: "explainable_ai",
+    label: "Explainable AI",
+    description:
+      "Generating SHAP-based model explanations and feature importance.",
+    icon: BrainCircuit,
+  },
+  {
+    id: "pathway_scoring",
+    label: "Pathway scoring",
+    description:
+      "Calculating metabolic and inflammatory pathway activity.",
     icon: BarChart3,
   },
   {
-    id: "enrichment",
-    label: "Functional enrichment",
+    id: "pathway_immune_integration",
+    label: "Pathway / immune integration",
     description:
-      "Characterizing biological pathways and processes.",
-    icon: FlaskConical,
+      "Integrating pathway activity with immune-state information.",
+    icon: Network,
   },
   {
-    id: "ml",
-    label: "Machine learning",
+    id: "final_analysis",
+    label: "Final analysis",
     description:
-      "Training and evaluating the immune-state classifier.",
-    icon: BrainCircuit,
+      "Building the integrated computational analysis package.",
+    icon: Microscope,
   },
   {
-    id: "xai",
-    label: "Explainable AI",
+    id: "llm_reasoning",
+    label: "Biological interpretation",
     description:
-      "Generating model feature importance and explanations.",
-    icon: BrainCircuit,
-  },
-  {
-    id: "report",
-    label: "Report generation",
-    description:
-      "Assembling the complete analysis summary.",
-    icon: FileText,
+      "Generating the biological interpretation of the computational analysis.",
+    icon: Sparkles,
   },
 ];
 
@@ -145,15 +185,40 @@ const ANALYSIS_STEPS: AnalysisStep[] = [
 type AnalysisStatus =
   | "idle"
   | "ready"
+  | "uploading"
+  | "starting"
+  | "queued"
   | "running"
+  | "completed"
+  | "failed"
   | "error";
+
+type BackendStatusResponse = {
+  success?: boolean;
+  job_id: string;
+  status: string;
+  step?: string | null;
+  step_number?: number;
+  total_steps?: number;
+  progress?: number;
+  message?: string;
+  started_at?: string | null;
+  completed_at?: string | null;
+  error?: unknown;
+};
+
+type UploadResponse = {
+  success?: boolean;
+  job_id: string;
+  filename: string;
+  file_size: number;
+  status: string;
+  message: string;
+};
 
 
 // ============================================================
-// SHARED TIME FORMATTER
-// IMPORTANT:
-// This must be OUTSIDE UploadPage so AnalysisProgressCard
-// can also use it.
+// TIME FORMATTER
 // ============================================================
 
 function formatTime(seconds: number | null) {
@@ -198,8 +263,14 @@ function UploadPage() {
   const [error, setError] =
     useState("");
 
+  const [jobId, setJobId] =
+    useState<string | null>(null);
+
   const [currentStep, setCurrentStep] =
     useState(0);
+
+  const [backendStep, setBackendStep] =
+    useState<string | null>(null);
 
   const [progress, setProgress] =
     useState(0);
@@ -207,15 +278,18 @@ function UploadPage() {
   const [elapsedSeconds, setElapsedSeconds] =
     useState(0);
 
-  const [estimatedTotalSeconds, setEstimatedTotalSeconds] =
-    useState<number | null>(null);
+  const [startedAt, setStartedAt] =
+    useState<string | null>(null);
 
 
   // ==========================================================
-  // RUNNING STATE
+  // RUNNING
   // ==========================================================
 
   const isRunning =
+    status === "uploading" ||
+    status === "starting" ||
+    status === "queued" ||
     status === "running";
 
 
@@ -230,43 +304,67 @@ function UploadPage() {
 
     const interval =
       window.setInterval(() => {
-        setElapsedSeconds(
-          (seconds) => seconds + 1,
-        );
+        if (startedAt) {
+          const start =
+            new Date(startedAt).getTime();
+
+          const now =
+            Date.now();
+
+          setElapsedSeconds(
+            Math.max(
+              0,
+              Math.floor(
+                (now - start) / 1000,
+              ),
+            ),
+          );
+        } else {
+          setElapsedSeconds(
+            (seconds) => seconds + 1,
+          );
+        }
       }, 1000);
 
     return () =>
       window.clearInterval(interval);
-  }, [isRunning]);
+  }, [
+    isRunning,
+    startedAt,
+  ]);
 
 
   // ==========================================================
-  // REMAINING TIME ESTIMATE
+  // ESTIMATED REMAINING TIME
+  //
+  // This is only an estimate.
+  // The progress itself comes from the backend.
   // ==========================================================
 
   const remainingSeconds =
     useMemo(() => {
       if (
-        !estimatedTotalSeconds ||
-        progress <= 0
+        progress <= 0 ||
+        progress >= 100 ||
+        elapsedSeconds <= 0
       ) {
         return null;
       }
 
-      const estimatedElapsed =
-        estimatedTotalSeconds *
-        (progress / 100);
+      const totalEstimated =
+        elapsedSeconds *
+        (100 / progress);
 
       return Math.max(
         0,
         Math.round(
-          estimatedTotalSeconds -
-            estimatedElapsed,
+          totalEstimated -
+            elapsedSeconds,
         ),
       );
     }, [
-      estimatedTotalSeconds,
       progress,
+      elapsedSeconds,
     ]);
 
 
@@ -308,10 +406,12 @@ function UploadPage() {
 
     setFile(selectedFile);
     setStatus("ready");
+    setJobId(null);
+    setBackendStep(null);
     setCurrentStep(0);
     setProgress(0);
     setElapsedSeconds(0);
-    setEstimatedTotalSeconds(null);
+    setStartedAt(null);
   }
 
 
@@ -327,25 +427,221 @@ function UploadPage() {
     setFile(null);
     setStatus("idle");
     setError("");
+    setJobId(null);
+    setBackendStep(null);
     setCurrentStep(0);
     setProgress(0);
     setElapsedSeconds(0);
-    setEstimatedTotalSeconds(null);
+    setStartedAt(null);
   }
 
 
   // ==========================================================
-  // ANALYZE DATASET
+  // UPLOAD TO BACKEND
   // ==========================================================
-  //
-  // CURRENTLY THIS IS STILL THE FRONTEND SIMULATION.
-  //
-  // We will replace this with:
-  //
-  // POST /api/analysis/run
-  //
-  // followed by polling of the real analysis job.
-  //
+
+  async function uploadDataset(
+    selectedFile: File,
+  ): Promise<UploadResponse> {
+    const formData =
+      new FormData();
+
+    formData.append(
+      "file",
+      selectedFile,
+    );
+
+    const response =
+      await fetch(
+        `${API_BASE_URL}/api/upload`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+    const data =
+      await response.json()
+        .catch(() => null);
+
+    if (!response.ok) {
+      const message =
+        typeof data?.detail === "string"
+          ? data.detail
+          : "Dataset upload failed.";
+
+      throw new Error(message);
+    }
+
+    return data as UploadResponse;
+  }
+
+
+  // ==========================================================
+  // START BACKEND ANALYSIS
+  // ==========================================================
+
+  async function startAnalysis(
+    uploadedJobId: string,
+  ) {
+    const response =
+      await fetch(
+        `${API_BASE_URL}/api/analysis/run`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            job_id: uploadedJobId,
+          }),
+        },
+      );
+
+    const data =
+      await response.json()
+        .catch(() => null);
+
+    if (!response.ok) {
+      const message =
+        typeof data?.detail === "string"
+          ? data.detail
+          : "Failed to start analysis.";
+
+      throw new Error(message);
+    }
+
+    return data;
+  }
+
+
+  // ==========================================================
+  // POLL BACKEND STATUS
+  // ==========================================================
+
+  async function pollAnalysisStatus(
+    uploadedJobId: string,
+  ) {
+    const response =
+      await fetch(
+        `${API_BASE_URL}/api/analysis/${encodeURIComponent(
+          uploadedJobId,
+        )}/status`,
+        {
+          method: "GET",
+          headers: {
+            Accept:
+              "application/json",
+          },
+        },
+      );
+
+    const data =
+      await response.json()
+        .catch(() => null);
+
+    if (!response.ok) {
+      const message =
+        typeof data?.detail === "string"
+          ? data.detail
+          : "Unable to retrieve analysis status.";
+
+      throw new Error(message);
+    }
+
+    return data as BackendStatusResponse;
+  }
+
+
+  // ==========================================================
+  // GET FINAL RESULT
+  // ==========================================================
+
+  async function getAnalysisResult(
+    uploadedJobId: string,
+  ) {
+    const response =
+      await fetch(
+        `${API_BASE_URL}/api/analysis/${encodeURIComponent(
+          uploadedJobId,
+        )}/result`,
+        {
+          method: "GET",
+          headers: {
+            Accept:
+              "application/json",
+          },
+        },
+      );
+
+    const data =
+      await response.json()
+        .catch(() => null);
+
+    if (!response.ok) {
+      const detail =
+        data?.detail;
+
+      if (
+        typeof detail === "string"
+      ) {
+        throw new Error(detail);
+      }
+
+      if (
+        detail?.message
+      ) {
+        throw new Error(
+          detail.message,
+        );
+      }
+
+      throw new Error(
+        "Unable to retrieve final analysis result.",
+      );
+    }
+
+    return data;
+  }
+
+
+  // ==========================================================
+  // CONVERT BACKEND STEP TO UI INDEX
+  // ==========================================================
+
+  function getStepIndex(
+    step: string | null | undefined,
+    stepNumber?: number,
+  ) {
+    if (step) {
+      const index =
+        ANALYSIS_STEPS.findIndex(
+          (item) =>
+            item.id === step,
+        );
+
+      if (index >= 0) {
+        return index;
+      }
+    }
+
+    if (
+      typeof stepNumber === "number" &&
+      stepNumber > 0
+    ) {
+      return Math.min(
+        stepNumber - 1,
+        ANALYSIS_STEPS.length - 1,
+      );
+    }
+
+    return 0;
+  }
+
+
+  // ==========================================================
+  // RUN COMPLETE ANALYSIS
   // ==========================================================
 
   async function handleAnalyze() {
@@ -358,77 +654,218 @@ function UploadPage() {
     }
 
     setError("");
-    setStatus("running");
+    setStatus("uploading");
+    setProgress(0);
     setCurrentStep(0);
-    setProgress(2);
+    setBackendStep(null);
     setElapsedSeconds(0);
+    setStartedAt(null);
 
 
-    // ----------------------------------------------------------
-    // Temporary estimate
-    // ----------------------------------------------------------
+    try {
+      // --------------------------------------------------------
+      // STEP A — UPLOAD DATASET
+      // --------------------------------------------------------
 
-    const estimatedSeconds =
-      estimateAnalysisTime(file);
+      const upload =
+        await uploadDataset(file);
 
-    setEstimatedTotalSeconds(
-      estimatedSeconds,
-    );
+      const uploadedJobId =
+        upload.job_id;
+
+      setJobId(
+        uploadedJobId,
+      );
 
 
-    // ----------------------------------------------------------
-    // Temporary frontend pipeline
-    // ----------------------------------------------------------
+      // --------------------------------------------------------
+      // STEP B — START ANALYSIS
+      // --------------------------------------------------------
 
-    for (
-      let i = 0;
-      i < ANALYSIS_STEPS.length;
-      i++
-    ) {
-      setCurrentStep(i);
+      setStatus("starting");
 
-      const stepProgress =
-        Math.round(
-          (i /
-            ANALYSIS_STEPS.length) *
-            92,
-        ) + 4;
+      await startAnalysis(
+        uploadedJobId,
+      );
 
-      setProgress(
-        Math.min(
-          stepProgress,
-          96,
+
+      // --------------------------------------------------------
+      // STEP C — INITIAL STATUS
+      // --------------------------------------------------------
+
+      setStatus("queued");
+
+      let finished = false;
+
+      while (!finished) {
+        const statusData =
+          await pollAnalysisStatus(
+            uploadedJobId,
+          );
+
+        const backendStatus =
+          statusData.status;
+
+        const backendProgress =
+          Number(
+            statusData.progress ?? 0,
+          );
+
+        const stepIndex =
+          getStepIndex(
+            statusData.step,
+            statusData.step_number,
+          );
+
+        setBackendStep(
+          statusData.step ??
+            null,
+        );
+
+        setCurrentStep(
+          stepIndex,
+        );
+
+        setProgress(
+          Math.min(
+            100,
+            Math.max(
+              0,
+              Math.round(
+                backendProgress,
+              ),
+            ),
+          ),
+        );
+
+        if (
+          statusData.started_at
+        ) {
+          setStartedAt(
+            statusData.started_at,
+          );
+        }
+
+        if (
+          backendStatus ===
+            "running" ||
+          backendStatus ===
+            "queued"
+        ) {
+          setStatus(
+            backendStatus ===
+              "running"
+              ? "running"
+              : "queued",
+          );
+        }
+
+
+        // ------------------------------------------------------
+        // COMPLETED
+        // ------------------------------------------------------
+
+        if (
+          backendStatus ===
+          "completed"
+        ) {
+          setProgress(100);
+          setCurrentStep(
+            ANALYSIS_STEPS.length - 1,
+          );
+          setBackendStep(
+            "completed",
+          );
+
+          setStatus(
+            "completed",
+          );
+
+          finished = true;
+
+          break;
+        }
+
+
+        // ------------------------------------------------------
+        // FAILED
+        // ------------------------------------------------------
+
+        if (
+          backendStatus ===
+          "failed"
+        ) {
+          const errorMessage =
+            extractBackendError(
+              statusData.error,
+            );
+
+          throw new Error(
+            errorMessage ||
+              statusData.message ||
+              "The analysis pipeline failed.",
+          );
+        }
+
+
+        // ------------------------------------------------------
+        // WAIT BEFORE NEXT POLL
+        // ------------------------------------------------------
+
+        await wait(1500);
+      }
+
+
+      // --------------------------------------------------------
+      // STEP D — GET FINAL RESULT
+      // --------------------------------------------------------
+
+      const finalResult =
+        await getAnalysisResult(
+          uploadedJobId,
+        );
+
+
+      // --------------------------------------------------------
+      // SAVE REAL BACKEND RESULT
+      // --------------------------------------------------------
+
+      sessionStorage.setItem(
+        "immunoxai-analysis",
+        JSON.stringify(
+          finalResult,
         ),
       );
 
-      await wait(
-        getStepDelay(i),
+      sessionStorage.setItem(
+        "immunoxai-job-id",
+        uploadedJobId,
       );
+
+
+      // --------------------------------------------------------
+      // GO TO RESULTS
+      // --------------------------------------------------------
+
+      await wait(500);
+
+      navigate({
+        to: "/results",
+      });
+    } catch (err) {
+      console.error(
+        "IMMUNO-XAI analysis error:",
+        err,
+      );
+
+      const message =
+        err instanceof Error
+          ? err.message
+          : "An unexpected analysis error occurred.";
+
+      setStatus("failed");
+      setError(message);
     }
-
-
-    // ----------------------------------------------------------
-    // Complete
-    // ----------------------------------------------------------
-
-    setProgress(100);
-
-    setCurrentStep(
-      ANALYSIS_STEPS.length - 1,
-    );
-
-    await wait(700);
-
-
-    // ----------------------------------------------------------
-    // TEMPORARY
-    // ----------------------------------------------------------
-
-    setStatus("ready");
-
-    setError(
-      "Analysis interface is ready. The next step is connecting this progress screen to the Python/FastAPI analysis pipeline.",
-    );
   }
 
 
@@ -442,11 +879,13 @@ function UploadPage() {
       subtitle="Run the complete ImmunoXAI single-cell analysis pipeline"
     >
       <div className="mx-auto max-w-5xl">
+
         {!isRunning ? (
           <UploadCard
             file={file}
             status={status}
             error={error}
+            jobId={jobId}
             onFileChange={
               handleFileChange
             }
@@ -458,8 +897,12 @@ function UploadPage() {
         ) : (
           <AnalysisProgressCard
             file={file}
+            jobId={jobId}
             currentStep={
               currentStep
+            }
+            backendStep={
+              backendStep
             }
             progress={progress}
             elapsedSeconds={
@@ -470,6 +913,7 @@ function UploadPage() {
             }
           />
         )}
+
       </div>
     </AppLayout>
   );
@@ -484,6 +928,7 @@ function UploadCard({
   file,
   status,
   error,
+  jobId,
   onFileChange,
   onClear,
   onAnalyze,
@@ -491,18 +936,21 @@ function UploadCard({
   file: File | null;
   status: AnalysisStatus;
   error: string;
+  jobId: string | null;
 
   onFileChange: (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => void;
 
   onClear: () => void;
+
   onAnalyze: () => void;
 }) {
   return (
     <div className="rounded-2xl border border-border bg-card shadow-sm">
 
       <div className="border-b border-border p-8">
+
         <div className="flex items-start gap-4">
 
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
@@ -510,18 +958,22 @@ function UploadCard({
           </div>
 
           <div>
+
             <h2 className="text-xl font-semibold text-foreground">
               Upload your dataset
             </h2>
 
             <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Upload a single-cell gene expression matrix.
-              ImmunoXAI will automatically validate the
-              dataset and run the appropriate analysis workflow.
+              Upload a single-cell gene expression
+              matrix. ImmunoXAI will validate the
+              dataset and run the complete computational
+              analysis pipeline.
             </p>
+
           </div>
 
         </div>
+
       </div>
 
 
@@ -551,7 +1003,9 @@ function UploadCard({
               type="file"
               accept=".csv,.tsv,.txt,.gz,text/csv,text/tab-separated-values,text/plain,application/gzip"
               className="hidden"
-              onChange={onFileChange}
+              onChange={
+                onFileChange
+              }
             />
 
           </label>
@@ -580,12 +1034,24 @@ function UploadCard({
 
               </div>
 
-              {status === "ready" && (
+
+              {status ===
+                "ready" && (
                 <div className="flex items-center gap-1.5 text-xs font-medium text-[oklch(0.5_0.14_155)]">
                   <CheckCircle2 className="h-4 w-4" />
                   Ready
                 </div>
               )}
+
+
+              {status ===
+                "failed" && (
+                <div className="flex items-center gap-1.5 text-xs font-medium text-destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  Failed
+                </div>
+              )}
+
 
               <button
                 type="button"
@@ -608,15 +1074,30 @@ function UploadCard({
 
               <InfoItem
                 label="Processing"
-                value="Automatic"
+                value="Python backend"
               />
 
               <InfoItem
                 label="Analysis"
-                value="Full pipeline"
+                value="16-step pipeline"
               />
 
             </div>
+
+
+            {jobId && (
+              <div className="mt-3 rounded-lg border border-border bg-muted/30 px-3 py-2">
+
+                <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  Job ID
+                </div>
+
+                <div className="mt-1 break-all font-mono text-xs text-foreground">
+                  {jobId}
+                </div>
+
+              </div>
+            )}
 
           </div>
 
@@ -624,6 +1105,7 @@ function UploadCard({
 
 
         {error && (
+
           <div className="mt-5 flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
 
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -633,6 +1115,7 @@ function UploadCard({
             </span>
 
           </div>
+
         )}
 
 
@@ -648,19 +1131,48 @@ function UploadCard({
             </button>
           )}
 
+
           <button
             type="button"
-            disabled={!file}
-            onClick={onAnalyze}
+            disabled={
+              !file ||
+              status ===
+                "uploading" ||
+              status ===
+                "starting"
+            }
+            onClick={
+              onAnalyze
+            }
             className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <FlaskConical className="h-4 w-4" />
-            Analyze Dataset
+
+            {status ===
+              "uploading" ||
+            status ===
+              "starting" ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <FlaskConical className="h-4 w-4" />
+            )}
+
+            {status ===
+              "uploading"
+              ? "Uploading..."
+              : status ===
+                  "starting"
+                ? "Starting..."
+                : status ===
+                    "failed"
+                  ? "Retry Analysis"
+                  : "Analyze Dataset"}
+
           </button>
 
         </div>
 
       </div>
+
     </div>
   );
 }
@@ -672,23 +1184,33 @@ function UploadCard({
 
 function AnalysisProgressCard({
   file,
+  jobId,
   currentStep,
+  backendStep,
   progress,
   elapsedSeconds,
   remainingSeconds,
 }: {
   file: File | null;
+  jobId: string | null;
   currentStep: number;
+  backendStep: string | null;
   progress: number;
   elapsedSeconds: number;
   remainingSeconds: number | null;
 }) {
+  const safeStepIndex =
+    Math.min(
+      Math.max(
+        currentStep,
+        0,
+      ),
+      ANALYSIS_STEPS.length - 1,
+    );
+
   const activeStep =
     ANALYSIS_STEPS[
-      Math.min(
-        currentStep,
-        ANALYSIS_STEPS.length - 1,
-      )
+      safeStepIndex
     ];
 
   const ActiveIcon =
@@ -717,6 +1239,12 @@ function AnalysisProgressCard({
                 {file?.name}
               </p>
 
+              {jobId && (
+                <p className="mt-1 truncate font-mono text-[10px] text-muted-foreground">
+                  Job: {jobId}
+                </p>
+              )}
+
             </div>
 
           </div>
@@ -727,7 +1255,8 @@ function AnalysisProgressCard({
             <Clock3 className="h-4 w-4" />
 
             <span>
-              {remainingSeconds === null
+              {remainingSeconds ===
+              null
                 ? "Estimating..."
                 : `~${formatTime(
                     remainingSeconds,
@@ -757,7 +1286,7 @@ function AnalysisProgressCard({
           <div className="h-2 overflow-hidden rounded-full bg-muted">
 
             <div
-              className="h-full rounded-full bg-primary transition-all duration-700"
+              className="h-full rounded-full bg-primary transition-all duration-500"
               style={{
                 width: `${progress}%`,
               }}
@@ -779,12 +1308,12 @@ function AnalysisProgressCard({
 
           <StatBox
             label="Current stage"
-            value={`${currentStep + 1}/${ANALYSIS_STEPS.length}`}
+            value={`${safeStepIndex + 1}/${ANALYSIS_STEPS.length}`}
           />
 
           <StatBox
             label="Pipeline"
-            value="Automated"
+            value="Python backend"
           />
 
         </div>
@@ -816,6 +1345,12 @@ function AnalysisProgressCard({
                 {activeStep.description}
               </p>
 
+              {backendStep && (
+                <p className="mt-2 font-mono text-[10px] text-muted-foreground">
+                  Backend: {backendStep}
+                </p>
+              )}
+
             </div>
 
           </div>
@@ -833,27 +1368,35 @@ function AnalysisProgressCard({
           <div className="space-y-1">
 
             {ANALYSIS_STEPS.map(
-              (step, index) => {
+              (
+                step,
+                index,
+              ) => {
+
                 const Icon =
                   step.icon;
 
                 const completed =
                   index <
-                  currentStep;
+                  safeStepIndex;
 
                 const active =
                   index ===
-                  currentStep;
+                  safeStepIndex;
 
                 return (
                   <div
-                    key={step.id}
+                    key={
+                      step.id
+                    }
                     className={[
                       "flex items-center gap-3 rounded-lg px-3 py-3 transition",
                       active
                         ? "bg-primary-soft"
                         : "bg-transparent",
-                    ].join(" ")}
+                    ].join(
+                      " ",
+                    )}
                   >
 
                     <div
@@ -864,7 +1407,9 @@ function AnalysisProgressCard({
                           : active
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted text-muted-foreground",
-                      ].join(" ")}
+                      ].join(
+                        " ",
+                      )}
                     >
 
                       {completed ? (
@@ -887,7 +1432,9 @@ function AnalysisProgressCard({
                           active
                             ? "text-foreground"
                             : "text-muted-foreground",
-                        ].join(" ")}
+                        ].join(
+                          " ",
+                        )}
                       >
                         {step.label}
                       </div>
@@ -895,7 +1442,9 @@ function AnalysisProgressCard({
 
                       {active && (
                         <div className="mt-0.5 text-xs text-muted-foreground">
-                          {step.description}
+                          {
+                            step.description
+                          }
                         </div>
                       )}
 
@@ -931,14 +1480,14 @@ function AnalysisProgressCard({
             <div>
 
               <div className="text-xs font-medium text-foreground">
-                Analysis time
+                Live backend analysis
               </div>
 
               <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                The remaining-time estimate will become
-                dynamic once the Python analysis service
-                is connected. It will use actual processing
-                progress rather than a fixed countdown.
+                Progress is being reported by the
+                Python/FastAPI analysis pipeline.
+                The interface is not simulating the
+                analysis stages.
               </p>
 
             </div>
@@ -948,6 +1497,7 @@ function AnalysisProgressCard({
         </div>
 
       </div>
+
     </div>
   );
 }
@@ -1029,7 +1579,9 @@ function formatFileSize(
 
   if (
     bytes <
-    1024 * 1024 * 1024
+    1024 *
+      1024 *
+      1024
   ) {
     return `${(
       bytes /
@@ -1039,68 +1591,58 @@ function formatFileSize(
 
   return `${(
     bytes /
-    (1024 * 1024 * 1024)
+    (1024 *
+      1024 *
+      1024)
   ).toFixed(2)} GB`;
 }
 
 
 // ============================================================
-// TEMPORARY ANALYSIS TIME ESTIMATE
+// BACKEND ERROR EXTRACTION
 // ============================================================
 
-function estimateAnalysisTime(
-  file: File,
-) {
-  const sizeMB =
-    file.size /
-    (1024 * 1024);
-
-  if (sizeMB < 20) {
-    return 90;
+function extractBackendError(
+  error: unknown,
+): string | null {
+  if (!error) {
+    return null;
   }
 
-  if (sizeMB < 100) {
-    return 150;
+  if (
+    typeof error ===
+    "string"
+  ) {
+    return error;
   }
 
-  if (sizeMB < 500) {
-    return 300;
+  if (
+    typeof error ===
+      "object" &&
+    error !== null
+  ) {
+    const record =
+      error as Record<
+        string,
+        unknown
+      >;
+
+    if (
+      typeof record.message ===
+      "string"
+    ) {
+      return record.message;
+    }
+
+    if (
+      typeof record.detail ===
+      "string"
+    ) {
+      return record.detail;
+    }
   }
 
-  if (sizeMB < 1000) {
-    return 480;
-  }
-
-  return 720;
-}
-
-
-// ============================================================
-// TEMPORARY STEP DELAYS
-// ============================================================
-
-function getStepDelay(
-  index: number,
-) {
-  const delays = [
-    700,
-    900,
-    1300,
-    1100,
-    1000,
-    1000,
-    1200,
-    1400,
-    1100,
-    1100,
-    1300,
-    1000,
-    900,
-  ];
-
-  return (
-    delays[index] ?? 1000
-  );
+  return null;
 }
 
 

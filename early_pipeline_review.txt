@@ -1,0 +1,1471 @@
+﻿
+
+============================================================
+
+FILE: .\backend\app\pipeline\qc.py
+
+============================================================
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import gzip
+import math
+
+import numpy as np
+
+
+# ============================================================
+# QC CONFIGURATION
+# ============================================================
+
+@dataclass
+class QCConfig:
+    """
+    Quality-control thresholds for single-cell RNA-seq data.
+    """
+
+    min_umis: int = 1_000
+    min_genes: int = 200
+    max_mito_fraction: float = 0.20
+
+
+# ============================================================
+# FILE HANDLING
+# ============================================================
+
+def _open_text(path: Path):
+    """
+    Open a plain-text or gzip-compressed expression matrix.
+    """
+
+    path = Path(path)
+
+    if path.suffix.lower() == ".gz":
+        return gzip.open(
+            path,
+            "rt",
+            encoding="utf-8",
+        )
+
+    return open(
+        path,
+        "r",
+        encoding="utf-8",
+    )
+
+
+# ============================================================
+# DELIMITER DETECTION
+# ============================================================
+
+def _detect_delimiter(header: str) -> str:
+    """
+    Detect the delimiter used by the expression matrix.
+    """
+
+    if "\t" in header:
+        return "\t"
+
+    if "," in header:
+        return ","
+
+    return "\t"
+
+
+# ============================================================
+# STREAMING QC
+# ============================================================
+
+def calculate_streaming_qc(
+    matrix_path: Path,
+    config: QCConfig | None = None,
+) -> dict[str, Any]:
+    """
+    Calculate single-cell QC statistics without loading
+    the complete expression matrix into RAM.
+
+    Expected matrix orientation:
+
+        genes Ã— cells
+
+    with genes in rows and cells in columns.
+
+    Returns both QC statistics and the actual cells that
+    pass QC so downstream filtering can use exactly the
+    same QC decisions.
+    """
+
+    matrix_path = Path(matrix_path)
+
+    if not matrix_path.exists():
+        raise FileNotFoundError(
+            f"Dataset not found: {matrix_path}"
+        )
+
+    if config is None:
+        config = QCConfig()
+
+    # --------------------------------------------------------
+    # Read matrix header
+    # --------------------------------------------------------
+
+    with _open_text(matrix_path) as handle:
+
+        header = handle.readline().rstrip("\r\n")
+
+        if not header:
+            raise ValueError(
+                "Expression matrix is empty."
+            )
+
+        delimiter = _detect_delimiter(header)
+
+        columns = header.split(delimiter)
+
+        if len(columns) < 2:
+            raise ValueError(
+                "Expression matrix must contain "
+                "a gene column and at least one cell."
+            )
+
+        gene_column = columns[0]
+        cells = columns[1:]
+
+    n_cells = len(cells)
+
+    # --------------------------------------------------------
+    # Per-cell statistics
+    # --------------------------------------------------------
+
+    umi_per_cell = np.zeros(
+        n_cells,
+        dtype=np.int64,
+    )
+
+    genes_per_cell = np.zeros(
+        n_cells,
+        dtype=np.int32,
+    )
+
+    mito_umi_per_cell = np.zeros(
+        n_cells,
+        dtype=np.int64,
+    )
+
+    n_genes = 0
+
+    # --------------------------------------------------------
+    # Stream genes row-by-row
+    # --------------------------------------------------------
+
+    with _open_text(matrix_path) as handle:
+
+        handle.readline()
+
+        for line in handle:
+
+            line = line.rstrip("\r\n")
+
+            if not line:
+                continue
+
+            parts = line.split(delimiter)
+
+            if len(parts) < 2:
+                continue
+
+            gene = parts[0]
+
+            is_mito = gene.upper().startswith("MT-")
+
+            values = parts[1:]
+
+            n_genes += 1
+
+            limit = min(
+                len(values),
+                n_cells,
+            )
+
+            for cell_index in range(limit):
+
+                raw_value = values[cell_index]
+
+                if not raw_value:
+                    continue
+
+                try:
+                    value = float(raw_value)
+
+                except ValueError:
+                    continue
+
+                if not math.isfinite(value):
+                    continue
+
+                if value <= 0:
+                    continue
+
+                # UMI counts are normally integers.
+                count = int(round(value))
+
+                if count <= 0:
+                    continue
+
+                umi_per_cell[cell_index] += count
+
+                genes_per_cell[cell_index] += 1
+
+                if is_mito:
+                    mito_umi_per_cell[cell_index] += count
+
+    # ========================================================
+    # DERIVED QC METRICS
+    # ========================================================
+
+    total_umis = int(
+        umi_per_cell.sum()
+    )
+
+    mito_total = int(
+        mito_umi_per_cell.sum()
+    )
+
+    if total_umis > 0:
+
+        global_mito_fraction = (
+            mito_total / total_umis
+        )
+
+    else:
+
+        global_mito_fraction = 0.0
+
+    # --------------------------------------------------------
+    # Per-cell mitochondrial fraction
+    # --------------------------------------------------------
+
+    mito_fraction_per_cell = np.divide(
+        mito_umi_per_cell.astype(np.float64),
+        umi_per_cell.astype(np.float64),
+        out=np.zeros(
+            n_cells,
+            dtype=np.float64,
+        ),
+        where=umi_per_cell > 0,
+    )
+
+    # ========================================================
+    # QC PASS / FAIL
+    # ========================================================
+
+    below_min_umis = (
+        umi_per_cell < config.min_umis
+    )
+
+    below_min_genes = (
+        genes_per_cell < config.min_genes
+    )
+
+    above_max_mito = (
+        mito_fraction_per_cell
+        > config.max_mito_fraction
+    )
+
+    # True = retain
+    # False = remove
+    keep_cells = ~(
+        below_min_umis
+        | below_min_genes
+        | above_max_mito
+    )
+
+    # --------------------------------------------------------
+    # IMPORTANT:
+    # Convert the boolean mask into actual original
+    # column indices.
+    #
+    # Example:
+    #
+    # original cells:
+    # 0 1 2 3 4
+    #
+    # keep:
+    # T T F T F
+    #
+    # retained indices:
+    # [0, 1, 3]
+    # --------------------------------------------------------
+
+    keep_cell_indices = np.flatnonzero(
+        keep_cells
+    ).astype(np.int32)
+
+    keep_cell_names = [
+        cells[index]
+        for index in keep_cell_indices
+    ]
+
+    cells_before = n_cells
+
+    cells_after = int(
+        keep_cells.sum()
+    )
+
+    cells_removed = (
+        cells_before - cells_after
+    )
+
+    # ========================================================
+    # QUANTILES
+    # ========================================================
+
+    def quantiles(
+        values: np.ndarray,
+    ) -> dict[str, float]:
+
+        if values.size == 0:
+
+            return {
+                "q01": 0.0,
+                "q05": 0.0,
+                "q25": 0.0,
+                "q50": 0.0,
+                "q75": 0.0,
+                "q95": 0.0,
+                "q99": 0.0,
+            }
+
+        q = np.percentile(
+            values,
+            [
+                1,
+                5,
+                25,
+                50,
+                75,
+                95,
+                99,
+            ],
+        )
+
+        return {
+            "q01": float(q[0]),
+            "q05": float(q[1]),
+            "q25": float(q[2]),
+            "q50": float(q[3]),
+            "q75": float(q[4]),
+            "q95": float(q[5]),
+            "q99": float(q[6]),
+        }
+
+    umi_quantiles = quantiles(
+        umi_per_cell
+    )
+
+    gene_quantiles = quantiles(
+        genes_per_cell
+    )
+
+    mito_quantiles = quantiles(
+        mito_fraction_per_cell
+    )
+
+    # ========================================================
+    # RESULT
+    # ========================================================
+
+    return {
+
+        "dataset": {
+            "filename": matrix_path.name,
+            "format": (
+                "tab-delimited"
+                if delimiter == "\t"
+                else "comma-delimited"
+            ),
+            "compression": (
+                "gzip"
+                if matrix_path.suffix.lower() == ".gz"
+                else "none"
+            ),
+            "gene_column": gene_column,
+        },
+
+        "cells": {
+            "before": cells_before,
+            "after": cells_after,
+            "removed": cells_removed,
+            "retained_fraction": (
+                cells_after / cells_before
+                if cells_before
+                else 0.0
+            ),
+        },
+
+        "expression": {
+            "genes": n_genes,
+            "total_umis": total_umis,
+
+            "median_umis_per_cell": float(
+                np.median(umi_per_cell)
+            ),
+
+            "mean_umis_per_cell": float(
+                np.mean(umi_per_cell)
+            ),
+
+            "min_umis_per_cell": int(
+                np.min(umi_per_cell)
+            )
+            if n_cells
+            else 0,
+
+            "max_umis_per_cell": int(
+                np.max(umi_per_cell)
+            )
+            if n_cells
+            else 0,
+
+            "median_genes_per_cell": float(
+                np.median(genes_per_cell)
+            ),
+
+            "mean_genes_per_cell": float(
+                np.mean(genes_per_cell)
+            ),
+
+            "min_genes_per_cell": int(
+                np.min(genes_per_cell)
+            )
+            if n_cells
+            else 0,
+
+            "max_genes_per_cell": int(
+                np.max(genes_per_cell)
+            )
+            if n_cells
+            else 0,
+        },
+
+        "distributions": {
+            "umis_per_cell": umi_quantiles,
+            "genes_per_cell": gene_quantiles,
+            "mitochondrial_fraction": mito_quantiles,
+        },
+
+        "threshold_diagnostics": {
+            "below_min_umis": int(
+                below_min_umis.sum()
+            ),
+
+            "below_min_genes": int(
+                below_min_genes.sum()
+            ),
+
+            "above_max_mito": int(
+                above_max_mito.sum()
+            ),
+        },
+
+        "mitochondrial": {
+            "umis": mito_total,
+            "fraction": global_mito_fraction,
+        },
+
+        "filtering": {
+            "min_umis": config.min_umis,
+            "min_genes": config.min_genes,
+            "max_mito_fraction": (
+                config.max_mito_fraction
+            ),
+        },
+
+        # Internal boolean mask.
+        "keep_cells": keep_cells,
+
+        # Actual retained column indices.
+        "keep_cell_indices": keep_cell_indices,
+
+        # Names of retained cells.
+        "keep_cell_names": keep_cell_names,
+
+        # Original cell names.
+        "cell_names": cells,
+    }
+
+
+# ============================================================
+# REPORT
+# ============================================================
+
+def print_qc_report(
+    result: dict[str, Any],
+) -> None:
+
+    dataset = result["dataset"]
+    cells = result["cells"]
+    expression = result["expression"]
+    distributions = result["distributions"]
+    diagnostics = result["threshold_diagnostics"]
+    mitochondrial = result["mitochondrial"]
+    filtering = result["filtering"]
+
+    print()
+    print("=" * 70)
+    print("IMMUNO-XAI QUALITY CONTROL REPORT")
+    print("=" * 70)
+
+    print(
+        f"Dataset:                "
+        f"{dataset['filename']}"
+    )
+
+    print()
+    print("CELL SUMMARY")
+    print("-" * 70)
+
+    print(
+        f"Cells before QC:        "
+        f"{cells['before']:,}"
+    )
+
+    print(
+        f"Cells after QC:         "
+        f"{cells['after']:,}"
+    )
+
+    print(
+        f"Cells removed:          "
+        f"{cells['removed']:,}"
+    )
+
+    print(
+        f"Cells retained:         "
+        f"{cells['retained_fraction']:.2%}"
+    )
+
+    print()
+    print("EXPRESSION SUMMARY")
+    print("-" * 70)
+
+    print(
+        f"Genes:                  "
+        f"{expression['genes']:,}"
+    )
+
+    print(
+        f"Total UMIs:             "
+        f"{expression['total_umis']:,}"
+    )
+
+    print(
+        f"Median UMIs/cell:       "
+        f"{expression['median_umis_per_cell']:,.2f}"
+    )
+
+    print(
+        f"Mean UMIs/cell:         "
+        f"{expression['mean_umis_per_cell']:,.2f}"
+    )
+
+    print(
+        f"Median genes/cell:      "
+        f"{expression['median_genes_per_cell']:,.2f}"
+    )
+
+    print(
+        f"Mean genes/cell:        "
+        f"{expression['mean_genes_per_cell']:,.2f}"
+    )
+
+    print()
+    print("QC DISTRIBUTIONS")
+    print("-" * 70)
+
+    print("UMIs/cell:")
+
+    for key, value in distributions[
+        "umis_per_cell"
+    ].items():
+
+        print(
+            f"  {key.upper():>3}: "
+            f"{value:,.2f}"
+        )
+
+    print()
+    print("Detected genes/cell:")
+
+    for key, value in distributions[
+        "genes_per_cell"
+    ].items():
+
+        print(
+            f"  {key.upper():>3}: "
+            f"{value:,.2f}"
+        )
+
+    print()
+    print("Mitochondrial fraction/cell:")
+
+    for key, value in distributions[
+        "mitochondrial_fraction"
+    ].items():
+
+        print(
+            f"  {key.upper():>3}: "
+            f"{value:.4%}"
+        )
+
+    print()
+    print("THRESHOLD DIAGNOSTICS")
+    print("-" * 70)
+
+    print(
+        f"Below minimum UMIs:    "
+        f"{diagnostics['below_min_umis']:,}"
+    )
+
+    print(
+        f"Below minimum genes:   "
+        f"{diagnostics['below_min_genes']:,}"
+    )
+
+    print(
+        f"Above maximum mito:    "
+        f"{diagnostics['above_max_mito']:,}"
+    )
+
+    print()
+    print("MITOCHONDRIAL QC")
+    print("-" * 70)
+
+    print(
+        f"Mitochondrial UMIs:     "
+        f"{mitochondrial['umis']:,}"
+    )
+
+    print(
+        f"Global mitochondrial:   "
+        f"{mitochondrial['fraction']:.4%}"
+    )
+
+    print()
+    print("CURRENT FILTERING CRITERIA")
+    print("-" * 70)
+
+    print(
+        f"Minimum UMIs/cell:     "
+        f"{filtering['min_umis']:,}"
+    )
+
+    print(
+        f"Minimum genes/cell:    "
+        f"{filtering['min_genes']:,}"
+    )
+
+    print(
+        f"Maximum mitochondrial: "
+        f"{filtering['max_mito_fraction']:.1%}"
+    )
+
+    print()
+    print(
+        f"Retained cell indices:  "
+        f"{len(result['keep_cell_indices']):,}"
+    )
+
+    print()
+    print("=" * 70)
+    print("QC COMPLETE")
+    print("=" * 70)
+
+
+============================================================
+
+FILE: .\backend\app\pipeline\feature_selection.py
+
+============================================================
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import scipy.sparse as sp
+
+
+# ============================================================
+# CONFIGURATION
+# ============================================================
+
+@dataclass
+class FeatureSelectionConfig:
+    n_top_genes: int = 2000
+    min_cells: int = 3
+
+
+# ============================================================
+# FEATURE SELECTION
+# ============================================================
+
+def select_highly_variable_genes(
+    normalized_matrix_path: str | Path,
+    output_dir: str | Path,
+    config: FeatureSelectionConfig | None = None,
+) -> dict[str, Any]:
+    """
+    Select highly variable genes from the normalized log1p matrix.
+
+    Expected input:
+        normalized_log1p.npz
+
+    The matrix is expected to be stored as:
+        genes x cells
+
+    The function computes variance across cells and selects
+    the top variable genes without converting the complete
+    matrix to a dense array.
+    """
+
+    if config is None:
+        config = FeatureSelectionConfig()
+
+    normalized_matrix_path = Path(normalized_matrix_path)
+    output_dir = Path(output_dir)
+
+    output_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    if not normalized_matrix_path.exists():
+        raise FileNotFoundError(
+            f"Normalized matrix not found: "
+            f"{normalized_matrix_path}"
+        )
+
+    # --------------------------------------------------------
+    # LOAD SPARSE MATRIX
+    # --------------------------------------------------------
+
+    matrix = sp.load_npz(
+        normalized_matrix_path
+    ).tocsr()
+
+    n_genes, n_cells = matrix.shape
+
+    if n_genes == 0 or n_cells == 0:
+        raise ValueError(
+            "Normalized matrix is empty."
+        )
+
+    # --------------------------------------------------------
+    # DETERMINE GENE DETECTION
+    # --------------------------------------------------------
+
+    detected_cells = np.asarray(
+        (matrix > 0).sum(axis=1)
+    ).ravel()
+
+    eligible_mask = (
+        detected_cells >= config.min_cells
+    )
+
+    eligible_indices = np.flatnonzero(
+        eligible_mask
+    )
+
+    if len(eligible_indices) == 0:
+        raise ValueError(
+            "No genes satisfy the minimum cell detection "
+            "criterion."
+        )
+
+    # --------------------------------------------------------
+    # VARIANCE ACROSS CELLS
+    # --------------------------------------------------------
+
+    eligible_matrix = matrix[
+        eligible_indices
+    ]
+
+    mean = np.asarray(
+        eligible_matrix.mean(axis=1)
+    ).ravel()
+
+    squared_mean = np.asarray(
+        eligible_matrix.power(2).mean(axis=1)
+    ).ravel()
+
+    variance = (
+        squared_mean
+        - np.square(mean)
+    )
+
+    variance = np.maximum(
+        variance,
+        0.0,
+    )
+
+    # --------------------------------------------------------
+    # TOP VARIABLE GENES
+    # --------------------------------------------------------
+
+    n_select = min(
+        config.n_top_genes,
+        len(eligible_indices),
+    )
+
+    ranking = np.argsort(
+        variance
+    )[::-1]
+
+    selected_local = ranking[
+        :n_select
+    ]
+
+    selected_gene_indices = (
+        eligible_indices[
+            selected_local
+        ]
+    )
+
+    selected_variances = (
+        variance[
+            selected_local
+        ]
+    )
+
+    # Keep genes ordered by original matrix order.
+    order = np.argsort(
+        selected_gene_indices
+    )
+
+    selected_gene_indices = (
+        selected_gene_indices[
+            order
+        ]
+    )
+
+    selected_variances = (
+        selected_variances[
+            order
+        ]
+    )
+
+    # --------------------------------------------------------
+    # CREATE FEATURE MATRIX
+    # --------------------------------------------------------
+
+    feature_matrix = matrix[
+        selected_gene_indices,
+        :
+    ].tocsr()
+
+    # --------------------------------------------------------
+    # SAVE
+    # --------------------------------------------------------
+
+    matrix_output = (
+        output_dir
+        / "highly_variable_genes.npz"
+    )
+
+    indices_output = (
+        output_dir
+        / "selected_gene_indices.npy"
+    )
+
+    variance_output = (
+        output_dir
+        / "gene_variances.npy"
+    )
+
+    sp.save_npz(
+        matrix_output,
+        feature_matrix,
+    )
+
+    np.save(
+        indices_output,
+        selected_gene_indices,
+    )
+
+    np.save(
+        variance_output,
+        selected_variances,
+    )
+
+    # --------------------------------------------------------
+    # RESULT
+    # --------------------------------------------------------
+
+    return {
+        "method": (
+            "Variance-based highly variable "
+            "gene selection"
+        ),
+        "original_genes": int(n_genes),
+        "eligible_genes": int(
+            len(eligible_indices)
+        ),
+        "selected_genes": int(
+            len(selected_gene_indices)
+        ),
+        "cells": int(n_cells),
+        "min_cells": int(
+            config.min_cells
+        ),
+        "n_top_genes": int(
+            config.n_top_genes
+        ),
+        "nonzero_entries": int(
+            feature_matrix.nnz
+        ),
+        "matrix_output": str(
+            matrix_output
+        ),
+        "indices_output": str(
+            indices_output
+        ),
+        "variance_output": str(
+            variance_output
+        ),
+    }
+
+
+============================================================
+
+FILE: .\backend\app\pipeline\pca.py
+
+============================================================
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import scipy.sparse as sp
+from sklearn.decomposition import TruncatedSVD
+
+
+# ============================================================
+# CONFIGURATION
+# ============================================================
+
+@dataclass
+class PCAConfig:
+    n_components: int = 50
+    random_state: int = 42
+
+
+# ============================================================
+# PCA
+# ============================================================
+
+def run_pca(
+    feature_matrix_path: str | Path,
+    output_dir: str | Path,
+    config: PCAConfig | None = None,
+) -> dict[str, Any]:
+    """
+    Run PCA on the selected highly variable gene matrix.
+
+    Expected input:
+        highly_variable_genes.npz
+
+    Matrix orientation:
+        genes x cells
+
+    PCA is performed across cells.
+
+    Therefore:
+        input:  genes x cells
+        PCA:    cells x genes
+        output: cells x components
+    """
+
+    if config is None:
+        config = PCAConfig()
+
+    feature_matrix_path = Path(feature_matrix_path)
+    output_dir = Path(output_dir)
+
+    output_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    if not feature_matrix_path.exists():
+        raise FileNotFoundError(
+            f"Feature matrix not found: "
+            f"{feature_matrix_path}"
+        )
+
+    # --------------------------------------------------------
+    # LOAD SPARSE FEATURE MATRIX
+    # --------------------------------------------------------
+
+    matrix = sp.load_npz(
+        feature_matrix_path
+    ).tocsr()
+
+    n_genes, n_cells = matrix.shape
+
+    if n_genes == 0 or n_cells == 0:
+        raise ValueError(
+            "Feature matrix is empty."
+        )
+
+    # --------------------------------------------------------
+    # VALIDATE COMPONENT COUNT
+    # --------------------------------------------------------
+
+    max_components = min(
+        n_genes,
+        n_cells - 1,
+    )
+
+    if max_components < 1:
+        raise ValueError(
+            "Not enough cells or genes for PCA."
+        )
+
+    n_components = min(
+        config.n_components,
+        max_components,
+    )
+
+    # --------------------------------------------------------
+    # PCA INPUT
+    # --------------------------------------------------------
+    #
+    # Feature-selection matrix:
+    #
+    #       genes x cells
+    #
+    # PCA expects:
+    #
+    #       cells x genes
+    #
+    # Transpose without creating a dense matrix.
+    # --------------------------------------------------------
+
+    cell_by_gene = matrix.T.tocsr()
+
+    # --------------------------------------------------------
+    # CENTERING / PCA
+    # --------------------------------------------------------
+    #
+    # TruncatedSVD is used on the sparse matrix so the
+    # complete 913 x 2000 matrix does not need to be
+    # materialized as a dense array.
+    #
+    # Because TruncatedSVD does not center the matrix,
+    # we explicitly calculate the centered representation
+    # in chunks before fitting.
+    # --------------------------------------------------------
+
+    # Gene means across cells.
+    gene_means = np.asarray(
+        cell_by_gene.mean(axis=0)
+    ).ravel()
+
+    # --------------------------------------------------------
+    # Build centered sparse matrix
+    # --------------------------------------------------------
+    #
+    # Subtracting the mean from every element creates many
+    # non-zero values, so centering a sparse matrix destroys
+    # sparsity.
+    #
+    # For this dataset:
+    #
+    #   913 cells Ã— 2000 genes
+    #
+    # the dense centered matrix is manageable.
+    #
+    # This is intentionally limited to the selected HVGs,
+    # rather than the original 28,928 genes.
+    # --------------------------------------------------------
+
+    centered = (
+        cell_by_gene.toarray()
+        - gene_means
+    )
+
+    # --------------------------------------------------------
+    # RUN PCA
+    # --------------------------------------------------------
+
+    from sklearn.decomposition import PCA
+
+    pca = PCA(
+        n_components=n_components,
+        svd_solver="auto",
+        random_state=config.random_state,
+    )
+
+    cell_embeddings = pca.fit_transform(
+        centered
+    )
+
+    gene_loadings = pca.components_
+
+    explained_variance = (
+        pca.explained_variance_
+    )
+
+    explained_variance_ratio = (
+        pca.explained_variance_ratio_
+    )
+
+    cumulative_variance_ratio = np.cumsum(
+        explained_variance_ratio
+    )
+
+    # --------------------------------------------------------
+    # SAVE PCA RESULTS
+    # --------------------------------------------------------
+
+    embeddings_output = (
+        output_dir
+        / "pca_coordinates.npy"
+    )
+
+    loadings_output = (
+        output_dir
+        / "pca_loadings.npy"
+    )
+
+    variance_output = (
+        output_dir
+        / "pca_explained_variance.npy"
+    )
+
+    variance_ratio_output = (
+        output_dir
+        / "pca_explained_variance_ratio.npy"
+    )
+
+    cumulative_variance_output = (
+        output_dir
+        / "pca_cumulative_variance_ratio.npy"
+    )
+
+    np.save(
+        embeddings_output,
+        cell_embeddings,
+    )
+
+    np.save(
+        loadings_output,
+        gene_loadings,
+    )
+
+    np.save(
+        variance_output,
+        explained_variance,
+    )
+
+    np.save(
+        variance_ratio_output,
+        explained_variance_ratio,
+    )
+
+    np.save(
+        cumulative_variance_output,
+        cumulative_variance_ratio,
+    )
+
+    # --------------------------------------------------------
+    # RESULT
+    # --------------------------------------------------------
+
+    return {
+        "method": "Principal Component Analysis",
+        "input_genes": int(n_genes),
+        "input_cells": int(n_cells),
+        "n_components": int(n_components),
+
+        "embedding_shape": [
+            int(cell_embeddings.shape[0]),
+            int(cell_embeddings.shape[1]),
+        ],
+
+        "loading_shape": [
+            int(gene_loadings.shape[0]),
+            int(gene_loadings.shape[1]),
+        ],
+
+        "explained_variance_sum": float(
+            explained_variance.sum()
+        ),
+
+        "explained_variance_ratio_sum": float(
+            explained_variance_ratio.sum()
+        ),
+
+        "cumulative_variance_ratio": [
+            float(x)
+            for x in cumulative_variance_ratio
+        ],
+
+        "embeddings_output": str(
+            embeddings_output
+        ),
+
+        "loadings_output": str(
+            loadings_output
+        ),
+
+        "variance_output": str(
+            variance_output
+        ),
+
+        "variance_ratio_output": str(
+            variance_ratio_output
+        ),
+
+        "cumulative_variance_output": str(
+            cumulative_variance_output
+        ),
+    }
+
+
+============================================================
+
+FILE: .\backend\app\pipeline\umap.py
+
+============================================================
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+
+
+# ============================================================
+# CONFIGURATION
+# ============================================================
+
+@dataclass
+class UMAPConfig:
+    n_components: int = 2
+    n_neighbors: int = 15
+    min_dist: float = 0.5
+    metric: str = "euclidean"
+    random_state: int = 42
+
+
+# ============================================================
+# UMAP
+# ============================================================
+
+def run_umap(
+    pca_coordinates_path: str | Path,
+    output_dir: str | Path,
+    config: UMAPConfig | None = None,
+) -> dict[str, Any]:
+    """
+    Run UMAP on PCA cell embeddings.
+
+    Expected input:
+        pca_coordinates.npy
+
+    Input orientation:
+        cells x PCA components
+
+    Output:
+        cells x UMAP components
+    """
+
+    if config is None:
+        config = UMAPConfig()
+
+    pca_coordinates_path = Path(
+        pca_coordinates_path
+    )
+
+    output_dir = Path(output_dir)
+
+    output_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    if not pca_coordinates_path.exists():
+        raise FileNotFoundError(
+            "PCA coordinates not found: "
+            f"{pca_coordinates_path}"
+        )
+
+    # --------------------------------------------------------
+    # LOAD PCA EMBEDDING
+    # --------------------------------------------------------
+
+    pca_coordinates = np.load(
+        pca_coordinates_path
+    )
+
+    if pca_coordinates.ndim != 2:
+        raise ValueError(
+            "PCA coordinates must be a "
+            "2-dimensional array."
+        )
+
+    n_cells, n_pcs = pca_coordinates.shape
+
+    if n_cells == 0 or n_pcs == 0:
+        raise ValueError(
+            "PCA coordinates are empty."
+        )
+
+    # --------------------------------------------------------
+    # VALIDATE UMAP CONFIGURATION
+    # --------------------------------------------------------
+
+    if config.n_components < 1:
+        raise ValueError(
+            "n_components must be at least 1."
+        )
+
+    if config.n_neighbors < 2:
+        raise ValueError(
+            "n_neighbors must be at least 2."
+        )
+
+    if config.n_neighbors >= n_cells:
+        raise ValueError(
+            "n_neighbors must be smaller than "
+            "the number of cells."
+        )
+
+    if config.min_dist < 0:
+        raise ValueError(
+            "min_dist must be non-negative."
+        )
+
+    # --------------------------------------------------------
+    # IMPORT UMAP
+    # --------------------------------------------------------
+
+    try:
+
+        import umap.umap_ as umap_module
+
+    except ImportError as exc:
+
+        raise ImportError(
+            "The 'umap-learn' package is required "
+            "to run UMAP. Install it with:\n"
+            "python -m pip install umap-learn"
+        ) from exc
+
+    # --------------------------------------------------------
+    # RUN UMAP
+    # --------------------------------------------------------
+
+    reducer = umap_module.UMAP(
+        n_components=config.n_components,
+        n_neighbors=config.n_neighbors,
+        min_dist=config.min_dist,
+        metric=config.metric,
+        random_state=config.random_state,
+    )
+
+    embedding = reducer.fit_transform(
+        pca_coordinates
+    )
+
+    embedding = np.asarray(
+        embedding,
+        dtype=np.float64,
+    )
+
+    # --------------------------------------------------------
+    # VALIDATE OUTPUT
+    # --------------------------------------------------------
+
+    expected_shape = (
+        n_cells,
+        config.n_components,
+    )
+
+    if embedding.shape != expected_shape:
+        raise RuntimeError(
+            "Unexpected UMAP embedding shape. "
+            f"Expected {expected_shape}, "
+            f"got {embedding.shape}."
+        )
+
+    if not np.all(
+        np.isfinite(embedding)
+    ):
+        raise RuntimeError(
+            "UMAP embedding contains "
+            "non-finite values."
+        )
+
+    # --------------------------------------------------------
+    # SAVE
+    # --------------------------------------------------------
+
+    embedding_output = (
+        output_dir
+        / "umap_coordinates.npy"
+    )
+
+    np.save(
+        embedding_output,
+        embedding,
+    )
+
+    # --------------------------------------------------------
+    # RESULT
+    # --------------------------------------------------------
+
+    return {
+
+        "method": "Uniform Manifold Approximation and Projection",
+
+        "input_cells": int(n_cells),
+
+        "input_pca_components": int(n_pcs),
+
+        "n_components": int(
+            config.n_components
+        ),
+
+        "n_neighbors": int(
+            config.n_neighbors
+        ),
+
+        "min_dist": float(
+            config.min_dist
+        ),
+
+        "metric": config.metric,
+
+        "embedding_shape": [
+            int(embedding.shape[0]),
+            int(embedding.shape[1]),
+        ],
+
+        "embedding_output": str(
+            embedding_output
+        ),
+    }
