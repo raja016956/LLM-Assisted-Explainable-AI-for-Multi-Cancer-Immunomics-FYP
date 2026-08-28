@@ -1,0 +1,217 @@
+{
+  "n_clusters": 10,
+  "clusters": {
+    "0": {
+      "cluster": 0,
+      "n_cells": 41,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 1.0,
+      "confidence": 0.0,
+      "reason": "No cells in this cluster provide sufficient evidence for a specific immune-state assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.0,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.0,
+        "immune_suppression": 0.0,
+        "inflammatory_signal": 0.0186228723060794,
+        "antigen_presentation": 0.03823099103642673
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 41
+      }
+    },
+    "1": {
+      "cluster": 1,
+      "n_cells": 137,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 0.8832116788321168,
+      "confidence": 0.072992700729927,
+      "reason": "No specific immune state is represented by enough cells in the cluster to support a cluster-level assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.0,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.007994947642305471,
+        "immune_suppression": 0.007582628106983909,
+        "inflammatory_signal": 0.01070195681204761,
+        "antigen_presentation": 0.044874895336854195
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 121,
+        "Immune-Excluded": 10,
+        "Immune-Suppressed": 6
+      }
+    },
+    "2": {
+      "cluster": 2,
+      "n_cells": 84,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 0.9166666666666666,
+      "confidence": 0.047619047619047616,
+      "reason": "No specific immune state is represented by enough cells in the cluster to support a cluster-level assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.0,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.021455359113003527,
+        "immune_suppression": 0.002724571597008478,
+        "inflammatory_signal": 0.02007254825106689,
+        "antigen_presentation": 0.05426397784391329
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 77,
+        "Immune-Excluded": 4,
+        "Immune-Suppressed": 2,
+        "Myeloid-Dominant": 1
+      }
+    },
+    "3": {
+      "cluster": 3,
+      "n_cells": 157,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 0.9426751592356688,
+      "confidence": 0.044585987261146494,
+      "reason": "No specific immune state is represented by enough cells in the cluster to support a cluster-level assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.0,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.0054437086508152596,
+        "immune_suppression": 0.00777456278254272,
+        "inflammatory_signal": 0.00970157606017058,
+        "antigen_presentation": 0.04655036642245806
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 148,
+        "Immune-Excluded": 7,
+        "Immune-Suppressed": 2
+      }
+    },
+    "4": {
+      "cluster": 4,
+      "n_cells": 110,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 0.9636363636363636,
+      "confidence": 0.02727272727272727,
+      "reason": "No specific immune state is represented by enough cells in the cluster to support a cluster-level assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.0,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.004438755254853856,
+        "immune_suppression": 0.00630674037066373,
+        "inflammatory_signal": 0.027111586115577003,
+        "antigen_presentation": 0.039467381279576906
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 106,
+        "Immune-Excluded": 3,
+        "Immune-Suppressed": 1
+      }
+    },
+    "5": {
+      "cluster": 5,
+      "n_cells": 60,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 1.0,
+      "confidence": 0.0,
+      "reason": "No cells in this cluster provide sufficient evidence for a specific immune-state assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.01097039779027303,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.0033077572782834372,
+        "immune_suppression": 0.005902748803297679,
+        "inflammatory_signal": 0.009274898966153463,
+        "antigen_presentation": 0.01278440977136294
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 60
+      }
+    },
+    "6": {
+      "cluster": 6,
+      "n_cells": 45,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 1.0,
+      "confidence": 0.0,
+      "reason": "No cells in this cluster provide sufficient evidence for a specific immune-state assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.0,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.0,
+        "immune_suppression": 0.0,
+        "inflammatory_signal": 0.0,
+        "antigen_presentation": 0.01875091592470805
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 45
+      }
+    },
+    "7": {
+      "cluster": 7,
+      "n_cells": 117,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 0.905982905982906,
+      "confidence": 0.06837606837606838,
+      "reason": "No specific immune state is represented by enough cells in the cluster to support a cluster-level assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.0,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.006084959603782393,
+        "immune_suppression": 0.006030346274885357,
+        "inflammatory_signal": 0.007102148909854074,
+        "antigen_presentation": 0.05110759647865581
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 106,
+        "Immune-Suppressed": 3,
+        "Immune-Excluded": 8
+      }
+    },
+    "8": {
+      "cluster": 8,
+      "n_cells": 40,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 1.0,
+      "confidence": 0.0,
+      "reason": "No cells in this cluster provide sufficient evidence for a specific immune-state assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.0,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.0,
+        "immune_suppression": 0.0037608370184898376,
+        "inflammatory_signal": 0.014281005412340165,
+        "antigen_presentation": 0.04114692551083863
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 40
+      }
+    },
+    "9": {
+      "cluster": 9,
+      "n_cells": 122,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 0.9918032786885246,
+      "confidence": 0.00819672131147541,
+      "reason": "No specific immune state is represented by enough cells in the cluster to support a cluster-level assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.0,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.008225596097649121,
+        "immune_suppression": 0.003548858229254113,
+        "inflammatory_signal": 0.0,
+        "antigen_presentation": 0.03314834747646676
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 121,
+        "Immune-Suppressed": 1
+      }
+    }
+  }
+}

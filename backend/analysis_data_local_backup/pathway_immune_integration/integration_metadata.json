@@ -1,0 +1,40 @@
+{
+  "input_cells": 913,
+  "pathway_count": 6,
+  "immune_score_count": 6,
+  "cluster_count": 10,
+  "immune_state_count": 4,
+  "supported_immune_state_count": 3,
+  "state_matrix_shape": [
+    3,
+    6
+  ],
+  "pathways": [
+    "glycolysis",
+    "oxidative_phosphorylation",
+    "fatty_acid_metabolism",
+    "interferon_response",
+    "inflammatory_signaling",
+    "chemokine_activity"
+  ],
+  "immune_scores": [
+    "t_cell_activity",
+    "cytotoxic_activity",
+    "myeloid_signal",
+    "immune_suppression",
+    "inflammatory_signal",
+    "antigen_presentation"
+  ],
+  "immune_states": [
+    "Immune-Excluded",
+    "Immune-Suppressed",
+    "Insufficient-Evidence",
+    "Myeloid-Dominant"
+  ],
+  "configuration": {
+    "minimum_cells_per_state": 2,
+    "minimum_cells_per_cluster": 2,
+    "minimum_state_fraction": 0.01,
+    "correlation_method": "pearson"
+  }
+}

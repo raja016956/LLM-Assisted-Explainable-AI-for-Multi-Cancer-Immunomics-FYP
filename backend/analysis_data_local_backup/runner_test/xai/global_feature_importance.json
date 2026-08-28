@@ -1,0 +1,106 @@
+{
+  "features": [
+    {
+      "feature": "immune_myeloid_signal",
+      "mean_absolute_shap": 0.12547553712561071,
+      "feature_index": 52
+    },
+    {
+      "feature": "immune_immune_suppression",
+      "mean_absolute_shap": 0.11777175812579678,
+      "feature_index": 53
+    },
+    {
+      "feature": "immune_antigen_presentation",
+      "mean_absolute_shap": 0.023630680882411107,
+      "feature_index": 55
+    },
+    {
+      "feature": "PC1",
+      "mean_absolute_shap": 0.020837029939615614,
+      "feature_index": 0
+    },
+    {
+      "feature": "PC36",
+      "mean_absolute_shap": 0.012596103686328346,
+      "feature_index": 35
+    },
+    {
+      "feature": "PC39",
+      "mean_absolute_shap": 0.01216015571055093,
+      "feature_index": 38
+    },
+    {
+      "feature": "PC22",
+      "mean_absolute_shap": 0.011507316737236858,
+      "feature_index": 21
+    },
+    {
+      "feature": "PC3",
+      "mean_absolute_shap": 0.0090266688798548,
+      "feature_index": 2
+    },
+    {
+      "feature": "PC8",
+      "mean_absolute_shap": 0.008932297262518683,
+      "feature_index": 7
+    },
+    {
+      "feature": "PC15",
+      "mean_absolute_shap": 0.008929439065608962,
+      "feature_index": 14
+    },
+    {
+      "feature": "PC28",
+      "mean_absolute_shap": 0.00756786092631517,
+      "feature_index": 27
+    },
+    {
+      "feature": "PC34",
+      "mean_absolute_shap": 0.007281653254954659,
+      "feature_index": 33
+    },
+    {
+      "feature": "PC35",
+      "mean_absolute_shap": 0.007246305329145331,
+      "feature_index": 34
+    },
+    {
+      "feature": "PC4",
+      "mean_absolute_shap": 0.006573560458993421,
+      "feature_index": 3
+    },
+    {
+      "feature": "immune_inflammatory_signal",
+      "mean_absolute_shap": 0.005631917003741189,
+      "feature_index": 54
+    },
+    {
+      "feature": "PC42",
+      "mean_absolute_shap": 0.005514914335273113,
+      "feature_index": 41
+    },
+    {
+      "feature": "PC18",
+      "mean_absolute_shap": 0.0054271693767107936,
+      "feature_index": 17
+    },
+    {
+      "feature": "PC9",
+      "mean_absolute_shap": 0.005237435990248279,
+      "feature_index": 8
+    },
+    {
+      "feature": "PC40",
+      "mean_absolute_shap": 0.005210337856023815,
+      "feature_index": 39
+    },
+    {
+      "feature": "PC20",
+      "mean_absolute_shap": 0.0049771135334252545,
+      "feature_index": 19
+    }
+  ],
+  "n_cells_explained": 200,
+  "n_features": 56
+}

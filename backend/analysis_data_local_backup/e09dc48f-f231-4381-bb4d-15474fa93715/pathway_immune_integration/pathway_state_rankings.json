@@ -1,0 +1,99 @@
+{
+  "Immune-Excluded": [
+    {
+      "pathway": "oxidative_phosphorylation",
+      "mean_score": 0.15896588563919067,
+      "rank": 1
+    },
+    {
+      "pathway": "fatty_acid_metabolism",
+      "mean_score": 0.11453034728765488,
+      "rank": 2
+    },
+    {
+      "pathway": "glycolysis",
+      "mean_score": 0.0890127569437027,
+      "rank": 3
+    },
+    {
+      "pathway": "chemokine_activity",
+      "mean_score": 0.034829653799533844,
+      "rank": 4
+    },
+    {
+      "pathway": "inflammatory_signaling",
+      "mean_score": 0.024425752460956573,
+      "rank": 5
+    },
+    {
+      "pathway": "interferon_response",
+      "mean_score": 0.0003176294267177582,
+      "rank": 6
+    }
+  ],
+  "Immune-Suppressed": [
+    {
+      "pathway": "fatty_acid_metabolism",
+      "mean_score": 0.10120917111635208,
+      "rank": 1
+    },
+    {
+      "pathway": "inflammatory_signaling",
+      "mean_score": 0.10106096416711807,
+      "rank": 2
+    },
+    {
+      "pathway": "chemokine_activity",
+      "mean_score": 0.08607564121484756,
+      "rank": 3
+    },
+    {
+      "pathway": "oxidative_phosphorylation",
+      "mean_score": 0.07747556269168854,
+      "rank": 4
+    },
+    {
+      "pathway": "glycolysis",
+      "mean_score": 0.03717007488012314,
+      "rank": 5
+    },
+    {
+      "pathway": "interferon_response",
+      "mean_score": -0.05561097338795662,
+      "rank": 6
+    }
+  ],
+  "Insufficient-Evidence": [
+    {
+      "pathway": "interferon_response",
+      "mean_score": 0.0010070822900161147,
+      "rank": 1
+    },
+    {
+      "pathway": "glycolysis",
+      "mean_score": -0.0033999800216406584,
+      "rank": 2
+    },
+    {
+      "pathway": "chemokine_activity",
+      "mean_score": -0.004121012054383755,
+      "rank": 3
+    },
+    {
+      "pathway": "inflammatory_signaling",
+      "mean_score": -0.004157464485615492,
+      "rank": 4
+    },
+    {
+      "pathway": "fatty_acid_metabolism",
+      "mean_score": -0.00656881183385849,
+      "rank": 5
+    },
+    {
+      "pathway": "oxidative_phosphorylation",
+      "mean_score": -0.007898548617959023,
+      "rank": 6
+    }
+  ],
+  "Myeloid-Dominant": []
+}

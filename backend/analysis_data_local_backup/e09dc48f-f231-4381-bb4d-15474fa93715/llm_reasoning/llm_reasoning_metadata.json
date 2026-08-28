@@ -1,0 +1,13 @@
+{
+  "pipeline": "IMMUNO-XAI",
+  "analysis_input": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\final_analysis\\llm_reasoning_input.json",
+  "input_cells": 913,
+  "provider": "groq",
+  "model": "groq/compound-mini",
+  "temperature": 0.2,
+  "max_tokens": 4000,
+  "llm_input_characters": 8264,
+  "analysis_package_extracted": true,
+  "compact_analysis_package": true,
+  "biological_interpretation_generated": true
+}

@@ -1,0 +1,30 @@
+{
+  "pipeline": "IMMUNO-XAI",
+  "status": "completed",
+  "dataset": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\backend_data\\uploads\\e09dc48f-f231-4381-bb4d-15474fa93715\\GSM5161291_D37_2_counts.txt.gz",
+  "analysis_dir": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715",
+  "runtime_seconds": 81.972537499998,
+  "steps_completed": 16,
+  "total_steps": 16,
+  "paths": {
+    "normalized_expression": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\normalization\\normalized_log1p.npz",
+    "genes": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\normalization\\genes.json",
+    "final_analysis": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\final_analysis\\final_analysis.json",
+    "llm_reasoning_input": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\final_analysis\\llm_reasoning_input.json",
+    "biological_interpretation": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\llm_reasoning\\biological_interpretation.json",
+    "biological_report": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\llm_reasoning\\biological_report.md",
+    "llm_metadata": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\llm_reasoning\\llm_reasoning_metadata.json",
+    "umap_coordinates": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\umap\\umap_coordinates.npy",
+    "cluster_labels": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\clustering\\cluster_labels.npy",
+    "immune_scores": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\immune_state_scoring\\immune_scores.npy",
+    "immune_score_names": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\immune_state_scoring\\score_names.json",
+    "cell_immune_states": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\immune_state_assignment\\cell_immune_states.json",
+    "cluster_immune_states": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\immune_state_assignment\\cluster_immune_states.json",
+    "ml_model": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\ml\\random_forest.pkl",
+    "ml_features": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\ml\\ml_features.npy",
+    "ml_predictions": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\ml\\random_forest_predictions.npy",
+    "xai_global_importance": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\xai\\global_feature_importance.json",
+    "pathway_scores": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\pathway_scoring\\pathway_scores.npy",
+    "pathway_names": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\pathway_scoring\\pathway_names.json"
+  }
+}

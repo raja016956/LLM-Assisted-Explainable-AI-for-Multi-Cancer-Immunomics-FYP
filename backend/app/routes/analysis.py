@@ -784,20 +784,13 @@ def get_analysis_result(
     )
 
     response: Dict[str, Any] = {
-
         "success": True,
-
         "job_id": job_id,
-
         "status": "completed",
-
         "progress": 100.0,
-
         "message": (
             "Analysis completed successfully."
         ),
-
-        "result": job["result"],
     }
 
     # ========================================================

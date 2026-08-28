@@ -1,0 +1,2250 @@
+﻿
+
+============================================================
+
+FILE: .\src\lib\scRNA\api.ts
+
+============================================================
+
+// ============================================================
+// IMMUNO-XAI API CLIENT
+// ============================================================
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "http://127.0.0.1:8000";
+
+
+// ============================================================
+// TYPES
+// ============================================================
+
+export interface UploadResponse {
+  job_id: string;
+  filename: string;
+  file_size: number;
+  status: string;
+  message: string;
+}
+
+export interface StartAnalysisResponse {
+  success: boolean;
+  job_id: string;
+  status: string;
+  message: string;
+  total_steps?: number;
+  progress?: number;
+}
+
+export interface AnalysisStatusResponse {
+  success: boolean;
+  job_id: string;
+  status: "queued" | "running" | "completed" | "failed";
+  step: string | null;
+  step_number: number;
+  total_steps: number;
+  progress: number;
+  message: string;
+  started_at: string | null;
+  completed_at: string | null;
+  error?: {
+    type?: string;
+    message?: string;
+    traceback?: string;
+  };
+}
+
+export interface AnalysisResultResponse {
+  success: boolean;
+  job_id: string;
+  status: string;
+  [key: string]: unknown;
+}
+
+
+// ============================================================
+// ERROR HANDLING
+// ============================================================
+
+async function parseApiError(
+  response: Response,
+): Promise<string> {
+  try {
+    const data = await response.json();
+
+    if (typeof data?.detail === "string") {
+      return data.detail;
+    }
+
+    if (typeof data?.detail?.message === "string") {
+      return data.detail.message;
+    }
+
+    if (typeof data?.message === "string") {
+      return data.message;
+    }
+
+    return JSON.stringify(data);
+  } catch {
+    return response.statusText || "API request failed.";
+  }
+}
+
+
+// ============================================================
+// GENERIC REQUEST
+// ============================================================
+
+async function apiRequest<T>(
+  path: string,
+  options?: RequestInit,
+): Promise<T> {
+  const response = await fetch(
+    `${API_BASE_URL}${path}`,
+    {
+      ...options,
+      headers: {
+        ...(options?.headers || {}),
+      },
+    },
+  );
+
+  if (!response.ok) {
+    const message =
+      await parseApiError(response);
+
+    throw new Error(
+      `API ${response.status}: ${message}`,
+    );
+  }
+
+  return response.json() as Promise<T>;
+}
+
+
+// ============================================================
+// UPLOAD DATASET
+// ============================================================
+
+export async function uploadDataset(
+  file: File,
+): Promise<UploadResponse> {
+  const formData = new FormData();
+
+  formData.append("file", file);
+
+  return apiRequest<UploadResponse>(
+    "/api/upload",
+    {
+      method: "POST",
+      body: formData,
+    },
+  );
+}
+
+
+// ============================================================
+// START ANALYSIS
+// ============================================================
+
+export async function startAnalysis(
+  jobId: string,
+): Promise<StartAnalysisResponse> {
+  return apiRequest<StartAnalysisResponse>(
+    "/api/analysis/run",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        job_id: jobId,
+      }),
+    },
+  );
+}
+
+
+// ============================================================
+// GET ANALYSIS STATUS
+// ============================================================
+
+export async function getAnalysisStatus(
+  jobId: string,
+): Promise<AnalysisStatusResponse> {
+  return apiRequest<AnalysisStatusResponse>(
+    `/api/analysis/${encodeURIComponent(jobId)}/status`,
+  );
+}
+
+
+// ============================================================
+// GET ANALYSIS RESULT
+// ============================================================
+
+export async function getAnalysisResult(
+  jobId: string,
+): Promise<AnalysisResultResponse> {
+  return apiRequest<AnalysisResultResponse>(
+    `/api/analysis/${encodeURIComponent(jobId)}/result`,
+  );
+}
+
+
+// ============================================================
+// LIST ANALYSIS JOBS
+// ============================================================
+
+export async function listAnalysisJobs(): Promise<
+  unknown
+> {
+  return apiRequest(
+    "/api/analysis/",
+  );
+}
+
+
+// ============================================================
+// HEALTH CHECK
+// ============================================================
+
+export async function checkApiHealth(): Promise<{
+  status: string;
+}> {
+  return apiRequest(
+    "/health",
+  );
+}
+
+
+============================================================
+
+FILE: .\src\lib\scRNA\types.ts
+
+============================================================
+
+// ============================================================
+// IMMUNO-XAI FRONTEND API TYPES
+// ============================================================
+
+export type AnalysisJobStatus =
+  | "queued"
+  | "running"
+  | "completed"
+  | "failed";
+
+export interface UploadResponse {
+  job_id: string;
+  filename: string;
+  file_size: number;
+  status: string;
+  message: string;
+}
+
+export interface StartAnalysisResponse {
+  success: boolean;
+  job_id: string;
+  status: string;
+  message: string;
+  total_steps?: number;
+  progress?: number;
+}
+
+export interface AnalysisStatus {
+  success: boolean;
+  job_id: string;
+  status: AnalysisJobStatus;
+  step: string | null;
+  step_number: number;
+  total_steps: number;
+  progress: number;
+  message: string;
+  started_at: string | null;
+  completed_at: string | null;
+  error?: {
+    type?: string;
+    message?: string;
+    traceback?: string;
+  };
+}
+
+export interface AnalysisResult {
+  success: boolean;
+  job_id: string;
+  status: string;
+
+  [key: string]: unknown;
+}
+
+
+============================================================
+
+FILE: .\src\lib\analysis.ts
+
+============================================================
+
+export type ImmuneState = "Inflamed" | "Immune-Excluded";
+
+export interface SampleResult {
+  sample: string;
+  tCellScore: number;
+  myeloidScore: number;
+  immuneState: ImmuneState;
+  confidence: number;
+}
+
+export interface AnalysisResult {
+  datasetName: string;
+  cancerType: string;
+  model: string;
+  totalSamples: number;
+  totalGenes: number;
+  validated: boolean;
+  normalized: boolean;
+  samples: SampleResult[];
+  stateDistribution: {
+    inflamed: number;
+    immuneExcluded: number;
+  };
+  topGenes: {
+    gene: string;
+    importance: number;
+  }[];
+  analyzedAt: string;
+}
+
+const T_CELL_MARKERS = [
+  "CD3D",
+  "CD3E",
+  "GZMB",
+];
+
+const MYELOID_MARKERS = [
+  "CD274",
+  "C1QA",
+  "LST1",
+  "CXCL9",
+];
+
+function parseCSV(text: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let cell = "";
+  let insideQuotes = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === '"' && insideQuotes && next === '"') {
+      cell += '"';
+      i++;
+    } else if (char === '"') {
+      insideQuotes = !insideQuotes;
+    } else if (char === "," && !insideQuotes) {
+      row.push(cell.trim());
+      cell = "";
+    } else if ((char === "\n" || char === "\r") && !insideQuotes) {
+      if (char === "\r" && next === "\n") {
+        i++;
+      }
+
+      row.push(cell.trim());
+      cell = "";
+
+      if (row.some((value) => value !== "")) {
+        rows.push(row);
+      }
+
+      row = [];
+    } else {
+      cell += char;
+    }
+  }
+
+  if (cell !== "" || row.length > 0) {
+    row.push(cell.trim());
+
+    if (row.some((value) => value !== "")) {
+      rows.push(row);
+    }
+  }
+
+  return rows;
+}
+
+function toNumber(value: string | undefined): number {
+  if (!value) return 0;
+
+  const number = Number(value);
+
+  return Number.isFinite(number) ? number : 0;
+}
+
+function normalizeValue(value: number): number {
+  return Math.log1p(Math.max(value, 0));
+}
+
+function calculateScore(
+  geneExpression: Map<string, number>,
+  markers: string[],
+): number {
+  const values = markers
+    .map((gene) => geneExpression.get(gene))
+    .filter((value): value is number => value !== undefined);
+
+  if (values.length === 0) {
+    return 0;
+  }
+
+  const normalizedValues = values.map(normalizeValue);
+
+  return (
+    normalizedValues.reduce((sum, value) => sum + value, 0) /
+    normalizedValues.length
+  );
+}
+
+function calculateConfidence(
+  tCellScore: number,
+  myeloidScore: number,
+): number {
+  const total = tCellScore + myeloidScore;
+
+  if (total === 0) {
+    return 0.5;
+  }
+
+  const strongerScore = Math.max(tCellScore, myeloidScore);
+
+  const confidence = strongerScore / total;
+
+  return Math.min(Math.max(confidence, 0.5), 0.99);
+}
+
+export function analyzeCSV(
+  csvText: string,
+  datasetName: string,
+  cancerType: string,
+  model: string,
+): AnalysisResult {
+  const rows = parseCSV(csvText);
+
+  if (rows.length < 2) {
+    throw new Error("The CSV file does not contain enough data.");
+  }
+
+  const header = rows[0];
+
+  if (header.length < 2) {
+    throw new Error(
+      "The CSV must contain a gene column and at least one sample column.",
+    );
+  }
+
+  const geneColumn = header[0];
+
+  if (!geneColumn) {
+    throw new Error("The first CSV column must contain gene identifiers.");
+  }
+
+  const sampleNames = header.slice(1);
+
+  const expression = new Map<string, Map<string, number>>();
+
+  for (const row of rows.slice(1)) {
+    const gene = row[0]?.trim();
+
+    if (!gene) {
+      continue;
+    }
+
+    const values = new Map<string, number>();
+
+    sampleNames.forEach((sample, index) => {
+      values.set(sample, toNumber(row[index + 1]));
+    });
+
+    expression.set(gene.toUpperCase(), values);
+  }
+
+  if (expression.size === 0) {
+    throw new Error("No valid gene-expression rows were found.");
+  }
+
+  const requiredMarkers = [
+    ...T_CELL_MARKERS,
+    ...MYELOID_MARKERS,
+  ];
+
+  const availableMarkers = requiredMarkers.filter((gene) =>
+    expression.has(gene),
+  );
+
+  if (availableMarkers.length === 0) {
+    throw new Error(
+      "The dataset does not contain the required immune marker genes.",
+    );
+  }
+
+  const samples: SampleResult[] = sampleNames.map((sample) => {
+    const geneExpression = new Map<string, number>();
+
+    expression.forEach((sampleValues, gene) => {
+      geneExpression.set(gene, sampleValues.get(sample) ?? 0);
+    });
+
+    const tCellScore = calculateScore(
+      geneExpression,
+      T_CELL_MARKERS,
+    );
+
+    const myeloidScore = calculateScore(
+      geneExpression,
+      MYELOID_MARKERS,
+    );
+
+    const immuneState: ImmuneState =
+      tCellScore >= myeloidScore
+        ? "Inflamed"
+        : "Immune-Excluded";
+
+    const confidence = calculateConfidence(
+      tCellScore,
+      myeloidScore,
+    );
+
+    return {
+      sample,
+      tCellScore,
+      myeloidScore,
+      immuneState,
+      confidence,
+    };
+  });
+
+  const inflamed = samples.filter(
+    (sample) => sample.immuneState === "Inflamed",
+  ).length;
+
+  const immuneExcluded = samples.filter(
+    (sample) => sample.immuneState === "Immune-Excluded",
+  ).length;
+
+  const topGenes = requiredMarkers
+    .filter((gene) => expression.has(gene))
+    .map((gene) => {
+      const values = expression.get(gene)!;
+
+      const mean =
+        Array.from(values.values()).reduce(
+          (sum, value) => sum + normalizeValue(value),
+          0,
+        ) / values.size;
+
+      return {
+        gene,
+        importance: mean,
+      };
+    })
+    .sort((a, b) => b.importance - a.importance)
+    .slice(0, 6);
+
+  return {
+    datasetName,
+    cancerType,
+    model,
+    totalSamples: sampleNames.length,
+    totalGenes: expression.size,
+    validated: true,
+    normalized: true,
+    samples,
+    stateDistribution: {
+      inflamed,
+      immuneExcluded,
+    },
+    topGenes,
+    analyzedAt: new Date().toISOString(),
+  };
+}
+
+
+============================================================
+
+FILE: .\src\routes\upload.tsx
+
+============================================================
+
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import {
+  UploadCloud,
+  FileText,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  X,
+  Clock3,
+  Database,
+  FlaskConical,
+  BrainCircuit,
+  BarChart3,
+  Dna,
+  Microscope,
+  Network,
+  Sparkles,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+
+import { AppLayout } from "@/components/AppLayout";
+
+
+// ============================================================
+// ROUTE
+// ============================================================
+
+export const Route = createFileRoute("/upload")({
+  head: () => ({
+    meta: [
+      {
+        title: "Analyze Dataset â€” ImmunoXAI",
+      },
+      {
+        name: "description",
+        content:
+          "Upload a single-cell gene expression dataset and run the complete ImmunoXAI analysis pipeline.",
+      },
+    ],
+  }),
+  component: UploadPage,
+});
+
+
+// ============================================================
+// BACKEND API
+// ============================================================
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "http://127.0.0.1:8000";
+
+
+// ============================================================
+// REAL BACKEND PIPELINE STEPS
+// ============================================================
+
+type AnalysisStep = {
+  id: string;
+  label: string;
+  description: string;
+  icon: typeof Database;
+};
+
+const ANALYSIS_STEPS: AnalysisStep[] = [
+  {
+    id: "dataset_inspection",
+    label: "Dataset inspection",
+    description:
+      "Inspecting the expression matrix structure, genes, and cells.",
+    icon: Database,
+  },
+  {
+    id: "validation",
+    label: "Dataset validation",
+    description:
+      "Validating the expression matrix and checking data integrity.",
+    icon: CheckCircle2,
+  },
+  {
+    id: "quality_control",
+    label: "Quality control",
+    description:
+      "Calculating QC metrics and filtering low-quality cells.",
+    icon: FlaskConical,
+  },
+  {
+    id: "normalization",
+    label: "Normalization",
+    description:
+      "Applying library-size normalization and log transformation.",
+    icon: BarChart3,
+  },
+  {
+    id: "feature_selection",
+    label: "Feature selection",
+    description:
+      "Selecting highly variable genes for downstream analysis.",
+    icon: Dna,
+  },
+  {
+    id: "pca",
+    label: "PCA",
+    description:
+      "Computing principal components from the selected features.",
+    icon: BarChart3,
+  },
+  {
+    id: "umap",
+    label: "UMAP",
+    description:
+      "Computing a low-dimensional representation of cellular profiles.",
+    icon: Network,
+  },
+  {
+    id: "clustering",
+    label: "Clustering",
+    description:
+      "Identifying transcriptionally distinct cellular populations.",
+    icon: Microscope,
+  },
+  {
+    id: "immune_state_scoring",
+    label: "Immune-state scoring",
+    description:
+      "Calculating immune-related gene-set activity scores.",
+    icon: FlaskConical,
+  },
+  {
+    id: "immune_state_assignment",
+    label: "Immune-state assignment",
+    description:
+      "Assigning evidence-aware immune states to cells and clusters.",
+    icon: Microscope,
+  },
+  {
+    id: "machine_learning",
+    label: "Machine learning",
+    description:
+      "Training the immune-state machine-learning classifier.",
+    icon: BrainCircuit,
+  },
+  {
+    id: "explainable_ai",
+    label: "Explainable AI",
+    description:
+      "Generating SHAP-based model explanations and feature importance.",
+    icon: BrainCircuit,
+  },
+  {
+    id: "pathway_scoring",
+    label: "Pathway scoring",
+    description:
+      "Calculating metabolic and inflammatory pathway activity.",
+    icon: BarChart3,
+  },
+  {
+    id: "pathway_immune_integration",
+    label: "Pathway / immune integration",
+    description:
+      "Integrating pathway activity with immune-state information.",
+    icon: Network,
+  },
+  {
+    id: "final_analysis",
+    label: "Final analysis",
+    description:
+      "Building the integrated computational analysis package.",
+    icon: Microscope,
+  },
+  {
+    id: "llm_reasoning",
+    label: "Biological interpretation",
+    description:
+      "Generating the biological interpretation of the computational analysis.",
+    icon: Sparkles,
+  },
+];
+
+
+// ============================================================
+// TYPES
+// ============================================================
+
+type AnalysisStatus =
+  | "idle"
+  | "ready"
+  | "uploading"
+  | "starting"
+  | "queued"
+  | "running"
+  | "completed"
+  | "failed"
+  | "error";
+
+type BackendStatusResponse = {
+  success?: boolean;
+  job_id: string;
+  status: string;
+  step?: string | null;
+  step_number?: number;
+  total_steps?: number;
+  progress?: number;
+  message?: string;
+  started_at?: string | null;
+  completed_at?: string | null;
+  error?: unknown;
+};
+
+type UploadResponse = {
+  success?: boolean;
+  job_id: string;
+  filename: string;
+  file_size: number;
+  status: string;
+  message: string;
+};
+
+
+// ============================================================
+// TIME FORMATTER
+// ============================================================
+
+function formatTime(seconds: number | null) {
+  if (seconds === null) {
+    return "Calculating...";
+  }
+
+  const safeSeconds = Math.max(
+    0,
+    Math.round(seconds),
+  );
+
+  const minutes = Math.floor(
+    safeSeconds / 60,
+  );
+
+  const remaining = safeSeconds % 60;
+
+  if (minutes === 0) {
+    return `${remaining}s`;
+  }
+
+  return `${minutes}m ${remaining
+    .toString()
+    .padStart(2, "0")}s`;
+}
+
+
+// ============================================================
+// UPLOAD PAGE
+// ============================================================
+
+function UploadPage() {
+  const navigate = useNavigate();
+
+  const [file, setFile] =
+    useState<File | null>(null);
+
+  const [status, setStatus] =
+    useState<AnalysisStatus>("idle");
+
+  const [error, setError] =
+    useState("");
+
+  const [jobId, setJobId] =
+    useState<string | null>(null);
+
+  const [currentStep, setCurrentStep] =
+    useState(0);
+
+  const [backendStep, setBackendStep] =
+    useState<string | null>(null);
+
+  const [progress, setProgress] =
+    useState(0);
+
+  const [elapsedSeconds, setElapsedSeconds] =
+    useState(0);
+
+  const [startedAt, setStartedAt] =
+    useState<string | null>(null);
+
+
+  // ==========================================================
+  // RUNNING
+  // ==========================================================
+
+  const isRunning =
+    status === "uploading" ||
+    status === "starting" ||
+    status === "queued" ||
+    status === "running";
+
+
+  // ==========================================================
+  // ELAPSED TIMER
+  // ==========================================================
+
+  useEffect(() => {
+    if (!isRunning) {
+      return;
+    }
+
+    const interval =
+      window.setInterval(() => {
+        if (startedAt) {
+          const start =
+            new Date(startedAt).getTime();
+
+          const now =
+            Date.now();
+
+          setElapsedSeconds(
+            Math.max(
+              0,
+              Math.floor(
+                (now - start) / 1000,
+              ),
+            ),
+          );
+        } else {
+          setElapsedSeconds(
+            (seconds) => seconds + 1,
+          );
+        }
+      }, 1000);
+
+    return () =>
+      window.clearInterval(interval);
+  }, [
+    isRunning,
+    startedAt,
+  ]);
+
+
+  // ==========================================================
+  // ESTIMATED REMAINING TIME
+  //
+  // This is only an estimate.
+  // The progress itself comes from the backend.
+  // ==========================================================
+
+  const remainingSeconds =
+    useMemo(() => {
+      if (
+        progress <= 0 ||
+        progress >= 100 ||
+        elapsedSeconds <= 0
+      ) {
+        return null;
+      }
+
+      const totalEstimated =
+        elapsedSeconds *
+        (100 / progress);
+
+      return Math.max(
+        0,
+        Math.round(
+          totalEstimated -
+            elapsedSeconds,
+        ),
+      );
+    }, [
+      progress,
+      elapsedSeconds,
+    ]);
+
+
+  // ==========================================================
+  // FILE SELECTION
+  // ==========================================================
+
+  function handleFileChange(
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const selectedFile =
+      event.target.files?.[0];
+
+    if (!selectedFile) {
+      return;
+    }
+
+    setError("");
+
+    const lowerName =
+      selectedFile.name.toLowerCase();
+
+    const supported =
+      lowerName.endsWith(".csv") ||
+      lowerName.endsWith(".tsv") ||
+      lowerName.endsWith(".txt") ||
+      lowerName.endsWith(".gz");
+
+    if (!supported) {
+      setFile(null);
+      setStatus("error");
+
+      setError(
+        "Unsupported file format. Upload a CSV, TSV, TXT, or GZ expression matrix.",
+      );
+
+      return;
+    }
+
+    setFile(selectedFile);
+    setStatus("ready");
+    setJobId(null);
+    setBackendStep(null);
+    setCurrentStep(0);
+    setProgress(0);
+    setElapsedSeconds(0);
+    setStartedAt(null);
+  }
+
+
+  // ==========================================================
+  // CLEAR DATASET
+  // ==========================================================
+
+  function clearFile() {
+    if (isRunning) {
+      return;
+    }
+
+    setFile(null);
+    setStatus("idle");
+    setError("");
+    setJobId(null);
+    setBackendStep(null);
+    setCurrentStep(0);
+    setProgress(0);
+    setElapsedSeconds(0);
+    setStartedAt(null);
+  }
+
+
+  // ==========================================================
+  // UPLOAD TO BACKEND
+  // ==========================================================
+
+  async function uploadDataset(
+    selectedFile: File,
+  ): Promise<UploadResponse> {
+    const formData =
+      new FormData();
+
+    formData.append(
+      "file",
+      selectedFile,
+    );
+
+    const response =
+      await fetch(
+        `${API_BASE_URL}/api/upload`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+    const data =
+      await response.json()
+        .catch(() => null);
+
+    if (!response.ok) {
+      const message =
+        typeof data?.detail === "string"
+          ? data.detail
+          : "Dataset upload failed.";
+
+      throw new Error(message);
+    }
+
+    return data as UploadResponse;
+  }
+
+
+  // ==========================================================
+  // START BACKEND ANALYSIS
+  // ==========================================================
+
+  async function startAnalysis(
+    uploadedJobId: string,
+  ) {
+    const response =
+      await fetch(
+        `${API_BASE_URL}/api/analysis/run`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            job_id: uploadedJobId,
+          }),
+        },
+      );
+
+    const data =
+      await response.json()
+        .catch(() => null);
+
+    if (!response.ok) {
+      const message =
+        typeof data?.detail === "string"
+          ? data.detail
+          : "Failed to start analysis.";
+
+      throw new Error(message);
+    }
+
+    return data;
+  }
+
+
+  // ==========================================================
+  // POLL BACKEND STATUS
+  // ==========================================================
+
+  async function pollAnalysisStatus(
+    uploadedJobId: string,
+  ) {
+    const response =
+      await fetch(
+        `${API_BASE_URL}/api/analysis/${encodeURIComponent(
+          uploadedJobId,
+        )}/status`,
+        {
+          method: "GET",
+          headers: {
+            Accept:
+              "application/json",
+          },
+        },
+      );
+
+    const data =
+      await response.json()
+        .catch(() => null);
+
+    if (!response.ok) {
+      const message =
+        typeof data?.detail === "string"
+          ? data.detail
+          : "Unable to retrieve analysis status.";
+
+      throw new Error(message);
+    }
+
+    return data as BackendStatusResponse;
+  }
+
+
+  // ==========================================================
+  // GET FINAL RESULT
+  // ==========================================================
+
+  async function getAnalysisResult(
+    uploadedJobId: string,
+  ) {
+    const response =
+      await fetch(
+        `${API_BASE_URL}/api/analysis/${encodeURIComponent(
+          uploadedJobId,
+        )}/result`,
+        {
+          method: "GET",
+          headers: {
+            Accept:
+              "application/json",
+          },
+        },
+      );
+
+    const data =
+      await response.json()
+        .catch(() => null);
+
+    if (!response.ok) {
+      const detail =
+        data?.detail;
+
+      if (
+        typeof detail === "string"
+      ) {
+        throw new Error(detail);
+      }
+
+      if (
+        detail?.message
+      ) {
+        throw new Error(
+          detail.message,
+        );
+      }
+
+      throw new Error(
+        "Unable to retrieve final analysis result.",
+      );
+    }
+
+    return data;
+  }
+
+
+  // ==========================================================
+  // CONVERT BACKEND STEP TO UI INDEX
+  // ==========================================================
+
+  function getStepIndex(
+    step: string | null | undefined,
+    stepNumber?: number,
+  ) {
+    if (step) {
+      const index =
+        ANALYSIS_STEPS.findIndex(
+          (item) =>
+            item.id === step,
+        );
+
+      if (index >= 0) {
+        return index;
+      }
+    }
+
+    if (
+      typeof stepNumber === "number" &&
+      stepNumber > 0
+    ) {
+      return Math.min(
+        stepNumber - 1,
+        ANALYSIS_STEPS.length - 1,
+      );
+    }
+
+    return 0;
+  }
+
+
+  // ==========================================================
+  // RUN COMPLETE ANALYSIS
+  // ==========================================================
+
+  async function handleAnalyze() {
+    if (!file) {
+      setError(
+        "Please upload a dataset first.",
+      );
+
+      return;
+    }
+
+    setError("");
+    setStatus("uploading");
+    setProgress(0);
+    setCurrentStep(0);
+    setBackendStep(null);
+    setElapsedSeconds(0);
+    setStartedAt(null);
+
+
+    try {
+      // --------------------------------------------------------
+      // STEP A â€” UPLOAD DATASET
+      // --------------------------------------------------------
+
+      const upload =
+        await uploadDataset(file);
+
+      const uploadedJobId =
+        upload.job_id;
+
+      setJobId(
+        uploadedJobId,
+      );
+
+
+      // --------------------------------------------------------
+      // STEP B â€” START ANALYSIS
+      // --------------------------------------------------------
+
+      setStatus("starting");
+
+      await startAnalysis(
+        uploadedJobId,
+      );
+
+
+      // --------------------------------------------------------
+      // STEP C â€” INITIAL STATUS
+      // --------------------------------------------------------
+
+      setStatus("queued");
+
+      let finished = false;
+
+      while (!finished) {
+        const statusData =
+          await pollAnalysisStatus(
+            uploadedJobId,
+          );
+
+        const backendStatus =
+          statusData.status;
+
+        const backendProgress =
+          Number(
+            statusData.progress ?? 0,
+          );
+
+        const stepIndex =
+          getStepIndex(
+            statusData.step,
+            statusData.step_number,
+          );
+
+        setBackendStep(
+          statusData.step ??
+            null,
+        );
+
+        setCurrentStep(
+          stepIndex,
+        );
+
+        setProgress(
+          Math.min(
+            100,
+            Math.max(
+              0,
+              Math.round(
+                backendProgress,
+              ),
+            ),
+          ),
+        );
+
+        if (
+          statusData.started_at
+        ) {
+          setStartedAt(
+            statusData.started_at,
+          );
+        }
+
+        if (
+          backendStatus ===
+            "running" ||
+          backendStatus ===
+            "queued"
+        ) {
+          setStatus(
+            backendStatus ===
+              "running"
+              ? "running"
+              : "queued",
+          );
+        }
+
+
+        // ------------------------------------------------------
+        // COMPLETED
+        // ------------------------------------------------------
+
+        if (
+          backendStatus ===
+          "completed"
+        ) {
+          setProgress(100);
+          setCurrentStep(
+            ANALYSIS_STEPS.length - 1,
+          );
+          setBackendStep(
+            "completed",
+          );
+
+          setStatus(
+            "completed",
+          );
+
+          finished = true;
+
+          break;
+        }
+
+
+        // ------------------------------------------------------
+        // FAILED
+        // ------------------------------------------------------
+
+        if (
+          backendStatus ===
+          "failed"
+        ) {
+          const errorMessage =
+            extractBackendError(
+              statusData.error,
+            );
+
+          throw new Error(
+            errorMessage ||
+              statusData.message ||
+              "The analysis pipeline failed.",
+          );
+        }
+
+
+        // ------------------------------------------------------
+        // WAIT BEFORE NEXT POLL
+        // ------------------------------------------------------
+
+        await wait(1500);
+      }
+
+
+      // --------------------------------------------------------
+      // STEP D â€” GET FINAL RESULT
+      // --------------------------------------------------------
+
+      const finalResult =
+        await getAnalysisResult(
+          uploadedJobId,
+        );
+
+
+      // --------------------------------------------------------
+      // SAVE REAL BACKEND RESULT
+      // --------------------------------------------------------
+
+      sessionStorage.setItem(
+        "immunoxai-analysis",
+        JSON.stringify(
+          finalResult,
+        ),
+      );
+
+      sessionStorage.setItem(
+        "immunoxai-job-id",
+        uploadedJobId,
+      );
+
+
+      // --------------------------------------------------------
+      // GO TO RESULTS
+      // --------------------------------------------------------
+
+      await wait(500);
+
+      navigate({
+        to: "/results",
+      });
+    } catch (err) {
+      console.error(
+        "IMMUNO-XAI analysis error:",
+        err,
+      );
+
+      const message =
+        err instanceof Error
+          ? err.message
+          : "An unexpected analysis error occurred.";
+
+      setStatus("failed");
+      setError(message);
+    }
+  }
+
+
+  // ==========================================================
+  // RENDER
+  // ==========================================================
+
+  return (
+    <AppLayout
+      title="Analyze Dataset"
+      subtitle="Run the complete ImmunoXAI single-cell analysis pipeline"
+    >
+      <div className="mx-auto max-w-5xl">
+
+        {!isRunning ? (
+          <UploadCard
+            file={file}
+            status={status}
+            error={error}
+            jobId={jobId}
+            onFileChange={
+              handleFileChange
+            }
+            onClear={clearFile}
+            onAnalyze={
+              handleAnalyze
+            }
+          />
+        ) : (
+          <AnalysisProgressCard
+            file={file}
+            jobId={jobId}
+            currentStep={
+              currentStep
+            }
+            backendStep={
+              backendStep
+            }
+            progress={progress}
+            elapsedSeconds={
+              elapsedSeconds
+            }
+            remainingSeconds={
+              remainingSeconds
+            }
+          />
+        )}
+
+      </div>
+    </AppLayout>
+  );
+}
+
+
+// ============================================================
+// UPLOAD CARD
+// ============================================================
+
+function UploadCard({
+  file,
+  status,
+  error,
+  jobId,
+  onFileChange,
+  onClear,
+  onAnalyze,
+}: {
+  file: File | null;
+  status: AnalysisStatus;
+  error: string;
+  jobId: string | null;
+
+  onFileChange: (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => void;
+
+  onClear: () => void;
+
+  onAnalyze: () => void;
+}) {
+  return (
+    <div className="rounded-2xl border border-border bg-card shadow-sm">
+
+      <div className="border-b border-border p-8">
+
+        <div className="flex items-start gap-4">
+
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+            <Dna className="h-6 w-6" />
+          </div>
+
+          <div>
+
+            <h2 className="text-xl font-semibold text-foreground">
+              Upload your dataset
+            </h2>
+
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-muted-foreground">
+              Upload a single-cell gene expression
+              matrix. ImmunoXAI will validate the
+              dataset and run the complete computational
+              analysis pipeline.
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div className="p-8">
+
+        {!file ? (
+
+          <label className="group flex min-h-[300px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-primary-soft/30 px-6 text-center transition hover:border-primary/50 hover:bg-primary-soft/60">
+
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-card text-primary shadow-sm transition group-hover:scale-105">
+              <UploadCloud className="h-8 w-8" />
+            </div>
+
+            <div className="mt-5 text-base font-medium text-foreground">
+              Upload expression matrix
+            </div>
+
+            <div className="mt-2 text-sm text-muted-foreground">
+              CSV, TSV, TXT, or compressed GZ files
+            </div>
+
+            <div className="mt-4 rounded-lg border border-border bg-card px-3 py-2 text-xs text-muted-foreground">
+              Raw UMI matrices are supported
+            </div>
+
+            <input
+              type="file"
+              accept=".csv,.tsv,.txt,.gz,text/csv,text/tab-separated-values,text/plain,application/gzip"
+              className="hidden"
+              onChange={
+                onFileChange
+              }
+            />
+
+          </label>
+
+        ) : (
+
+          <div className="rounded-2xl border border-border bg-background p-5">
+
+            <div className="flex items-center gap-4">
+
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                <FileText className="h-6 w-6" />
+              </div>
+
+              <div className="min-w-0 flex-1">
+
+                <div className="truncate text-sm font-semibold text-foreground">
+                  {file.name}
+                </div>
+
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {formatFileSize(
+                    file.size,
+                  )}
+                </div>
+
+              </div>
+
+
+              {status ===
+                "ready" && (
+                <div className="flex items-center gap-1.5 text-xs font-medium text-[oklch(0.5_0.14_155)]">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Ready
+                </div>
+              )}
+
+
+              {status ===
+                "failed" && (
+                <div className="flex items-center gap-1.5 text-xs font-medium text-destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  Failed
+                </div>
+              )}
+
+
+              <button
+                type="button"
+                onClick={onClear}
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
+                aria-label="Remove dataset"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+            </div>
+
+
+            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+
+              <InfoItem
+                label="Input"
+                value="Expression matrix"
+              />
+
+              <InfoItem
+                label="Processing"
+                value="Python backend"
+              />
+
+              <InfoItem
+                label="Analysis"
+                value="16-step pipeline"
+              />
+
+            </div>
+
+
+            {jobId && (
+              <div className="mt-3 rounded-lg border border-border bg-muted/30 px-3 py-2">
+
+                <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  Job ID
+                </div>
+
+                <div className="mt-1 break-all font-mono text-xs text-foreground">
+                  {jobId}
+                </div>
+
+              </div>
+            )}
+
+          </div>
+
+        )}
+
+
+        {error && (
+
+          <div className="mt-5 flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+
+            <span>
+              {error}
+            </span>
+
+          </div>
+
+        )}
+
+
+        <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+
+          {file && (
+            <button
+              type="button"
+              onClick={onClear}
+              className="h-11 rounded-lg border border-border bg-card px-5 text-sm font-medium text-foreground transition hover:bg-muted"
+            >
+              Change Dataset
+            </button>
+          )}
+
+
+          <button
+            type="button"
+            disabled={
+              !file ||
+              status ===
+                "uploading" ||
+              status ===
+                "starting"
+            }
+            onClick={
+              onAnalyze
+            }
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground shadow-sm transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+
+            {status ===
+              "uploading" ||
+            status ===
+              "starting" ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <FlaskConical className="h-4 w-4" />
+            )}
+
+            {status ===
+              "uploading"
+              ? "Uploading..."
+              : status ===
+                  "starting"
+                ? "Starting..."
+                : status ===
+                    "failed"
+                  ? "Retry Analysis"
+                  : "Analyze Dataset"}
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
+
+// ============================================================
+// ANALYSIS PROGRESS CARD
+// ============================================================
+
+function AnalysisProgressCard({
+  file,
+  jobId,
+  currentStep,
+  backendStep,
+  progress,
+  elapsedSeconds,
+  remainingSeconds,
+}: {
+  file: File | null;
+  jobId: string | null;
+  currentStep: number;
+  backendStep: string | null;
+  progress: number;
+  elapsedSeconds: number;
+  remainingSeconds: number | null;
+}) {
+  const safeStepIndex =
+    Math.min(
+      Math.max(
+        currentStep,
+        0,
+      ),
+      ANALYSIS_STEPS.length - 1,
+    );
+
+  const activeStep =
+    ANALYSIS_STEPS[
+      safeStepIndex
+    ];
+
+  const ActiveIcon =
+    activeStep.icon;
+
+  return (
+    <div className="rounded-2xl border border-border bg-card shadow-sm">
+
+      <div className="border-b border-border p-8">
+
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+
+          <div className="flex min-w-0 items-start gap-4">
+
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+              <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+
+            <div className="min-w-0">
+
+              <h2 className="text-xl font-semibold text-foreground">
+                Analyzing dataset
+              </h2>
+
+              <p className="mt-1 truncate text-sm text-muted-foreground">
+                {file?.name}
+              </p>
+
+              {jobId && (
+                <p className="mt-1 truncate font-mono text-[10px] text-muted-foreground">
+                  Job: {jobId}
+                </p>
+              )}
+
+            </div>
+
+          </div>
+
+
+          <div className="flex shrink-0 items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
+
+            <Clock3 className="h-4 w-4" />
+
+            <span>
+              {remainingSeconds ===
+              null
+                ? "Estimating..."
+                : `~${formatTime(
+                    remainingSeconds,
+                  )} remaining`}
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div className="mt-8">
+
+          <div className="mb-2 flex items-center justify-between text-xs">
+
+            <span className="font-medium text-foreground">
+              Overall progress
+            </span>
+
+            <span className="font-medium text-primary">
+              {progress}%
+            </span>
+
+          </div>
+
+
+          <div className="h-2 overflow-hidden rounded-full bg-muted">
+
+            <div
+              className="h-full rounded-full bg-primary transition-all duration-500"
+              style={{
+                width: `${progress}%`,
+              }}
+            />
+
+          </div>
+
+        </div>
+
+
+        <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
+
+          <StatBox
+            label="Elapsed"
+            value={formatTime(
+              elapsedSeconds,
+            )}
+          />
+
+          <StatBox
+            label="Current stage"
+            value={`${safeStepIndex + 1}/${ANALYSIS_STEPS.length}`}
+          />
+
+          <StatBox
+            label="Pipeline"
+            value="Python backend"
+          />
+
+        </div>
+
+      </div>
+
+
+      <div className="p-8">
+
+        <div className="rounded-xl border border-primary/20 bg-primary-soft/30 p-5">
+
+          <div className="flex items-start gap-4">
+
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <ActiveIcon className="h-5 w-5" />
+            </div>
+
+            <div className="min-w-0">
+
+              <div className="text-xs font-semibold uppercase tracking-wider text-primary">
+                Current step
+              </div>
+
+              <h3 className="mt-1 text-base font-semibold text-foreground">
+                {activeStep.label}
+              </h3>
+
+              <p className="mt-1 text-sm text-muted-foreground">
+                {activeStep.description}
+              </p>
+
+              {backendStep && (
+                <p className="mt-2 font-mono text-[10px] text-muted-foreground">
+                  Backend: {backendStep}
+                </p>
+              )}
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div className="mt-7">
+
+          <div className="mb-4 text-sm font-semibold text-foreground">
+            Analysis pipeline
+          </div>
+
+
+          <div className="space-y-1">
+
+            {ANALYSIS_STEPS.map(
+              (
+                step,
+                index,
+              ) => {
+
+                const Icon =
+                  step.icon;
+
+                const completed =
+                  index <
+                  safeStepIndex;
+
+                const active =
+                  index ===
+                  safeStepIndex;
+
+                return (
+                  <div
+                    key={
+                      step.id
+                    }
+                    className={[
+                      "flex items-center gap-3 rounded-lg px-3 py-3 transition",
+                      active
+                        ? "bg-primary-soft"
+                        : "bg-transparent",
+                    ].join(
+                      " ",
+                    )}
+                  >
+
+                    <div
+                      className={[
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                        completed
+                          ? "bg-[oklch(0.65_0.16_155)] text-white"
+                          : active
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground",
+                      ].join(
+                        " ",
+                      )}
+                    >
+
+                      {completed ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : active ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Icon className="h-4 w-4" />
+                      )}
+
+                    </div>
+
+
+                    <div className="min-w-0 flex-1">
+
+                      <div
+                        className={[
+                          "text-sm font-medium",
+                          completed ||
+                          active
+                            ? "text-foreground"
+                            : "text-muted-foreground",
+                        ].join(
+                          " ",
+                        )}
+                      >
+                        {step.label}
+                      </div>
+
+
+                      {active && (
+                        <div className="mt-0.5 text-xs text-muted-foreground">
+                          {
+                            step.description
+                          }
+                        </div>
+                      )}
+
+                    </div>
+
+
+                    <div className="text-xs text-muted-foreground">
+
+                      {completed
+                        ? "Complete"
+                        : active
+                          ? "Running"
+                          : "Waiting"}
+
+                    </div>
+
+                  </div>
+                );
+              },
+            )}
+
+          </div>
+
+        </div>
+
+
+        <div className="mt-7 rounded-xl border border-border bg-muted/30 p-4">
+
+          <div className="flex items-start gap-3">
+
+            <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+
+            <div>
+
+              <div className="text-xs font-medium text-foreground">
+                Live backend analysis
+              </div>
+
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                Progress is being reported by the
+                Python/FastAPI analysis pipeline.
+                The interface is not simulating the
+                analysis stages.
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
+
+// ============================================================
+// INFO ITEM
+// ============================================================
+
+function InfoItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-lg border border-border bg-card px-3 py-2.5">
+
+      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+        {label}
+      </div>
+
+      <div className="mt-0.5 text-xs font-medium text-foreground">
+        {value}
+      </div>
+
+    </div>
+  );
+}
+
+
+// ============================================================
+// STAT BOX
+// ============================================================
+
+function StatBox({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-lg border border-border bg-background p-3">
+
+      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+        {label}
+      </div>
+
+      <div className="mt-1 text-sm font-semibold text-foreground">
+        {value}
+      </div>
+
+    </div>
+  );
+}
+
+
+// ============================================================
+// FILE SIZE
+// ============================================================
+
+function formatFileSize(
+  bytes: number,
+) {
+  if (bytes < 1024) {
+    return `${bytes} B`;
+  }
+
+  if (
+    bytes <
+    1024 * 1024
+  ) {
+    return `${(
+      bytes / 1024
+    ).toFixed(1)} KB`;
+  }
+
+  if (
+    bytes <
+    1024 *
+      1024 *
+      1024
+  ) {
+    return `${(
+      bytes /
+      (1024 * 1024)
+    ).toFixed(2)} MB`;
+  }
+
+  return `${(
+    bytes /
+    (1024 *
+      1024 *
+      1024)
+  ).toFixed(2)} GB`;
+}
+
+
+// ============================================================
+// BACKEND ERROR EXTRACTION
+// ============================================================
+
+function extractBackendError(
+  error: unknown,
+): string | null {
+  if (!error) {
+    return null;
+  }
+
+  if (
+    typeof error ===
+    "string"
+  ) {
+    return error;
+  }
+
+  if (
+    typeof error ===
+      "object" &&
+    error !== null
+  ) {
+    const record =
+      error as Record<
+        string,
+        unknown
+      >;
+
+    if (
+      typeof record.message ===
+      "string"
+    ) {
+      return record.message;
+    }
+
+    if (
+      typeof record.detail ===
+      "string"
+    ) {
+      return record.detail;
+    }
+  }
+
+  return null;
+}
+
+
+// ============================================================
+// WAIT
+// ============================================================
+
+function wait(
+  ms: number,
+) {
+  return new Promise<void>(
+    (resolve) => {
+      window.setTimeout(
+        resolve,
+        ms,
+      );
+    },
+  );
+}
+
+
+============================================================
+
+FILE: .\src\lib\validation.ts
+
+============================================================
+
+FILE NOT FOUND

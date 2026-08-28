@@ -1,0 +1,26 @@
+{
+  "input_cells": 913,
+  "input_scores": 6,
+  "clusters": 10,
+  "states": {
+    "Insufficient-Evidence": 865,
+    "Immune-Excluded": 32,
+    "Immune-Suppressed": 15,
+    "Myeloid-Dominant": 1
+  },
+  "configuration": {
+    "minimum_supported_signatures": 2,
+    "minimum_signal": 0.005,
+    "dominance_ratio": 1.25,
+    "suppression_ratio": 1.25,
+    "inflammatory_ratio": 1.15,
+    "antigen_presentation_threshold": 0.01,
+    "cluster_min_fraction": 0.5,
+    "cluster_min_confidence": 0.5
+  },
+  "outputs": {
+    "cell_assignments": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\immune_state_assignment\\cell_immune_states.json",
+    "cluster_assignments": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\immune_state_assignment\\cluster_immune_states.json",
+    "state_distribution": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\immune_state_assignment\\state_distribution.json"
+  }
+}

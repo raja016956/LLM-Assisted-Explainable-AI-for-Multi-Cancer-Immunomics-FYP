@@ -1,0 +1,150 @@
+{
+  "Immune-Excluded": {
+    "n_cells": 32,
+    "fraction": 0.03504928806133625,
+    "supported": true,
+    "pathways": {
+      "glycolysis": {
+        "mean": 0.0890127569437027,
+        "median": 0.04536101967096329,
+        "std": 0.2687862515449524
+      },
+      "oxidative_phosphorylation": {
+        "mean": 0.15896588563919067,
+        "median": 0.15522536635398865,
+        "std": 0.2821173667907715
+      },
+      "fatty_acid_metabolism": {
+        "mean": 0.11453034728765488,
+        "median": 0.12350203841924667,
+        "std": 0.20526814460754395
+      },
+      "interferon_response": {
+        "mean": 0.0003176294267177582,
+        "median": -0.12367157638072968,
+        "std": 0.30344122648239136
+      },
+      "inflammatory_signaling": {
+        "mean": 0.024425752460956573,
+        "median": -0.06933656334877014,
+        "std": 0.29098400473594666
+      },
+      "chemokine_activity": {
+        "mean": 0.034829653799533844,
+        "median": -0.09351689368486404,
+        "std": 0.314100980758667
+      }
+    }
+  },
+  "Immune-Suppressed": {
+    "n_cells": 15,
+    "fraction": 0.01642935377875137,
+    "supported": true,
+    "pathways": {
+      "glycolysis": {
+        "mean": 0.03717007488012314,
+        "median": 0.10225840657949448,
+        "std": 0.42483678460121155
+      },
+      "oxidative_phosphorylation": {
+        "mean": 0.07747556269168854,
+        "median": -0.0015191255370154977,
+        "std": 0.3056304156780243
+      },
+      "fatty_acid_metabolism": {
+        "mean": 0.10120917111635208,
+        "median": 0.08083145320415497,
+        "std": 0.335043728351593
+      },
+      "interferon_response": {
+        "mean": -0.05561097338795662,
+        "median": -0.0764918327331543,
+        "std": 0.1332082450389862
+      },
+      "inflammatory_signaling": {
+        "mean": 0.10106096416711807,
+        "median": 0.052593789994716644,
+        "std": 0.29955580830574036
+      },
+      "chemokine_activity": {
+        "mean": 0.08607564121484756,
+        "median": -0.09351689368486404,
+        "std": 0.3864800035953522
+      }
+    }
+  },
+  "Insufficient-Evidence": {
+    "n_cells": 865,
+    "fraction": 0.9474260679079957,
+    "supported": true,
+    "pathways": {
+      "glycolysis": {
+        "mean": -0.0033999800216406584,
+        "median": -0.011716964654624462,
+        "std": 0.4385795295238495
+      },
+      "oxidative_phosphorylation": {
+        "mean": -0.007898548617959023,
+        "median": 0.0720493346452713,
+        "std": 0.4241757094860077
+      },
+      "fatty_acid_metabolism": {
+        "mean": -0.00656881183385849,
+        "median": 0.0007085025426931679,
+        "std": 0.35891151428222656
+      },
+      "interferon_response": {
+        "mean": 0.0010070822900161147,
+        "median": -0.07295439392328262,
+        "std": 0.3342568576335907
+      },
+      "inflammatory_signaling": {
+        "mean": -0.004157464485615492,
+        "median": -0.24283885955810547,
+        "std": 0.49912846088409424
+      },
+      "chemokine_activity": {
+        "mean": -0.004121012054383755,
+        "median": -0.09351689368486404,
+        "std": 0.6337930560112
+      }
+    }
+  },
+  "Myeloid-Dominant": {
+    "n_cells": 1,
+    "fraction": 0.001095290251916758,
+    "supported": false,
+    "pathways": {
+      "glycolysis": {
+        "mean": -0.46498313546180725,
+        "median": -0.46498313546180725,
+        "std": 0.0
+      },
+      "oxidative_phosphorylation": {
+        "mean": 0.5831817984580994,
+        "median": 0.5831817984580994,
+        "std": 0.0
+      },
+      "fatty_acid_metabolism": {
+        "mean": 0.4989267885684967,
+        "median": 0.4989267885684967,
+        "std": 0.0
+      },
+      "interferon_response": {
+        "mean": -0.04711538180708885,
+        "median": -0.04711538180708885,
+        "std": 0.0
+      },
+      "inflammatory_signaling": {
+        "mean": 1.2986736297607422,
+        "median": 1.2986736297607422,
+        "std": 0.0
+      },
+      "chemokine_activity": {
+        "mean": 1.1589815616607666,
+        "median": 1.1589815616607666,
+        "std": 0.0
+      }
+    }
+  }
+}

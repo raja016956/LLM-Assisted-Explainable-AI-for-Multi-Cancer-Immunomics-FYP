@@ -1,0 +1,1881 @@
+{
+  "method": "Cluster-wise differential expression ranking",
+  "input_cells": 913,
+  "input_genes": 28928,
+  "number_of_clusters": 10,
+  "top_n_genes": 20,
+  "min_expression_fraction": 0.05,
+  "min_fold_change": 1.25,
+  "clusters": {
+    "0": {
+      "cluster_id": 0,
+      "cell_count": 41,
+      "cell_fraction": 0.044906900328587074,
+      "markers": [
+        {
+          "gene": "VSTM2A-OT1",
+          "gene_index": 27687,
+          "mean_expression": 0.06659132242202759,
+          "outside_mean_expression": 0.0023407526314258575,
+          "fold_change": 28.44866943359375,
+          "log2_fold_change": 4.830289363861084,
+          "expression_fraction": 0.07317073170731708
+        },
+        {
+          "gene": "CYP51A1P1",
+          "gene_index": 11205,
+          "mean_expression": 0.11340785026550293,
+          "outside_mean_expression": 0.005326731596142054,
+          "fold_change": 21.290321350097656,
+          "log2_fold_change": 4.412125587463379,
+          "expression_fraction": 0.07317073170731708
+        },
+        {
+          "gene": "STAG3L5P",
+          "gene_index": 25438,
+          "mean_expression": 0.12234508991241455,
+          "outside_mean_expression": 0.007149185054004192,
+          "fold_change": 17.113149642944336,
+          "log2_fold_change": 4.097033500671387,
+          "expression_fraction": 0.0975609756097561
+        },
+        {
+          "gene": "ANKRD24",
+          "gene_index": 7668,
+          "mean_expression": 0.08711352199316025,
+          "outside_mean_expression": 0.005104723386466503,
+          "fold_change": 17.065275192260742,
+          "log2_fold_change": 4.092991828918457,
+          "expression_fraction": 0.07317073170731708
+        },
+        {
+          "gene": "LINC01507",
+          "gene_index": 16429,
+          "mean_expression": 0.08350759744644165,
+          "outside_mean_expression": 0.005709429271519184,
+          "fold_change": 14.62625789642334,
+          "log2_fold_change": 3.8704888820648193,
+          "expression_fraction": 0.07317073170731708
+        },
+        {
+          "gene": "PHACTR3",
+          "gene_index": 20033,
+          "mean_expression": 0.09366351366043091,
+          "outside_mean_expression": 0.008660593070089817,
+          "fold_change": 10.814906120300293,
+          "log2_fold_change": 3.4349491596221924,
+          "expression_fraction": 0.07317073170731708
+        },
+        {
+          "gene": "ANKRD36BP1",
+          "gene_index": 7684,
+          "mean_expression": 0.1261323094367981,
+          "outside_mean_expression": 0.011995188891887665,
+          "fold_change": 10.515240669250488,
+          "log2_fold_change": 3.3944098949432373,
+          "expression_fraction": 0.0975609756097561
+        },
+        {
+          "gene": "CD200",
+          "gene_index": 9990,
+          "mean_expression": 0.11738366633653641,
+          "outside_mean_expression": 0.01183401606976986,
+          "fold_change": 9.919173240661621,
+          "log2_fold_change": 3.3102197647094727,
+          "expression_fraction": 0.07317073170731708
+        },
+        {
+          "gene": "AL356489.2",
+          "gene_index": 6731,
+          "mean_expression": 0.11292517185211182,
+          "outside_mean_expression": 0.01146639697253704,
+          "fold_change": 9.848356246948242,
+          "log2_fold_change": 3.2998828887939453,
+          "expression_fraction": 0.07317073170731708
+        },
+        {
+          "gene": "AC137630.3",
+          "gene_index": 4852,
+          "mean_expression": 0.07718919962644577,
+          "outside_mean_expression": 0.008301153779029846,
+          "fold_change": 9.298609733581543,
+          "log2_fold_change": 3.217015027999878,
+          "expression_fraction": 0.07317073170731708
+        },
+        {
+          "gene": "CERCAM",
+          "gene_index": 10264,
+          "mean_expression": 0.09541381150484085,
+          "outside_mean_expression": 0.010479249060153961,
+          "fold_change": 9.105023384094238,
+          "log2_fold_change": 3.1866626739501953,
+          "expression_fraction": 0.07317073170731708
+        },
+        {
+          "gene": "CBX7",
+          "gene_index": 9760,
+          "mean_expression": 0.14318430423736572,
+          "outside_mean_expression": 0.016940508037805557,
+          "fold_change": 8.452183723449707,
+          "log2_fold_change": 3.079324245452881,
+          "expression_fraction": 0.12195121951219512
+        },
+        {
+          "gene": "AC005921.3",
+          "gene_index": 534,
+          "mean_expression": 0.07738014310598373,
+          "outside_mean_expression": 0.01047817338258028,
+          "fold_change": 7.384888172149658,
+          "log2_fold_change": 2.8845760822296143,
+          "expression_fraction": 0.07317073170731708
+        },
+        {
+          "gene": "AC048341.1",
+          "gene_index": 2607,
+          "mean_expression": 0.10959016531705856,
+          "outside_mean_expression": 0.01542595587670803,
+          "fold_change": 7.104269981384277,
+          "log2_fold_change": 2.828686475753784,
+          "expression_fraction": 0.0975609756097561
+        },
+        {
+          "gene": "LINC01252",
+          "gene_index": 16370,
+          "mean_expression": 0.08705075085163116,
+          "outside_mean_expression": 0.01237327791750431,
+          "fold_change": 7.0353827476501465,
+          "log2_fold_change": 2.814628839492798,
+          "expression_fraction": 0.07317073170731708
+        },
+        {
+          "gene": "LIN7A",
+          "gene_index": 16134,
+          "mean_expression": 0.1371113657951355,
+          "outside_mean_expression": 0.020420793443918228,
+          "fold_change": 6.714301109313965,
+          "log2_fold_change": 2.747237205505371,
+          "expression_fraction": 0.0975609756097561
+        },
+        {
+          "gene": "FBXL17",
+          "gene_index": 12932,
+          "mean_expression": 0.15024985373020172,
+          "outside_mean_expression": 0.023256001994013786,
+          "fold_change": 6.460690975189209,
+          "log2_fold_change": 2.6916885375976562,
+          "expression_fraction": 0.0975609756097561
+        },
+        {
+          "gene": "AGAP11",
+          "gene_index": 5441,
+          "mean_expression": 0.09002700448036194,
+          "outside_mean_expression": 0.014000524766743183,
+          "fold_change": 6.430258750915527,
+          "log2_fold_change": 2.6848766803741455,
+          "expression_fraction": 0.07317073170731708
+        },
+        {
+          "gene": "PPIEL",
+          "gene_index": 20664,
+          "mean_expression": 0.081403449177742,
+          "outside_mean_expression": 0.012756266631186008,
+          "fold_change": 6.3814473152160645,
+          "log2_fold_change": 2.6738836765289307,
+          "expression_fraction": 0.07317073170731708
+        },
+        {
+          "gene": "BICRA",
+          "gene_index": 8997,
+          "mean_expression": 0.20123609900474548,
+          "outside_mean_expression": 0.032941628247499466,
+          "fold_change": 6.1088690757751465,
+          "log2_fold_change": 2.610905408859253,
+          "expression_fraction": 0.14634146341463414
+        }
+      ]
+    },
+    "1": {
+      "cluster_id": 1,
+      "cell_count": 137,
+      "cell_fraction": 0.15005476451259583,
+      "markers": [
+        {
+          "gene": "RB1-DT",
+          "gene_index": 21524,
+          "mean_expression": 0.018721366301178932,
+          "outside_mean_expression": 0.0008875984349288046,
+          "fold_change": 21.09213638305664,
+          "log2_fold_change": 4.3986334800720215,
+          "expression_fraction": 0.0510948905109489
+        },
+        {
+          "gene": "NR3C2",
+          "gene_index": 19101,
+          "mean_expression": 0.01619436778128147,
+          "outside_mean_expression": 0.0011440227972343564,
+          "fold_change": 14.155622482299805,
+          "log2_fold_change": 3.82330322265625,
+          "expression_fraction": 0.0510948905109489
+        },
+        {
+          "gene": "AC004696.1",
+          "gene_index": 256,
+          "mean_expression": 0.012028204277157784,
+          "outside_mean_expression": 0.0010013306746259332,
+          "fold_change": 12.012207984924316,
+          "log2_fold_change": 3.5864293575286865,
+          "expression_fraction": 0.0510948905109489
+        },
+        {
+          "gene": "PRORP",
+          "gene_index": 20899,
+          "mean_expression": 0.018238212913274765,
+          "outside_mean_expression": 0.0015307243447750807,
+          "fold_change": 11.914752960205078,
+          "log2_fold_change": 3.5746772289276123,
+          "expression_fraction": 0.072992700729927
+        },
+        {
+          "gene": "AC131212.1",
+          "gene_index": 4753,
+          "mean_expression": 0.01719779707491398,
+          "outside_mean_expression": 0.0014962118584662676,
+          "fold_change": 11.494218826293945,
+          "log2_fold_change": 3.522836446762085,
+          "expression_fraction": 0.0510948905109489
+        },
+        {
+          "gene": "RPL9P31",
+          "gene_index": 23139,
+          "mean_expression": 0.023593716323375702,
+          "outside_mean_expression": 0.002056400990113616,
+          "fold_change": 11.47330093383789,
+          "log2_fold_change": 3.5202085971832275,
+          "expression_fraction": 0.072992700729927
+        },
+        {
+          "gene": "JAK3",
+          "gene_index": 15386,
+          "mean_expression": 0.023496098816394806,
+          "outside_mean_expression": 0.0021177949383854866,
+          "fold_change": 11.09460163116455,
+          "log2_fold_change": 3.4717860221862793,
+          "expression_fraction": 0.072992700729927
+        },
+        {
+          "gene": "AL445430.1",
+          "gene_index": 7029,
+          "mean_expression": 0.015200089663267136,
+          "outside_mean_expression": 0.0014227373758330941,
+          "fold_change": 10.683686256408691,
+          "log2_fold_change": 3.417337656021118,
+          "expression_fraction": 0.0583941605839416
+        },
+        {
+          "gene": "AP000919.2",
+          "gene_index": 7872,
+          "mean_expression": 0.02270761877298355,
+          "outside_mean_expression": 0.0022315613459795713,
+          "fold_change": 10.175661087036133,
+          "log2_fold_change": 3.347050666809082,
+          "expression_fraction": 0.0583941605839416
+        },
+        {
+          "gene": "AC068446.1",
+          "gene_index": 2736,
+          "mean_expression": 0.03297737240791321,
+          "outside_mean_expression": 0.0033618195448070765,
+          "fold_change": 9.809379577636719,
+          "log2_fold_change": 3.294161796569824,
+          "expression_fraction": 0.072992700729927
+        },
+        {
+          "gene": "RNU6-611P",
+          "gene_index": 22299,
+          "mean_expression": 0.01880282536149025,
+          "outside_mean_expression": 0.002003926318138838,
+          "fold_change": 9.382988929748535,
+          "log2_fold_change": 3.2300474643707275,
+          "expression_fraction": 0.0656934306569343
+        },
+        {
+          "gene": "DCLK1",
+          "gene_index": 11295,
+          "mean_expression": 0.02053586207330227,
+          "outside_mean_expression": 0.002595348283648491,
+          "fold_change": 7.912562847137451,
+          "log2_fold_change": 2.984145164489746,
+          "expression_fraction": 0.0583941605839416
+        },
+        {
+          "gene": "AC130456.2",
+          "gene_index": 4733,
+          "mean_expression": 0.032379668205976486,
+          "outside_mean_expression": 0.004194362089037895,
+          "fold_change": 7.719805717468262,
+          "log2_fold_change": 2.9485645294189453,
+          "expression_fraction": 0.08759124087591241
+        },
+        {
+          "gene": "CEBPB",
+          "gene_index": 10176,
+          "mean_expression": 0.024295102804899216,
+          "outside_mean_expression": 0.003244211431592703,
+          "fold_change": 7.488752841949463,
+          "log2_fold_change": 2.9047255516052246,
+          "expression_fraction": 0.0656934306569343
+        },
+        {
+          "gene": "DEUP1",
+          "gene_index": 11457,
+          "mean_expression": 0.019173767417669296,
+          "outside_mean_expression": 0.002671591704711318,
+          "fold_change": 7.176906108856201,
+          "log2_fold_change": 2.8433620929718018,
+          "expression_fraction": 0.0510948905109489
+        },
+        {
+          "gene": "LEPR",
+          "gene_index": 16067,
+          "mean_expression": 0.023449163883924484,
+          "outside_mean_expression": 0.003298546187579632,
+          "fold_change": 7.108937740325928,
+          "log2_fold_change": 2.829633951187134,
+          "expression_fraction": 0.072992700729927
+        },
+        {
+          "gene": "AL359232.1",
+          "gene_index": 6824,
+          "mean_expression": 0.013934601098299026,
+          "outside_mean_expression": 0.001979419495910406,
+          "fold_change": 7.039738655090332,
+          "log2_fold_change": 2.8155219554901123,
+          "expression_fraction": 0.0510948905109489
+        },
+        {
+          "gene": "CAPSL",
+          "gene_index": 9654,
+          "mean_expression": 0.019978173077106476,
+          "outside_mean_expression": 0.00295052956789732,
+          "fold_change": 6.771045207977295,
+          "log2_fold_change": 2.759378433227539,
+          "expression_fraction": 0.0510948905109489
+        },
+        {
+          "gene": "AL354836.1",
+          "gene_index": 6605,
+          "mean_expression": 0.015767822042107582,
+          "outside_mean_expression": 0.002358104567974806,
+          "fold_change": 6.686648845672607,
+          "log2_fold_change": 2.741283416748047,
+          "expression_fraction": 0.0510948905109489
+        },
+        {
+          "gene": "AC022784.6",
+          "gene_index": 2184,
+          "mean_expression": 0.020665349438786507,
+          "outside_mean_expression": 0.003103206865489483,
+          "fold_change": 6.659351348876953,
+          "log2_fold_change": 2.735381603240967,
+          "expression_fraction": 0.0510948905109489
+        }
+      ]
+    },
+    "2": {
+      "cluster_id": 2,
+      "cell_count": 84,
+      "cell_fraction": 0.09200438116100766,
+      "markers": [
+        {
+          "gene": "CPM",
+          "gene_index": 10848,
+          "mean_expression": 0.06185931712388992,
+          "outside_mean_expression": 0.003877991111949086,
+          "fold_change": 15.951377868652344,
+          "log2_fold_change": 3.9956090450286865,
+          "expression_fraction": 0.07142857142857142
+        },
+        {
+          "gene": "AGR3",
+          "gene_index": 5478,
+          "mean_expression": 0.06537211686372757,
+          "outside_mean_expression": 0.00464011961594224,
+          "fold_change": 14.088452339172363,
+          "log2_fold_change": 3.816441297531128,
+          "expression_fraction": 0.08333333333333333
+        },
+        {
+          "gene": "COL1A1",
+          "gene_index": 10692,
+          "mean_expression": 0.0313091054558754,
+          "outside_mean_expression": 0.0022633052431046963,
+          "fold_change": 13.833349227905273,
+          "log2_fold_change": 3.790078639984131,
+          "expression_fraction": 0.05952380952380952
+        },
+        {
+          "gene": "SIPA1L2",
+          "gene_index": 24295,
+          "mean_expression": 0.030445193871855736,
+          "outside_mean_expression": 0.0025890818797051907,
+          "fold_change": 11.759065628051758,
+          "log2_fold_change": 3.555701494216919,
+          "expression_fraction": 0.05952380952380952
+        },
+        {
+          "gene": "AF235103.3",
+          "gene_index": 5412,
+          "mean_expression": 0.028643209487199783,
+          "outside_mean_expression": 0.0025113150477409363,
+          "fold_change": 11.405657768249512,
+          "log2_fold_change": 3.5116777420043945,
+          "expression_fraction": 0.05952380952380952
+        },
+        {
+          "gene": "ADCY5",
+          "gene_index": 5300,
+          "mean_expression": 0.05273927375674248,
+          "outside_mean_expression": 0.004649693612009287,
+          "fold_change": 11.342524528503418,
+          "log2_fold_change": 3.5036699771881104,
+          "expression_fraction": 0.09523809523809523
+        },
+        {
+          "gene": "AL035701.1",
+          "gene_index": 5799,
+          "mean_expression": 0.04417795315384865,
+          "outside_mean_expression": 0.0041735535487532616,
+          "fold_change": 10.585210800170898,
+          "log2_fold_change": 3.403978109359741,
+          "expression_fraction": 0.05952380952380952
+        },
+        {
+          "gene": "AC008496.2",
+          "gene_index": 930,
+          "mean_expression": 0.04131711646914482,
+          "outside_mean_expression": 0.004469535779207945,
+          "fold_change": 9.244160652160645,
+          "log2_fold_change": 3.2085423469543457,
+          "expression_fraction": 0.05952380952380952
+        },
+        {
+          "gene": "AC091544.2",
+          "gene_index": 3450,
+          "mean_expression": 0.04073302820324898,
+          "outside_mean_expression": 0.004659651312977076,
+          "fold_change": 8.741645812988281,
+          "log2_fold_change": 3.1279048919677734,
+          "expression_fraction": 0.05952380952380952
+        },
+        {
+          "gene": "MAFF",
+          "gene_index": 17080,
+          "mean_expression": 0.042574722319841385,
+          "outside_mean_expression": 0.005076828878372908,
+          "fold_change": 8.38608455657959,
+          "log2_fold_change": 3.067997455596924,
+          "expression_fraction": 0.08333333333333333
+        },
+        {
+          "gene": "ARHGEF6",
+          "gene_index": 8396,
+          "mean_expression": 0.027395034208893776,
+          "outside_mean_expression": 0.0034329770132899284,
+          "fold_change": 7.9799628257751465,
+          "log2_fold_change": 2.996381998062134,
+          "expression_fraction": 0.08333333333333333
+        },
+        {
+          "gene": "TMOD1",
+          "gene_index": 26519,
+          "mean_expression": 0.04012373834848404,
+          "outside_mean_expression": 0.005029215943068266,
+          "fold_change": 7.978128433227539,
+          "log2_fold_change": 2.9960503578186035,
+          "expression_fraction": 0.07142857142857142
+        },
+        {
+          "gene": "PCSK5",
+          "gene_index": 19815,
+          "mean_expression": 0.03178386390209198,
+          "outside_mean_expression": 0.0040168315172195435,
+          "fold_change": 7.912668704986572,
+          "log2_fold_change": 2.984164237976074,
+          "expression_fraction": 0.07142857142857142
+        },
+        {
+          "gene": "SLC25A5-AS1",
+          "gene_index": 24461,
+          "mean_expression": 0.025574322789907455,
+          "outside_mean_expression": 0.0032330600079149008,
+          "fold_change": 7.910251140594482,
+          "log2_fold_change": 2.9837234020233154,
+          "expression_fraction": 0.05952380952380952
+        },
+        {
+          "gene": "MEIS3",
+          "gene_index": 17413,
+          "mean_expression": 0.06318238377571106,
+          "outside_mean_expression": 0.008016038686037064,
+          "fold_change": 7.881994724273682,
+          "log2_fold_change": 2.97856068611145,
+          "expression_fraction": 0.10714285714285714
+        },
+        {
+          "gene": "RAB11FIP1P1",
+          "gene_index": 21291,
+          "mean_expression": 0.025326766073703766,
+          "outside_mean_expression": 0.003226574044674635,
+          "fold_change": 7.849428176879883,
+          "log2_fold_change": 2.9725875854492188,
+          "expression_fraction": 0.05952380952380952
+        },
+        {
+          "gene": "AC129926.1",
+          "gene_index": 4726,
+          "mean_expression": 0.06105189397931099,
+          "outside_mean_expression": 0.00778106227517128,
+          "fold_change": 7.846214771270752,
+          "log2_fold_change": 2.971996784210205,
+          "expression_fraction": 0.09523809523809523
+        },
+        {
+          "gene": "NTAN1P2",
+          "gene_index": 19184,
+          "mean_expression": 0.039237577468156815,
+          "outside_mean_expression": 0.005048336926847696,
+          "fold_change": 7.772375583648682,
+          "log2_fold_change": 2.958355665206909,
+          "expression_fraction": 0.07142857142857142
+        },
+        {
+          "gene": "ANKRD9",
+          "gene_index": 7705,
+          "mean_expression": 0.016330191865563393,
+          "outside_mean_expression": 0.0022065085358917713,
+          "fold_change": 7.400917053222656,
+          "log2_fold_change": 2.8877041339874268,
+          "expression_fraction": 0.05952380952380952
+        },
+        {
+          "gene": "SHE",
+          "gene_index": 24232,
+          "mean_expression": 0.07500885426998138,
+          "outside_mean_expression": 0.010155714116990566,
+          "fold_change": 7.385876178741455,
+          "log2_fold_change": 2.8847689628601074,
+          "expression_fraction": 0.14285714285714285
+        }
+      ]
+    },
+    "3": {
+      "cluster_id": 3,
+      "cell_count": 157,
+      "cell_fraction": 0.171960569550931,
+      "markers": [
+        {
+          "gene": "RPS15P9",
+          "gene_index": 23231,
+          "mean_expression": 0.020557966083288193,
+          "outside_mean_expression": 0.001936314394697547,
+          "fold_change": 10.61705493927002,
+          "log2_fold_change": 3.4083118438720703,
+          "expression_fraction": 0.07006369426751592
+        },
+        {
+          "gene": "CAMTA1-IT1",
+          "gene_index": 9624,
+          "mean_expression": 0.026937387883663177,
+          "outside_mean_expression": 0.002706699538975954,
+          "fold_change": 9.952113151550293,
+          "log2_fold_change": 3.315002918243408,
+          "expression_fraction": 0.057324840764331204
+        },
+        {
+          "gene": "AL445685.2",
+          "gene_index": 7040,
+          "mean_expression": 0.019212711602449417,
+          "outside_mean_expression": 0.0020949714817106724,
+          "fold_change": 9.170866966247559,
+          "log2_fold_change": 3.1970582008361816,
+          "expression_fraction": 0.057324840764331204
+        },
+        {
+          "gene": "RPL7P30",
+          "gene_index": 23089,
+          "mean_expression": 0.02589007094502449,
+          "outside_mean_expression": 0.002917940029874444,
+          "fold_change": 8.872719764709473,
+          "log2_fold_change": 3.149376392364502,
+          "expression_fraction": 0.07006369426751592
+        },
+        {
+          "gene": "RPL23AP94",
+          "gene_index": 22750,
+          "mean_expression": 0.02995625138282776,
+          "outside_mean_expression": 0.0034442932810634375,
+          "fold_change": 8.697356224060059,
+          "log2_fold_change": 3.120576858520508,
+          "expression_fraction": 0.08917197452229299
+        },
+        {
+          "gene": "ELOBP2",
+          "gene_index": 12271,
+          "mean_expression": 0.04862647131085396,
+          "outside_mean_expression": 0.0059326388873159885,
+          "fold_change": 8.196431159973145,
+          "log2_fold_change": 3.0349957942962646,
+          "expression_fraction": 0.14012738853503184
+        },
+        {
+          "gene": "RAMACL",
+          "gene_index": 21432,
+          "mean_expression": 0.020221922546625137,
+          "outside_mean_expression": 0.0029748370870947838,
+          "fold_change": 6.7976555824279785,
+          "log2_fold_change": 2.7650372982025146,
+          "expression_fraction": 0.05095541401273885
+        },
+        {
+          "gene": "LAMTOR5P1",
+          "gene_index": 15988,
+          "mean_expression": 0.01754361018538475,
+          "outside_mean_expression": 0.002608812414109707,
+          "fold_change": 6.724747657775879,
+          "log2_fold_change": 2.7494802474975586,
+          "expression_fraction": 0.057324840764331204
+        },
+        {
+          "gene": "RPL23AP96",
+          "gene_index": 22752,
+          "mean_expression": 0.03151356056332588,
+          "outside_mean_expression": 0.004762890748679638,
+          "fold_change": 6.616476535797119,
+          "log2_fold_change": 2.7260632514953613,
+          "expression_fraction": 0.07006369426751592
+        },
+        {
+          "gene": "RPL31P40",
+          "gene_index": 22825,
+          "mean_expression": 0.029080484062433243,
+          "outside_mean_expression": 0.004655739292502403,
+          "fold_change": 6.246157169342041,
+          "log2_fold_change": 2.6429688930511475,
+          "expression_fraction": 0.07006369426751592
+        },
+        {
+          "gene": "AC010632.1",
+          "gene_index": 1361,
+          "mean_expression": 0.02527814731001854,
+          "outside_mean_expression": 0.004102465696632862,
+          "fold_change": 6.16169548034668,
+          "log2_fold_change": 2.6233274936676025,
+          "expression_fraction": 0.06369426751592357
+        },
+        {
+          "gene": "AC026167.1",
+          "gene_index": 2401,
+          "mean_expression": 0.029839761555194855,
+          "outside_mean_expression": 0.004950331058353186,
+          "fold_change": 6.027830600738525,
+          "log2_fold_change": 2.5916388034820557,
+          "expression_fraction": 0.07006369426751592
+        },
+        {
+          "gene": "AC023050.1",
+          "gene_index": 2207,
+          "mean_expression": 0.011033555492758751,
+          "outside_mean_expression": 0.0018418978434056044,
+          "fold_change": 5.990315914154053,
+          "log2_fold_change": 2.582632064819336,
+          "expression_fraction": 0.05095541401273885
+        },
+        {
+          "gene": "PPIAP91",
+          "gene_index": 20659,
+          "mean_expression": 0.024253685027360916,
+          "outside_mean_expression": 0.004128817468881607,
+          "fold_change": 5.874244213104248,
+          "log2_fold_change": 2.554403305053711,
+          "expression_fraction": 0.07006369426751592
+        },
+        {
+          "gene": "RPL17P3",
+          "gene_index": 22551,
+          "mean_expression": 0.024127749726176262,
+          "outside_mean_expression": 0.0041866544634103775,
+          "fold_change": 5.7630133628845215,
+          "log2_fold_change": 2.5268232822418213,
+          "expression_fraction": 0.07006369426751592
+        },
+        {
+          "gene": "RPS10P21",
+          "gene_index": 23177,
+          "mean_expression": 0.02257857471704483,
+          "outside_mean_expression": 0.004016294609755278,
+          "fold_change": 5.621741771697998,
+          "log2_fold_change": 2.4910171031951904,
+          "expression_fraction": 0.057324840764331204
+        },
+        {
+          "gene": "AL451139.1",
+          "gene_index": 7088,
+          "mean_expression": 0.02292681857943535,
+          "outside_mean_expression": 0.004081786144524813,
+          "fold_change": 5.61685848236084,
+          "log2_fold_change": 2.4897634983062744,
+          "expression_fraction": 0.05095541401273885
+        },
+        {
+          "gene": "RPL39P5",
+          "gene_index": 22947,
+          "mean_expression": 0.05228661000728607,
+          "outside_mean_expression": 0.00937984511256218,
+          "fold_change": 5.574357032775879,
+          "log2_fold_change": 2.4788053035736084,
+          "expression_fraction": 0.11464968152866241
+        },
+        {
+          "gene": "AL355075.4",
+          "gene_index": 6634,
+          "mean_expression": 0.030136968940496445,
+          "outside_mean_expression": 0.0054540387354791164,
+          "fold_change": 5.525623798370361,
+          "log2_fold_change": 2.466137409210205,
+          "expression_fraction": 0.07643312101910828
+        },
+        {
+          "gene": "AC233279.1",
+          "gene_index": 4984,
+          "mean_expression": 0.022288233041763306,
+          "outside_mean_expression": 0.004088359419256449,
+          "fold_change": 5.451631546020508,
+          "log2_fold_change": 2.446688175201416,
+          "expression_fraction": 0.057324840764331204
+        }
+      ]
+    },
+    "4": {
+      "cluster_id": 4,
+      "cell_count": 110,
+      "cell_fraction": 0.12048192771084337,
+      "markers": [
+        {
+          "gene": "CIART",
+          "gene_index": 10443,
+          "mean_expression": 0.034890785813331604,
+          "outside_mean_expression": 0.003953718114644289,
+          "fold_change": 8.824801445007324,
+          "log2_fold_change": 3.141563892364502,
+          "expression_fraction": 0.05454545454545455
+        },
+        {
+          "gene": "KRT18P21",
+          "gene_index": 15828,
+          "mean_expression": 0.045089270919561386,
+          "outside_mean_expression": 0.005345062352716923,
+          "fold_change": 8.435685157775879,
+          "log2_fold_change": 3.076505184173584,
+          "expression_fraction": 0.07272727272727274
+        },
+        {
+          "gene": "AC073325.2",
+          "gene_index": 2862,
+          "mean_expression": 0.0553416907787323,
+          "outside_mean_expression": 0.007604323793202639,
+          "fold_change": 7.277659893035889,
+          "log2_fold_change": 2.8634746074676514,
+          "expression_fraction": 0.09090909090909093
+        },
+        {
+          "gene": "CHST8",
+          "gene_index": 10429,
+          "mean_expression": 0.027902716770768166,
+          "outside_mean_expression": 0.004121450241655111,
+          "fold_change": 6.770120143890381,
+          "log2_fold_change": 2.759181499481201,
+          "expression_fraction": 0.06363636363636364
+        },
+        {
+          "gene": "NRAV",
+          "gene_index": 19111,
+          "mean_expression": 0.05409635230898857,
+          "outside_mean_expression": 0.008455290459096432,
+          "fold_change": 6.397928714752197,
+          "log2_fold_change": 2.677604913711548,
+          "expression_fraction": 0.08181818181818183
+        },
+        {
+          "gene": "GPR135",
+          "gene_index": 13884,
+          "mean_expression": 0.038964249193668365,
+          "outside_mean_expression": 0.00615121703594923,
+          "fold_change": 6.334395885467529,
+          "log2_fold_change": 2.6632070541381836,
+          "expression_fraction": 0.06363636363636364
+        },
+        {
+          "gene": "ATOH7",
+          "gene_index": 8617,
+          "mean_expression": 0.02625076100230217,
+          "outside_mean_expression": 0.004183206707239151,
+          "fold_change": 6.275271415710449,
+          "log2_fold_change": 2.6496777534484863,
+          "expression_fraction": 0.05454545454545455
+        },
+        {
+          "gene": "SPOUT1",
+          "gene_index": 25230,
+          "mean_expression": 0.02068144641816616,
+          "outside_mean_expression": 0.003324435791000724,
+          "fold_change": 6.221038341522217,
+          "log2_fold_change": 2.637155294418335,
+          "expression_fraction": 0.05454545454545455
+        },
+        {
+          "gene": "SEMA3F-AS1",
+          "gene_index": 23997,
+          "mean_expression": 0.029229823499917984,
+          "outside_mean_expression": 0.005432930309325457,
+          "fold_change": 5.380120754241943,
+          "log2_fold_change": 2.427638530731201,
+          "expression_fraction": 0.05454545454545455
+        },
+        {
+          "gene": "TEAD3",
+          "gene_index": 25974,
+          "mean_expression": 0.0429968498647213,
+          "outside_mean_expression": 0.008638851344585419,
+          "fold_change": 4.977148532867432,
+          "log2_fold_change": 2.315319538116455,
+          "expression_fraction": 0.07272727272727274
+        },
+        {
+          "gene": "AC023157.3",
+          "gene_index": 2213,
+          "mean_expression": 0.04922154173254967,
+          "outside_mean_expression": 0.010126937180757523,
+          "fold_change": 4.860456466674805,
+          "log2_fold_change": 2.2810916900634766,
+          "expression_fraction": 0.07272727272727274
+        },
+        {
+          "gene": "ALDH7A1P1",
+          "gene_index": 7506,
+          "mean_expression": 0.10279954224824905,
+          "outside_mean_expression": 0.022619208320975304,
+          "fold_change": 4.5447893142700195,
+          "log2_fold_change": 2.184213399887085,
+          "expression_fraction": 0.15454545454545457
+        },
+        {
+          "gene": "EEF1A1P37",
+          "gene_index": 12009,
+          "mean_expression": 0.04088185727596283,
+          "outside_mean_expression": 0.009048113599419594,
+          "fold_change": 4.518273830413818,
+          "log2_fold_change": 2.175771713256836,
+          "expression_fraction": 0.07272727272727274
+        },
+        {
+          "gene": "C5orf47",
+          "gene_index": 9468,
+          "mean_expression": 0.0299654770642519,
+          "outside_mean_expression": 0.006634568329900503,
+          "fold_change": 4.516567230224609,
+          "log2_fold_change": 2.1752266883850098,
+          "expression_fraction": 0.05454545454545455
+        },
+        {
+          "gene": "ABHD16A",
+          "gene_index": 77,
+          "mean_expression": 0.07097115367650986,
+          "outside_mean_expression": 0.015812106430530548,
+          "fold_change": 4.488405704498291,
+          "log2_fold_change": 2.166203022003174,
+          "expression_fraction": 0.10909090909090911
+        },
+        {
+          "gene": "FHL1",
+          "gene_index": 13065,
+          "mean_expression": 0.07128125429153442,
+          "outside_mean_expression": 0.016231033951044083,
+          "fold_change": 4.391664028167725,
+          "log2_fold_change": 2.134767770767212,
+          "expression_fraction": 0.08181818181818183
+        },
+        {
+          "gene": "OSMR",
+          "gene_index": 19464,
+          "mean_expression": 0.052827898412942886,
+          "outside_mean_expression": 0.01211737934499979,
+          "fold_change": 4.359679698944092,
+          "log2_fold_change": 2.1242220401763916,
+          "expression_fraction": 0.09090909090909093
+        },
+        {
+          "gene": "METRN",
+          "gene_index": 17433,
+          "mean_expression": 0.027874568477272987,
+          "outside_mean_expression": 0.006428413093090057,
+          "fold_change": 4.336150646209717,
+          "log2_fold_change": 2.116414785385132,
+          "expression_fraction": 0.05454545454545455
+        },
+        {
+          "gene": "TMEM156",
+          "gene_index": 26352,
+          "mean_expression": 0.048047713935375214,
+          "outside_mean_expression": 0.011101980693638325,
+          "fold_change": 4.327850341796875,
+          "log2_fold_change": 2.1136505603790283,
+          "expression_fraction": 0.07272727272727274
+        },
+        {
+          "gene": "AP000593.4",
+          "gene_index": 7805,
+          "mean_expression": 0.02384931966662407,
+          "outside_mean_expression": 0.005516699515283108,
+          "fold_change": 4.323113441467285,
+          "log2_fold_change": 2.1120707988739014,
+          "expression_fraction": 0.05454545454545455
+        }
+      ]
+    },
+    "5": {
+      "cluster_id": 5,
+      "cell_count": 60,
+      "cell_fraction": 0.06571741511500548,
+      "markers": [
+        {
+          "gene": "RNF152",
+          "gene_index": 22099,
+          "mean_expression": 0.055109456181526184,
+          "outside_mean_expression": 0.0013416694710031152,
+          "fold_change": 41.075252532958984,
+          "log2_fold_change": 5.3601975440979,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "FMO4",
+          "gene_index": 13133,
+          "mean_expression": 0.04991468787193298,
+          "outside_mean_expression": 0.003032807493582368,
+          "fold_change": 16.458240509033203,
+          "log2_fold_change": 4.040738105773926,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "TPH1",
+          "gene_index": 26684,
+          "mean_expression": 0.03953158110380173,
+          "outside_mean_expression": 0.0024061372969299555,
+          "fold_change": 16.429471969604492,
+          "log2_fold_change": 4.038214206695557,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "AC027796.1",
+          "gene_index": 2530,
+          "mean_expression": 0.03717146813869476,
+          "outside_mean_expression": 0.0023004210088402033,
+          "fold_change": 16.15854263305664,
+          "log2_fold_change": 4.014225006103516,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "ASB14",
+          "gene_index": 8522,
+          "mean_expression": 0.08565618842840195,
+          "outside_mean_expression": 0.005310497246682644,
+          "fold_change": 16.129594802856445,
+          "log2_fold_change": 4.011638164520264,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "AC093535.1",
+          "gene_index": 3724,
+          "mean_expression": 0.050111450254917145,
+          "outside_mean_expression": 0.0038056818302720785,
+          "fold_change": 13.167531967163086,
+          "log2_fold_change": 3.7189130783081055,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "AC106028.3",
+          "gene_index": 4206,
+          "mean_expression": 0.06431126594543457,
+          "outside_mean_expression": 0.005711227655410767,
+          "fold_change": 11.260496139526367,
+          "log2_fold_change": 3.4931983947753906,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "COL9A1",
+          "gene_index": 10715,
+          "mean_expression": 0.05539989843964577,
+          "outside_mean_expression": 0.005394836887717247,
+          "fold_change": 10.269057273864746,
+          "log2_fold_change": 3.360231876373291,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "RAB6C",
+          "gene_index": 21351,
+          "mean_expression": 0.06854528188705444,
+          "outside_mean_expression": 0.0069237384013831615,
+          "fold_change": 9.90003776550293,
+          "log2_fold_change": 3.30743408203125,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "ALDH3B1",
+          "gene_index": 7500,
+          "mean_expression": 0.05505950748920441,
+          "outside_mean_expression": 0.005606791470199823,
+          "fold_change": 9.820143699645996,
+          "log2_fold_change": 3.2957441806793213,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "AP002985.1",
+          "gene_index": 8057,
+          "mean_expression": 0.055634044110774994,
+          "outside_mean_expression": 0.0058069126680493355,
+          "fold_change": 9.580656051635742,
+          "log2_fold_change": 3.260124444961548,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "AC111006.1",
+          "gene_index": 4405,
+          "mean_expression": 0.04855400323867798,
+          "outside_mean_expression": 0.005185755435377359,
+          "fold_change": 9.362955093383789,
+          "log2_fold_change": 3.226963996887207,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "ITGA3",
+          "gene_index": 15327,
+          "mean_expression": 0.10493135452270508,
+          "outside_mean_expression": 0.011857777833938599,
+          "fold_change": 8.849157333374023,
+          "log2_fold_change": 3.1455399990081787,
+          "expression_fraction": 0.09999999999999999
+        },
+        {
+          "gene": "P3H1",
+          "gene_index": 19526,
+          "mean_expression": 0.08463093638420105,
+          "outside_mean_expression": 0.009744205512106419,
+          "fold_change": 8.685256958007812,
+          "log2_fold_change": 3.1185684204101562,
+          "expression_fraction": 0.08333333333333333
+        },
+        {
+          "gene": "ESAM",
+          "gene_index": 12502,
+          "mean_expression": 0.04393092542886734,
+          "outside_mean_expression": 0.0052377707324922085,
+          "fold_change": 8.387331008911133,
+          "log2_fold_change": 3.068211793899536,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "AC106820.3",
+          "gene_index": 4231,
+          "mean_expression": 0.04127398878335953,
+          "outside_mean_expression": 0.005038890987634659,
+          "fold_change": 8.191083908081055,
+          "log2_fold_change": 3.0340542793273926,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "NLGN1",
+          "gene_index": 18887,
+          "mean_expression": 0.05195152014493942,
+          "outside_mean_expression": 0.006389373913407326,
+          "fold_change": 8.130924224853516,
+          "log2_fold_change": 3.0234193801879883,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "ANKRD23",
+          "gene_index": 7667,
+          "mean_expression": 0.04042162746191025,
+          "outside_mean_expression": 0.005107564851641655,
+          "fold_change": 7.914068698883057,
+          "log2_fold_change": 2.984419584274292,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "AC105074.1",
+          "gene_index": 4171,
+          "mean_expression": 0.049758002161979675,
+          "outside_mean_expression": 0.006307851057499647,
+          "fold_change": 7.888264179229736,
+          "log2_fold_change": 2.979707956314087,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "AC011479.5",
+          "gene_index": 1493,
+          "mean_expression": 0.039995692670345306,
+          "outside_mean_expression": 0.0051252287812530994,
+          "fold_change": 7.803688049316406,
+          "log2_fold_change": 2.964156150817871,
+          "expression_fraction": 0.05
+        }
+      ]
+    },
+    "6": {
+      "cluster_id": 6,
+      "cell_count": 45,
+      "cell_fraction": 0.04928806133625411,
+      "markers": [
+        {
+          "gene": "LRFN2",
+          "gene_index": 16853,
+          "mean_expression": 0.12433512508869171,
+          "outside_mean_expression": 0.0021000290289521217,
+          "fold_change": 59.206356048583984,
+          "log2_fold_change": 5.8876800537109375,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "CATSPERZ",
+          "gene_index": 9718,
+          "mean_expression": 0.11205436289310455,
+          "outside_mean_expression": 0.0022750834468752146,
+          "fold_change": 49.252838134765625,
+          "log2_fold_change": 5.622135162353516,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "GALNT16",
+          "gene_index": 13418,
+          "mean_expression": 0.12283593416213989,
+          "outside_mean_expression": 0.00430653989315033,
+          "fold_change": 28.523109436035156,
+          "log2_fold_change": 4.834059238433838,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "RPL17P44",
+          "gene_index": 22560,
+          "mean_expression": 0.11204676330089569,
+          "outside_mean_expression": 0.00787416659295559,
+          "fold_change": 14.22966480255127,
+          "log2_fold_change": 3.8308298587799072,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "RPSAP16",
+          "gene_index": 23525,
+          "mean_expression": 0.12738759815692902,
+          "outside_mean_expression": 0.010616008192300797,
+          "fold_change": 11.999574661254883,
+          "log2_fold_change": 3.584911346435547,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "RPS2P4",
+          "gene_index": 23388,
+          "mean_expression": 0.13343656063079834,
+          "outside_mean_expression": 0.012496672570705414,
+          "fold_change": 10.677766799926758,
+          "log2_fold_change": 3.4165380001068115,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "AC106872.3",
+          "gene_index": 4240,
+          "mean_expression": 0.12340425699949265,
+          "outside_mean_expression": 0.015467011369764805,
+          "fold_change": 7.978545188903809,
+          "log2_fold_change": 2.9961256980895996,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "BTF3P12",
+          "gene_index": 9176,
+          "mean_expression": 0.12016624212265015,
+          "outside_mean_expression": 0.01547840517014265,
+          "fold_change": 7.763476371765137,
+          "log2_fold_change": 2.956702709197998,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "RPL22P19",
+          "gene_index": 22665,
+          "mean_expression": 0.1197056919336319,
+          "outside_mean_expression": 0.01723230630159378,
+          "fold_change": 6.946584701538086,
+          "log2_fold_change": 2.7963037490844727,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "CR392039.3",
+          "gene_index": 10877,
+          "mean_expression": 0.12317706644535065,
+          "outside_mean_expression": 0.0182245671749115,
+          "fold_change": 6.758846759796143,
+          "log2_fold_change": 2.756777048110962,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "AC005562.1",
+          "gene_index": 457,
+          "mean_expression": 0.12514843046665192,
+          "outside_mean_expression": 0.019702132791280746,
+          "fold_change": 6.352024078369141,
+          "log2_fold_change": 2.6672163009643555,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "AL445433.1",
+          "gene_index": 7030,
+          "mean_expression": 0.12335380911827087,
+          "outside_mean_expression": 0.019453929737210274,
+          "fold_change": 6.340816497802734,
+          "log2_fold_change": 2.664668560028076,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "AL355309.1",
+          "gene_index": 6639,
+          "mean_expression": 0.12407532334327698,
+          "outside_mean_expression": 0.01980765163898468,
+          "fold_change": 6.26400899887085,
+          "log2_fold_change": 2.6470861434936523,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "RBM14-RBM4",
+          "gene_index": 21554,
+          "mean_expression": 0.12213079631328583,
+          "outside_mean_expression": 0.019715161994099617,
+          "fold_change": 6.194764614105225,
+          "log2_fold_change": 2.631049394607544,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "RPS2P48",
+          "gene_index": 23392,
+          "mean_expression": 0.12220416963100433,
+          "outside_mean_expression": 0.021690145134925842,
+          "fold_change": 5.634086608886719,
+          "log2_fold_change": 2.4941816329956055,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "ZHX2",
+          "gene_index": 28270,
+          "mean_expression": 0.10832326114177704,
+          "outside_mean_expression": 0.019254671409726143,
+          "fold_change": 5.625816822052002,
+          "log2_fold_change": 2.492062568664551,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "AC007386.1",
+          "gene_index": 741,
+          "mean_expression": 0.12802095711231232,
+          "outside_mean_expression": 0.02302604913711548,
+          "fold_change": 5.559831142425537,
+          "log2_fold_change": 2.475041151046753,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "RPL10AP3",
+          "gene_index": 22432,
+          "mean_expression": 0.12162759900093079,
+          "outside_mean_expression": 0.022396713495254517,
+          "fold_change": 5.430599689483643,
+          "log2_fold_change": 2.4411115646362305,
+          "expression_fraction": 0.06666666666666667
+        },
+        {
+          "gene": "PPIAL4A",
+          "gene_index": 20573,
+          "mean_expression": 0.1565917432308197,
+          "outside_mean_expression": 0.028889447450637817,
+          "fold_change": 5.4203782081604,
+          "log2_fold_change": 2.4383935928344727,
+          "expression_fraction": 0.08888888888888889
+        },
+        {
+          "gene": "AC015983.1",
+          "gene_index": 1767,
+          "mean_expression": 0.11523088812828064,
+          "outside_mean_expression": 0.02233978733420372,
+          "fold_change": 5.1581010818481445,
+          "log2_fold_change": 2.366840124130249,
+          "expression_fraction": 0.06666666666666667
+        }
+      ]
+    },
+    "7": {
+      "cluster_id": 7,
+      "cell_count": 117,
+      "cell_fraction": 0.12814895947426067,
+      "markers": [
+        {
+          "gene": "C1QBPP2",
+          "gene_index": 9357,
+          "mean_expression": 0.03106766752898693,
+          "outside_mean_expression": 0.0014455162454396486,
+          "fold_change": 21.49242401123047,
+          "log2_fold_change": 4.425756454467773,
+          "expression_fraction": 0.059829059829059825
+        },
+        {
+          "gene": "GALM",
+          "gene_index": 13409,
+          "mean_expression": 0.03624473884701729,
+          "outside_mean_expression": 0.00310935964807868,
+          "fold_change": 11.65665340423584,
+          "log2_fold_change": 3.543081760406494,
+          "expression_fraction": 0.05128205128205128
+        },
+        {
+          "gene": "LINC01003",
+          "gene_index": 16303,
+          "mean_expression": 0.03601459041237831,
+          "outside_mean_expression": 0.003097534878179431,
+          "fold_change": 11.626852035522461,
+          "log2_fold_change": 3.539388656616211,
+          "expression_fraction": 0.06837606837606837
+        },
+        {
+          "gene": "AC092017.1",
+          "gene_index": 3487,
+          "mean_expression": 0.05602005869150162,
+          "outside_mean_expression": 0.007937561720609665,
+          "fold_change": 7.057589530944824,
+          "log2_fold_change": 2.8191754817962646,
+          "expression_fraction": 0.1282051282051282
+        },
+        {
+          "gene": "GRAMD1B",
+          "gene_index": 13950,
+          "mean_expression": 0.024193286895751953,
+          "outside_mean_expression": 0.003618663176894188,
+          "fold_change": 6.685696125030518,
+          "log2_fold_change": 2.7410778999328613,
+          "expression_fraction": 0.059829059829059825
+        },
+        {
+          "gene": "TMEM59L",
+          "gene_index": 26484,
+          "mean_expression": 0.028811227530241013,
+          "outside_mean_expression": 0.004343850072473288,
+          "fold_change": 6.632646560668945,
+          "log2_fold_change": 2.7295846939086914,
+          "expression_fraction": 0.059829059829059825
+        },
+        {
+          "gene": "VTRNA1-1",
+          "gene_index": 27699,
+          "mean_expression": 0.033085912466049194,
+          "outside_mean_expression": 0.005207884591072798,
+          "fold_change": 6.353041648864746,
+          "log2_fold_change": 2.667447566986084,
+          "expression_fraction": 0.06837606837606837
+        },
+        {
+          "gene": "RBMS3",
+          "gene_index": 21596,
+          "mean_expression": 0.023838713765144348,
+          "outside_mean_expression": 0.00389724038541317,
+          "fold_change": 6.116817951202393,
+          "log2_fold_change": 2.612781286239624,
+          "expression_fraction": 0.05128205128205128
+        },
+        {
+          "gene": "RPL35AP31",
+          "gene_index": 22882,
+          "mean_expression": 0.02163124270737171,
+          "outside_mean_expression": 0.0038163154385983944,
+          "fold_change": 5.668095111846924,
+          "log2_fold_change": 2.502863883972168,
+          "expression_fraction": 0.059829059829059825
+        },
+        {
+          "gene": "AC090515.3",
+          "gene_index": 3321,
+          "mean_expression": 0.03140654414892197,
+          "outside_mean_expression": 0.005685096140950918,
+          "fold_change": 5.5243635177612305,
+          "log2_fold_change": 2.465808153152466,
+          "expression_fraction": 0.06837606837606837
+        },
+        {
+          "gene": "AC005224.2",
+          "gene_index": 383,
+          "mean_expression": 0.02062891237437725,
+          "outside_mean_expression": 0.003825021907687187,
+          "fold_change": 5.393147945404053,
+          "log2_fold_change": 2.4311275482177734,
+          "expression_fraction": 0.05128205128205128
+        },
+        {
+          "gene": "AC025181.2",
+          "gene_index": 2342,
+          "mean_expression": 0.04223192110657692,
+          "outside_mean_expression": 0.008017227984964848,
+          "fold_change": 5.267645835876465,
+          "log2_fold_change": 2.39715838432312,
+          "expression_fraction": 0.06837606837606837
+        },
+        {
+          "gene": "LRRC7",
+          "gene_index": 16926,
+          "mean_expression": 0.04318966343998909,
+          "outside_mean_expression": 0.008346298709511757,
+          "fold_change": 5.174707889556885,
+          "log2_fold_change": 2.3714773654937744,
+          "expression_fraction": 0.10256410256410255
+        },
+        {
+          "gene": "AC017037.2",
+          "gene_index": 1854,
+          "mean_expression": 0.021798966452479362,
+          "outside_mean_expression": 0.0042163049802184105,
+          "fold_change": 5.1701579093933105,
+          "log2_fold_change": 2.370208263397217,
+          "expression_fraction": 0.05128205128205128
+        },
+        {
+          "gene": "AC022034.3",
+          "gene_index": 2103,
+          "mean_expression": 0.032442789524793625,
+          "outside_mean_expression": 0.006301451940089464,
+          "fold_change": 5.148461818695068,
+          "log2_fold_change": 2.3641414642333984,
+          "expression_fraction": 0.059829059829059825
+        },
+        {
+          "gene": "ETS1",
+          "gene_index": 12535,
+          "mean_expression": 0.021133307367563248,
+          "outside_mean_expression": 0.00414449954405427,
+          "fold_change": 5.09912109375,
+          "log2_fold_change": 2.3502485752105713,
+          "expression_fraction": 0.05128205128205128
+        },
+        {
+          "gene": "PAQR6",
+          "gene_index": 19621,
+          "mean_expression": 0.026942316442728043,
+          "outside_mean_expression": 0.005514867138117552,
+          "fold_change": 4.885396480560303,
+          "log2_fold_change": 2.288475751876831,
+          "expression_fraction": 0.07692307692307691
+        },
+        {
+          "gene": "BBC3",
+          "gene_index": 8885,
+          "mean_expression": 0.03320838510990143,
+          "outside_mean_expression": 0.006879768799990416,
+          "fold_change": 4.826961517333984,
+          "log2_fold_change": 2.271115303039551,
+          "expression_fraction": 0.07692307692307691
+        },
+        {
+          "gene": "WFDC8",
+          "gene_index": 27829,
+          "mean_expression": 0.04226192459464073,
+          "outside_mean_expression": 0.009047092869877815,
+          "fold_change": 4.671326160430908,
+          "log2_fold_change": 2.223832130432129,
+          "expression_fraction": 0.08547008547008546
+        },
+        {
+          "gene": "STARD4-AS1",
+          "gene_index": 25455,
+          "mean_expression": 0.029279367998242378,
+          "outside_mean_expression": 0.00648838933557272,
+          "fold_change": 4.51257848739624,
+          "log2_fold_change": 2.173952102661133,
+          "expression_fraction": 0.06837606837606837
+        }
+      ]
+    },
+    "8": {
+      "cluster_id": 8,
+      "cell_count": 40,
+      "cell_fraction": 0.04381161007667032,
+      "markers": [
+        {
+          "gene": "RNU6-123P",
+          "gene_index": 22229,
+          "mean_expression": 0.042903974652290344,
+          "outside_mean_expression": 0.0,
+          "fold_change": 42903976.0,
+          "log2_fold_change": 25.3546085357666,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "AP001858.2",
+          "gene_index": 7996,
+          "mean_expression": 0.041717495769262314,
+          "outside_mean_expression": 0.0,
+          "fold_change": 41717496.0,
+          "log2_fold_change": 25.314149856567383,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "TUBB4BP7",
+          "gene_index": 27113,
+          "mean_expression": 0.0335257388651371,
+          "outside_mean_expression": 0.0,
+          "fold_change": 33525740.0,
+          "log2_fold_change": 24.99876594543457,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "AC009027.1",
+          "gene_index": 1062,
+          "mean_expression": 0.029435668140649796,
+          "outside_mean_expression": 0.0,
+          "fold_change": 29435670.0,
+          "log2_fold_change": 24.81106185913086,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "CDC20P1",
+          "gene_index": 10044,
+          "mean_expression": 0.02465013787150383,
+          "outside_mean_expression": 0.0,
+          "fold_change": 24650140.0,
+          "log2_fold_change": 24.555091857910156,
+          "expression_fraction": 0.07500000000000001
+        },
+        {
+          "gene": "H3C1",
+          "gene_index": 14170,
+          "mean_expression": 0.0229265708476305,
+          "outside_mean_expression": 0.0,
+          "fold_change": 22926574.0,
+          "log2_fold_change": 24.450517654418945,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "GRHL3",
+          "gene_index": 13965,
+          "mean_expression": 0.018530528992414474,
+          "outside_mean_expression": 0.0,
+          "fold_change": 18530532.0,
+          "log2_fold_change": 24.143400192260742,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "PCNAP1",
+          "gene_index": 19793,
+          "mean_expression": 0.017681950703263283,
+          "outside_mean_expression": 0.0,
+          "fold_change": 17681954.0,
+          "log2_fold_change": 24.075775146484375,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "SGO1-AS1",
+          "gene_index": 24173,
+          "mean_expression": 0.014469555579125881,
+          "outside_mean_expression": 0.0,
+          "fold_change": 14469557.0,
+          "log2_fold_change": 23.786518096923828,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "AC010480.1",
+          "gene_index": 1326,
+          "mean_expression": 0.014296065084636211,
+          "outside_mean_expression": 0.0,
+          "fold_change": 14296066.0,
+          "log2_fold_change": 23.769115447998047,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "LINC02417",
+          "gene_index": 16643,
+          "mean_expression": 0.013660218566656113,
+          "outside_mean_expression": 0.0,
+          "fold_change": 13660220.0,
+          "log2_fold_change": 23.70347785949707,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "ATP5PBP1",
+          "gene_index": 8696,
+          "mean_expression": 0.013101696968078613,
+          "outside_mean_expression": 0.0,
+          "fold_change": 13101698.0,
+          "log2_fold_change": 23.64324951171875,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "AL355474.1",
+          "gene_index": 6659,
+          "mean_expression": 0.011880707927048206,
+          "outside_mean_expression": 0.0,
+          "fold_change": 11880709.0,
+          "log2_fold_change": 23.502117156982422,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "NEK2P4",
+          "gene_index": 18731,
+          "mean_expression": 0.010475493967533112,
+          "outside_mean_expression": 0.0,
+          "fold_change": 10475495.0,
+          "log2_fold_change": 23.320514678955078,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "H2AC4",
+          "gene_index": 14123,
+          "mean_expression": 0.009327592328190804,
+          "outside_mean_expression": 0.0,
+          "fold_change": 9327594.0,
+          "log2_fold_change": 23.153074264526367,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "E2F2",
+          "gene_index": 11922,
+          "mean_expression": 0.03555196523666382,
+          "outside_mean_expression": 0.00016664415306877345,
+          "fold_change": 213.33932495117188,
+          "log2_fold_change": 7.737006187438965,
+          "expression_fraction": 0.07500000000000001
+        },
+        {
+          "gene": "MTFR2",
+          "gene_index": 18172,
+          "mean_expression": 0.043556712567806244,
+          "outside_mean_expression": 0.0002267633390147239,
+          "fold_change": 192.07919311523438,
+          "log2_fold_change": 7.585557460784912,
+          "expression_fraction": 0.1
+        },
+        {
+          "gene": "ISL2",
+          "gene_index": 15309,
+          "mean_expression": 0.026083817705512047,
+          "outside_mean_expression": 0.00023652160598430783,
+          "fold_change": 110.28044891357422,
+          "log2_fold_change": 6.785033226013184,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "HMGN2P36",
+          "gene_index": 14545,
+          "mean_expression": 0.024260610342025757,
+          "outside_mean_expression": 0.0002666177460923791,
+          "fold_change": 90.99365234375,
+          "log2_fold_change": 6.507694244384766,
+          "expression_fraction": 0.05
+        },
+        {
+          "gene": "SNORA20",
+          "gene_index": 24871,
+          "mean_expression": 0.016843777149915695,
+          "outside_mean_expression": 0.00020004970428999513,
+          "fold_change": 84.19754791259766,
+          "log2_fold_change": 6.3957061767578125,
+          "expression_fraction": 0.05
+        }
+      ]
+    },
+    "9": {
+      "cluster_id": 9,
+      "cell_count": 122,
+      "cell_fraction": 0.13362541073384446,
+      "markers": [
+        {
+          "gene": "RPS27P27",
+          "gene_index": 23350,
+          "mean_expression": 0.05340811237692833,
+          "outside_mean_expression": 0.00898925494402647,
+          "fold_change": 5.9413275718688965,
+          "log2_fold_change": 2.5707852840423584,
+          "expression_fraction": 0.05737704918032788
+        },
+        {
+          "gene": "AL590365.1",
+          "gene_index": 7226,
+          "mean_expression": 0.06436757743358612,
+          "outside_mean_expression": 0.018220022320747375,
+          "fold_change": 3.5327932834625244,
+          "log2_fold_change": 1.8208093643188477,
+          "expression_fraction": 0.05737704918032788
+        },
+        {
+          "gene": "AC092757.1",
+          "gene_index": 3618,
+          "mean_expression": 0.0835084617137909,
+          "outside_mean_expression": 0.02400536835193634,
+          "fold_change": 3.478740930557251,
+          "log2_fold_change": 1.7985652685165405,
+          "expression_fraction": 0.08196721311475409
+        },
+        {
+          "gene": "AC112191.2",
+          "gene_index": 4414,
+          "mean_expression": 0.08285535126924515,
+          "outside_mean_expression": 0.02456170693039894,
+          "fold_change": 3.373354434967041,
+          "log2_fold_change": 1.7541838884353638,
+          "expression_fraction": 0.06557377049180328
+        },
+        {
+          "gene": "RNF139-AS1",
+          "gene_index": 22088,
+          "mean_expression": 0.08227812498807907,
+          "outside_mean_expression": 0.024810969829559326,
+          "fold_change": 3.31619930267334,
+          "log2_fold_change": 1.729530692100525,
+          "expression_fraction": 0.07377049180327869
+        },
+        {
+          "gene": "TMEM250",
+          "gene_index": 26440,
+          "mean_expression": 0.072975754737854,
+          "outside_mean_expression": 0.023177525028586388,
+          "fold_change": 3.1485564708709717,
+          "log2_fold_change": 1.6546905040740967,
+          "expression_fraction": 0.06557377049180328
+        },
+        {
+          "gene": "SCARNA9",
+          "gene_index": 23834,
+          "mean_expression": 0.05170716345310211,
+          "outside_mean_expression": 0.017322108149528503,
+          "fold_change": 2.9850382804870605,
+          "log2_fold_change": 1.577749490737915,
+          "expression_fraction": 0.05737704918032788
+        },
+        {
+          "gene": "RPL30P15",
+          "gene_index": 22807,
+          "mean_expression": 0.06337957084178925,
+          "outside_mean_expression": 0.02204001508653164,
+          "fold_change": 2.8756589889526367,
+          "log2_fold_change": 1.5238926410675049,
+          "expression_fraction": 0.05737704918032788
+        },
+        {
+          "gene": "AL354707.2",
+          "gene_index": 6592,
+          "mean_expression": 0.06871095299720764,
+          "outside_mean_expression": 0.024465758353471756,
+          "fold_change": 2.8084535598754883,
+          "log2_fold_change": 1.4897758960723877,
+          "expression_fraction": 0.05737704918032788
+        },
+        {
+          "gene": "AC091826.2",
+          "gene_index": 3468,
+          "mean_expression": 0.08017232269048691,
+          "outside_mean_expression": 0.02959875389933586,
+          "fold_change": 2.7086381912231445,
+          "log2_fold_change": 1.4375677108764648,
+          "expression_fraction": 0.06557377049180328
+        },
+        {
+          "gene": "AC090543.2",
+          "gene_index": 3334,
+          "mean_expression": 0.06655359268188477,
+          "outside_mean_expression": 0.025172892957925797,
+          "fold_change": 2.643859386444092,
+          "log2_fold_change": 1.402645468711853,
+          "expression_fraction": 0.06557377049180328
+        },
+        {
+          "gene": "AC009414.1",
+          "gene_index": 1161,
+          "mean_expression": 0.08094258606433868,
+          "outside_mean_expression": 0.030845284461975098,
+          "fold_change": 2.624147653579712,
+          "log2_fold_change": 1.3918489217758179,
+          "expression_fraction": 0.07377049180327869
+        },
+        {
+          "gene": "RPL23AP37",
+          "gene_index": 22701,
+          "mean_expression": 0.13241532444953918,
+          "outside_mean_expression": 0.05120551958680153,
+          "fold_change": 2.5859580039978027,
+          "log2_fold_change": 1.3706988096237183,
+          "expression_fraction": 0.11475409836065571
+        },
+        {
+          "gene": "RPS4XP17",
+          "gene_index": 23450,
+          "mean_expression": 0.09350881725549698,
+          "outside_mean_expression": 0.036377910524606705,
+          "fold_change": 2.570483446121216,
+          "log2_fold_change": 1.3620396852493286,
+          "expression_fraction": 0.0983606557377049
+        },
+        {
+          "gene": "AC107956.1",
+          "gene_index": 4286,
+          "mean_expression": 0.09984377026557922,
+          "outside_mean_expression": 0.03993488475680351,
+          "fold_change": 2.500164270401001,
+          "log2_fold_change": 1.3220229148864746,
+          "expression_fraction": 0.0983606557377049
+        },
+        {
+          "gene": "AC010469.1",
+          "gene_index": 1322,
+          "mean_expression": 0.09057195484638214,
+          "outside_mean_expression": 0.03652540594339371,
+          "fold_change": 2.4796974658966064,
+          "log2_fold_change": 1.3101640939712524,
+          "expression_fraction": 0.08196721311475409
+        },
+        {
+          "gene": "RPL23AP28",
+          "gene_index": 22692,
+          "mean_expression": 0.06511352211236954,
+          "outside_mean_expression": 0.026341760531067848,
+          "fold_change": 2.471874237060547,
+          "log2_fold_change": 1.305605411529541,
+          "expression_fraction": 0.05737704918032788
+        },
+        {
+          "gene": "AC026304.1",
+          "gene_index": 2407,
+          "mean_expression": 0.05643148347735405,
+          "outside_mean_expression": 0.0229090116918087,
+          "fold_change": 2.463287353515625,
+          "log2_fold_change": 1.3005849123001099,
+          "expression_fraction": 0.06557377049180328
+        },
+        {
+          "gene": "IRX4-AS1",
+          "gene_index": 15296,
+          "mean_expression": 0.09804007411003113,
+          "outside_mean_expression": 0.039930086582899094,
+          "fold_change": 2.4552934169769287,
+          "log2_fold_change": 1.2958954572677612,
+          "expression_fraction": 0.0983606557377049
+        },
+        {
+          "gene": "NHP2P1",
+          "gene_index": 18823,
+          "mean_expression": 0.06921296566724777,
+          "outside_mean_expression": 0.028640933334827423,
+          "fold_change": 2.4165749549865723,
+          "log2_fold_change": 1.2729637622833252,
+          "expression_fraction": 0.06557377049180328
+        }
+      ]
+    }
+  }
+}

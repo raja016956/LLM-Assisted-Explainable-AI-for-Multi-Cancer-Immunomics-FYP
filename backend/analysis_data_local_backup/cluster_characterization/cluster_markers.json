@@ -1,0 +1,2067 @@
+{
+  "n_cells": 913,
+  "n_genes": 28928,
+  "n_clusters": 10,
+  "clusters": {
+    "0": {
+      "cluster": 0,
+      "n_cells": 41,
+      "top_markers": [
+        {
+          "gene": "STAG3L5P",
+          "gene_index": 25438,
+          "cluster_mean_expression": 0.12234508991241455,
+          "background_mean_expression": 0.007149185054004192,
+          "cluster_detection_fraction": 0.0975609756097561,
+          "background_detection_fraction": 0.020642201834862386,
+          "log2_fold_change": 4.097033500671387,
+          "marker_score": 0.31513879298630326
+        },
+        {
+          "gene": "VSTM2A-OT1",
+          "gene_index": 27687,
+          "cluster_mean_expression": 0.06659132242202759,
+          "background_mean_expression": 0.0023407526314258575,
+          "cluster_detection_fraction": 0.07317073170731708,
+          "background_detection_fraction": 0.008027522935779817,
+          "log2_fold_change": 4.830289363861084,
+          "marker_score": 0.31466054845693847
+        },
+        {
+          "gene": "CBX7",
+          "gene_index": 9760,
+          "cluster_mean_expression": 0.14318430423736572,
+          "background_mean_expression": 0.016940508037805557,
+          "cluster_detection_fraction": 0.12195121951219512,
+          "background_detection_fraction": 0.034403669724770644,
+          "log2_fold_change": 3.079324245452881,
+          "marker_score": 0.2695872926904094
+        },
+        {
+          "gene": "CYP51A1P1",
+          "gene_index": 11205,
+          "cluster_mean_expression": 0.11340785026550293,
+          "background_mean_expression": 0.005326731596142054,
+          "cluster_detection_fraction": 0.07317073170731708,
+          "background_detection_fraction": 0.01261467889908257,
+          "log2_fold_change": 4.412125587463379,
+          "marker_score": 0.2671809100709951
+        },
+        {
+          "gene": "ANKRD24",
+          "gene_index": 7668,
+          "cluster_mean_expression": 0.08711352199316025,
+          "background_mean_expression": 0.005104723386466503,
+          "cluster_detection_fraction": 0.07317073170731708,
+          "background_detection_fraction": 0.009174311926605505,
+          "log2_fold_change": 4.092991828918457,
+          "marker_score": 0.261936823242488
+        },
+        {
+          "gene": "ANKRD36BP1",
+          "gene_index": 7684,
+          "cluster_mean_expression": 0.1261323094367981,
+          "background_mean_expression": 0.011995188891887665,
+          "cluster_detection_fraction": 0.0975609756097561,
+          "background_detection_fraction": 0.02522935779816514,
+          "log2_fold_change": 3.3944098949432373,
+          "marker_score": 0.24552315921691686
+        },
+        {
+          "gene": "LINC01507",
+          "gene_index": 16429,
+          "cluster_mean_expression": 0.08350759744644165,
+          "background_mean_expression": 0.005709429271519184,
+          "cluster_detection_fraction": 0.07317073170731708,
+          "background_detection_fraction": 0.014908256880733946,
+          "log2_fold_change": 3.8704888820648193,
+          "marker_score": 0.22550426105787144
+        },
+        {
+          "gene": "AC048341.1",
+          "gene_index": 2607,
+          "cluster_mean_expression": 0.10959016531705856,
+          "background_mean_expression": 0.01542595587670803,
+          "cluster_detection_fraction": 0.0975609756097561,
+          "background_detection_fraction": 0.028669724770642203,
+          "log2_fold_change": 2.828686475753784,
+          "marker_score": 0.19487174954636305
+        },
+        {
+          "gene": "BICRA",
+          "gene_index": 8997,
+          "cluster_mean_expression": 0.20123609900474548,
+          "background_mean_expression": 0.032941628247499466,
+          "cluster_detection_fraction": 0.14634146341463414,
+          "background_detection_fraction": 0.07339449541284399,
+          "log2_fold_change": 2.610905408859253,
+          "marker_score": 0.19045763331575677
+        },
+        {
+          "gene": "PHACTR3",
+          "gene_index": 20033,
+          "cluster_mean_expression": 0.09366351366043091,
+          "background_mean_expression": 0.008660593070089817,
+          "cluster_detection_fraction": 0.07317073170731708,
+          "background_detection_fraction": 0.01834862385321101,
+          "log2_fold_change": 3.4349491596221924,
+          "marker_score": 0.18831115330217885
+        },
+        {
+          "gene": "HERPUD2",
+          "gene_index": 14356,
+          "cluster_mean_expression": 0.27469056844711304,
+          "background_mean_expression": 0.06070392578840256,
+          "cluster_detection_fraction": 0.19512195121951217,
+          "background_detection_fraction": 0.11582568807339419,
+          "log2_fold_change": 2.177945613861084,
+          "marker_score": 0.17270294851466197
+        },
+        {
+          "gene": "COL6A2",
+          "gene_index": 10708,
+          "cluster_mean_expression": 0.09667350351810455,
+          "background_mean_expression": 0.01617133803665638,
+          "cluster_detection_fraction": 0.0975609756097561,
+          "background_detection_fraction": 0.03096330275229358,
+          "log2_fold_change": 2.579681396484375,
+          "marker_score": 0.17180077771954846
+        },
+        {
+          "gene": "AC137630.3",
+          "gene_index": 4852,
+          "cluster_mean_expression": 0.07718919962644577,
+          "background_mean_expression": 0.008301153779029846,
+          "cluster_detection_fraction": 0.07317073170731708,
+          "background_detection_fraction": 0.020642201834862386,
+          "log2_fold_change": 3.217015027999878,
+          "marker_score": 0.16898506999842727
+        },
+        {
+          "gene": "LIN7A",
+          "gene_index": 16134,
+          "cluster_mean_expression": 0.1371113657951355,
+          "background_mean_expression": 0.020420793443918228,
+          "cluster_detection_fraction": 0.0975609756097561,
+          "background_detection_fraction": 0.04243119266055046,
+          "log2_fold_change": 2.747237205505371,
+          "marker_score": 0.15145459084949336
+        },
+        {
+          "gene": "CD200",
+          "gene_index": 9990,
+          "cluster_mean_expression": 0.11738366633653641,
+          "background_mean_expression": 0.01183401606976986,
+          "cluster_detection_fraction": 0.07317073170731708,
+          "background_detection_fraction": 0.027522935779816515,
+          "log2_fold_change": 3.3102197647094727,
+          "marker_score": 0.15110423629463696
+        },
+        {
+          "gene": "AL356489.2",
+          "gene_index": 6731,
+          "cluster_mean_expression": 0.11292517185211182,
+          "background_mean_expression": 0.01146639697253704,
+          "cluster_detection_fraction": 0.07317073170731708,
+          "background_detection_fraction": 0.027522935779816515,
+          "log2_fold_change": 3.2998828887939453,
+          "marker_score": 0.15063238069231707
+        },
+        {
+          "gene": "CERCAM",
+          "gene_index": 10264,
+          "cluster_mean_expression": 0.09541381150484085,
+          "background_mean_expression": 0.010479249060153961,
+          "cluster_detection_fraction": 0.07317073170731708,
+          "background_detection_fraction": 0.027522935779816515,
+          "log2_fold_change": 3.1866626739501953,
+          "marker_score": 0.1454641274302618
+        },
+        {
+          "gene": "ABCA1",
+          "gene_index": 28,
+          "cluster_mean_expression": 0.12649314105510712,
+          "background_mean_expression": 0.02196357026696205,
+          "cluster_detection_fraction": 0.0975609756097561,
+          "background_detection_fraction": 0.04243119266055046,
+          "log2_fold_change": 2.525874614715576,
+          "marker_score": 0.13925091926617814
+        },
+        {
+          "gene": "TDRD6",
+          "gene_index": 25968,
+          "cluster_mean_expression": 0.09272053837776184,
+          "background_mean_expression": 0.016609935089945793,
+          "cluster_detection_fraction": 0.0975609756097561,
+          "background_detection_fraction": 0.04243119266055046,
+          "log2_fold_change": 2.480842351913452,
+          "marker_score": 0.13676830039218546
+        },
+        {
+          "gene": "AC005921.3",
+          "gene_index": 534,
+          "cluster_mean_expression": 0.07738014310598373,
+          "background_mean_expression": 0.01047817338258028,
+          "cluster_detection_fraction": 0.07317073170731708,
+          "background_detection_fraction": 0.027522935779816515,
+          "log2_fold_change": 2.8845760822296143,
+          "marker_score": 0.13167454033896653
+        }
+      ]
+    },
+    "1": {
+      "cluster": 1,
+      "n_cells": 137,
+      "top_markers": [
+        {
+          "gene": "AP003352.1",
+          "gene_index": 8099,
+          "cluster_mean_expression": 0.2049998641014099,
+          "background_mean_expression": 0.07960569113492966,
+          "cluster_detection_fraction": 0.43795620437956173,
+          "background_detection_fraction": 0.14046391752577297,
+          "log2_fold_change": 1.3646794557571411,
+          "marker_score": 0.40598161211557576
+        },
+        {
+          "gene": "ZNF528",
+          "gene_index": 28579,
+          "cluster_mean_expression": 0.35457977652549744,
+          "background_mean_expression": 0.18038682639598846,
+          "cluster_detection_fraction": 0.693430656934306,
+          "background_detection_fraction": 0.27963917525773124,
+          "log2_fold_change": 0.9750162363052368,
+          "marker_score": 0.40345341307946125
+        },
+        {
+          "gene": "FIRRE",
+          "gene_index": 13079,
+          "cluster_mean_expression": 0.23318150639533997,
+          "background_mean_expression": 0.10034538060426712,
+          "cluster_detection_fraction": 0.4671532846715325,
+          "background_detection_fraction": 0.17268041237113368,
+          "log2_fold_change": 1.2164791822433472,
+          "marker_score": 0.35822011888883876
+        },
+        {
+          "gene": "MORF4L1P1",
+          "gene_index": 17765,
+          "cluster_mean_expression": 0.3386707901954651,
+          "background_mean_expression": 0.17911399900913239,
+          "cluster_detection_fraction": 0.6715328467153279,
+          "background_detection_fraction": 0.2873711340206178,
+          "log2_fold_change": 0.9190055131912231,
+          "marker_score": 0.35304673192342123
+        },
+        {
+          "gene": "HCG18",
+          "gene_index": 14283,
+          "cluster_mean_expression": 0.47038528323173523,
+          "background_mean_expression": 0.26324543356895447,
+          "cluster_detection_fraction": 0.7591240875912402,
+          "background_detection_fraction": 0.3582474226804114,
+          "log2_fold_change": 0.8374344110488892,
+          "marker_score": 0.3357079137828428
+        },
+        {
+          "gene": "ZNF28",
+          "gene_index": 28412,
+          "cluster_mean_expression": 0.15246902406215668,
+          "background_mean_expression": 0.06177716329693794,
+          "cluster_detection_fraction": 0.3722627737226275,
+          "background_detection_fraction": 0.1198453608247421,
+          "log2_fold_change": 1.303370714187622,
+          "marker_score": 0.32899346372210875
+        },
+        {
+          "gene": "LCOR",
+          "gene_index": 16031,
+          "cluster_mean_expression": 0.28758060932159424,
+          "background_mean_expression": 0.15497344732284546,
+          "cluster_detection_fraction": 0.6058394160583936,
+          "background_detection_fraction": 0.2461340206185561,
+          "log2_fold_change": 0.8919453620910645,
+          "marker_score": 0.32083755918169543
+        },
+        {
+          "gene": "CWF19L2",
+          "gene_index": 11099,
+          "cluster_mean_expression": 0.33006787300109863,
+          "background_mean_expression": 0.16791141033172607,
+          "cluster_detection_fraction": 0.5693430656934302,
+          "background_detection_fraction": 0.2603092783505148,
+          "log2_fold_change": 0.9750624299049377,
+          "marker_score": 0.30132723560930885
+        },
+        {
+          "gene": "AL138963.4",
+          "gene_index": 6265,
+          "cluster_mean_expression": 0.1125844269990921,
+          "background_mean_expression": 0.04157844930887222,
+          "cluster_detection_fraction": 0.2846715328467152,
+          "background_detection_fraction": 0.07603092783505154,
+          "log2_fold_change": 1.4370994567871094,
+          "marker_score": 0.2998373001259957
+        },
+        {
+          "gene": "FABP5",
+          "gene_index": 12623,
+          "cluster_mean_expression": 0.3281201422214508,
+          "background_mean_expression": 0.18022148311138153,
+          "cluster_detection_fraction": 0.6058394160583936,
+          "background_detection_fraction": 0.2590206185567004,
+          "log2_fold_change": 0.864453136920929,
+          "marker_score": 0.29980859744348315
+        },
+        {
+          "gene": "BHLHE41",
+          "gene_index": 8990,
+          "cluster_mean_expression": 0.37724319100379944,
+          "background_mean_expression": 0.20247042179107666,
+          "cluster_detection_fraction": 0.6058394160583936,
+          "background_detection_fraction": 0.27963917525773124,
+          "log2_fold_change": 0.8977836966514587,
+          "marker_score": 0.2928572580346147
+        },
+        {
+          "gene": "ITCH",
+          "gene_index": 15318,
+          "cluster_mean_expression": 0.4265827536582947,
+          "background_mean_expression": 0.25327953696250916,
+          "cluster_detection_fraction": 0.7518248175182475,
+          "background_detection_fraction": 0.3646907216494835,
+          "log2_fold_change": 0.7520951628684998,
+          "marker_score": 0.29116168088436745
+        },
+        {
+          "gene": "PALM2AKAP2",
+          "gene_index": 19594,
+          "cluster_mean_expression": 0.3953901529312134,
+          "background_mean_expression": 0.22067125141620636,
+          "cluster_detection_fraction": 0.6569343065693425,
+          "background_detection_fraction": 0.3182989690721641,
+          "log2_fold_change": 0.8413782119750977,
+          "marker_score": 0.2849203947749597
+        },
+        {
+          "gene": "YLPM1",
+          "gene_index": 27956,
+          "cluster_mean_expression": 0.26890990138053894,
+          "background_mean_expression": 0.1519695520401001,
+          "cluster_detection_fraction": 0.5912408759124083,
+          "background_detection_fraction": 0.2461340206185561,
+          "log2_fold_change": 0.8233405947685242,
+          "marker_score": 0.28414048349633525
+        },
+        {
+          "gene": "ZFHX4",
+          "gene_index": 28227,
+          "cluster_mean_expression": 0.32773953676223755,
+          "background_mean_expression": 0.1840512752532959,
+          "cluster_detection_fraction": 0.598540145985401,
+          "background_detection_fraction": 0.2590206185567004,
+          "log2_fold_change": 0.8324419260025024,
+          "marker_score": 0.28263028932820694
+        },
+        {
+          "gene": "TRIM14",
+          "gene_index": 26823,
+          "cluster_mean_expression": 0.3230593502521515,
+          "background_mean_expression": 0.18611209094524384,
+          "cluster_detection_fraction": 0.6423357664233571,
+          "background_detection_fraction": 0.28865979381443224,
+          "log2_fold_change": 0.7956274151802063,
+          "marker_score": 0.2813942998981843
+        },
+        {
+          "gene": "AC245060.7",
+          "gene_index": 5076,
+          "cluster_mean_expression": 0.11825355887413025,
+          "background_mean_expression": 0.04283171147108078,
+          "cluster_detection_fraction": 0.2700729927007298,
+          "background_detection_fraction": 0.0786082474226804,
+          "log2_fold_change": 1.465132474899292,
+          "marker_score": 0.28052121610519104
+        },
+        {
+          "gene": "SEMA3E",
+          "gene_index": 23995,
+          "cluster_mean_expression": 0.20674464106559753,
+          "background_mean_expression": 0.1016920730471611,
+          "cluster_detection_fraction": 0.4525547445255471,
+          "background_detection_fraction": 0.18041237113402026,
+          "log2_fold_change": 1.023642659187317,
+          "marker_score": 0.27857654277605026
+        },
+        {
+          "gene": "PAXBP1",
+          "gene_index": 19676,
+          "cluster_mean_expression": 0.4548579752445221,
+          "background_mean_expression": 0.2724960148334503,
+          "cluster_detection_fraction": 0.7299270072992694,
+          "background_detection_fraction": 0.3543814432989681,
+          "log2_fold_change": 0.7391809821128845,
+          "marker_score": 0.27759613882587986
+        },
+        {
+          "gene": "CCDC144B",
+          "gene_index": 9798,
+          "cluster_mean_expression": 0.13896781206130981,
+          "background_mean_expression": 0.05979904532432556,
+          "cluster_detection_fraction": 0.32846715328467135,
+          "background_detection_fraction": 0.10051546391752568,
+          "log2_fold_change": 1.216556429862976,
+          "marker_score": 0.27731609339772884
+        }
+      ]
+    },
+    "2": {
+      "cluster": 2,
+      "n_cells": 84,
+      "top_markers": [
+        {
+          "gene": "SLC12A6",
+          "gene_index": 24346,
+          "cluster_mean_expression": 0.232305645942688,
+          "background_mean_expression": 0.06615032255649567,
+          "cluster_detection_fraction": 0.3809523809523812,
+          "background_detection_fraction": 0.11821471652593493,
+          "log2_fold_change": 1.812204122543335,
+          "marker_score": 0.4761342786210133
+        },
+        {
+          "gene": "PLAAT4",
+          "gene_index": 20257,
+          "cluster_mean_expression": 0.3123680353164673,
+          "background_mean_expression": 0.10359655320644379,
+          "cluster_detection_fraction": 0.46428571428571463,
+          "background_detection_fraction": 0.17973462002412557,
+          "log2_fold_change": 1.592270851135254,
+          "marker_score": 0.4530824130513683
+        },
+        {
+          "gene": "DHRS3",
+          "gene_index": 11501,
+          "cluster_mean_expression": 0.5191165208816528,
+          "background_mean_expression": 0.22767874598503113,
+          "cluster_detection_fraction": 0.7142857142857139,
+          "background_detection_fraction": 0.342581423401689,
+          "log2_fold_change": 1.1890588998794556,
+          "marker_score": 0.4419782951990317
+        },
+        {
+          "gene": "CRIP2",
+          "gene_index": 10913,
+          "cluster_mean_expression": 0.2811935544013977,
+          "background_mean_expression": 0.08629323542118073,
+          "cluster_detection_fraction": 0.41666666666666696,
+          "background_detection_fraction": 0.1580217129071171,
+          "log2_fold_change": 1.7042441368103027,
+          "marker_score": 0.44079414596028477
+        },
+        {
+          "gene": "CA5B",
+          "gene_index": 9533,
+          "cluster_mean_expression": 0.1942814290523529,
+          "background_mean_expression": 0.055719707161188126,
+          "cluster_detection_fraction": 0.3214285714285716,
+          "background_detection_fraction": 0.09891435464414963,
+          "log2_fold_change": 1.8018884658813477,
+          "marker_score": 0.40094580071847175
+        },
+        {
+          "gene": "JUNB",
+          "gene_index": 15422,
+          "cluster_mean_expression": 0.5714446306228638,
+          "background_mean_expression": 0.2004639357328415,
+          "cluster_detection_fraction": 0.5476190476190478,
+          "background_detection_fraction": 0.28347406513872153,
+          "log2_fold_change": 1.5112709999084473,
+          "marker_score": 0.39919465179384195
+        },
+        {
+          "gene": "AHNAK",
+          "gene_index": 5492,
+          "cluster_mean_expression": 0.274521142244339,
+          "background_mean_expression": 0.09068480134010315,
+          "cluster_detection_fraction": 0.40476190476190504,
+          "background_detection_fraction": 0.1592279855247287,
+          "log2_fold_change": 1.5979845523834229,
+          "marker_score": 0.39235941002716673
+        },
+        {
+          "gene": "LMCD1",
+          "gene_index": 16784,
+          "cluster_mean_expression": 0.16523605585098267,
+          "background_mean_expression": 0.041454218327999115,
+          "cluster_detection_fraction": 0.27380952380952395,
+          "background_detection_fraction": 0.07840772014475275,
+          "log2_fold_change": 1.9949376583099365,
+          "marker_score": 0.38981441663253663
+        },
+        {
+          "gene": "PARP14",
+          "gene_index": 19642,
+          "cluster_mean_expression": 0.3717288374900818,
+          "background_mean_expression": 0.15147948265075684,
+          "cluster_detection_fraction": 0.5476190476190478,
+          "background_detection_fraction": 0.24969843184559729,
+          "log2_fold_change": 1.2951282262802124,
+          "marker_score": 0.38584539867897766
+        },
+        {
+          "gene": "KIF13B",
+          "gene_index": 15641,
+          "cluster_mean_expression": 0.29226821660995483,
+          "background_mean_expression": 0.0959845706820488,
+          "cluster_detection_fraction": 0.41666666666666696,
+          "background_detection_fraction": 0.18094089264173716,
+          "log2_fold_change": 1.6064186096191406,
+          "marker_score": 0.37867427016052346
+        },
+        {
+          "gene": "GPAT3",
+          "gene_index": 13846,
+          "cluster_mean_expression": 0.49808984994888306,
+          "background_mean_expression": 0.19300775229930878,
+          "cluster_detection_fraction": 0.5357142857142859,
+          "background_detection_fraction": 0.2653799758745478,
+          "log2_fold_change": 1.367747187614441,
+          "marker_score": 0.3697489919989927
+        },
+        {
+          "gene": "ZNF350-AS1",
+          "gene_index": 28468,
+          "cluster_mean_expression": 0.3002978563308716,
+          "background_mean_expression": 0.09878731518983841,
+          "cluster_detection_fraction": 0.3809523809523812,
+          "background_detection_fraction": 0.1519903498190592,
+          "log2_fold_change": 1.6039965152740479,
+          "marker_score": 0.36725430006791654
+        },
+        {
+          "gene": "CCN1",
+          "gene_index": 9915,
+          "cluster_mean_expression": 0.3362211287021637,
+          "background_mean_expression": 0.10142030566930771,
+          "cluster_detection_fraction": 0.3690476190476193,
+          "background_detection_fraction": 0.15681544028950553,
+          "log2_fold_change": 1.729063868522644,
+          "marker_score": 0.3669629920284935
+        },
+        {
+          "gene": "EPHB6",
+          "gene_index": 12414,
+          "cluster_mean_expression": 1.058560848236084,
+          "background_mean_expression": 0.48672059178352356,
+          "cluster_detection_fraction": 0.8928571428571418,
+          "background_detection_fraction": 0.5681544028950516,
+          "log2_fold_change": 1.1209385395050049,
+          "marker_score": 0.36397181510637877
+        },
+        {
+          "gene": "FAM76A",
+          "gene_index": 12829,
+          "cluster_mean_expression": 0.14704716205596924,
+          "background_mean_expression": 0.03854218125343323,
+          "cluster_detection_fraction": 0.27380952380952395,
+          "background_detection_fraction": 0.08564535585042224,
+          "log2_fold_change": 1.931768774986267,
+          "marker_score": 0.3634896642346641
+        },
+        {
+          "gene": "TCF7L2",
+          "gene_index": 25937,
+          "cluster_mean_expression": 0.13054344058036804,
+          "background_mean_expression": 0.02813056670129299,
+          "cluster_detection_fraction": 0.21428571428571436,
+          "background_detection_fraction": 0.05307599517490955,
+          "log2_fold_change": 2.2143194675445557,
+          "marker_score": 0.35696981938444466
+        },
+        {
+          "gene": "SHE",
+          "gene_index": 24232,
+          "cluster_mean_expression": 0.07500885426998138,
+          "background_mean_expression": 0.010155714116990566,
+          "cluster_detection_fraction": 0.14285714285714285,
+          "background_detection_fraction": 0.020506634499396863,
+          "log2_fold_change": 2.8847689628601074,
+          "marker_score": 0.3529529491005818
+        },
+        {
+          "gene": "GUCA2A",
+          "gene_index": 14077,
+          "cluster_mean_expression": 0.21152250468730927,
+          "background_mean_expression": 0.06255379319190979,
+          "cluster_detection_fraction": 0.3095238095238097,
+          "background_detection_fraction": 0.11218335343787703,
+          "log2_fold_change": 1.7576419115066528,
+          "marker_score": 0.3468538564524734
+        },
+        {
+          "gene": "B3GNT5",
+          "gene_index": 8817,
+          "cluster_mean_expression": 0.19681201875209808,
+          "background_mean_expression": 0.06399773806333542,
+          "cluster_detection_fraction": 0.34523809523809545,
+          "background_detection_fraction": 0.1338962605548855,
+          "log2_fold_change": 1.620725393295288,
+          "marker_score": 0.34252707813669325
+        },
+        {
+          "gene": "MYH9",
+          "gene_index": 18345,
+          "cluster_mean_expression": 0.3893721401691437,
+          "background_mean_expression": 0.14956574141979218,
+          "cluster_detection_fraction": 0.5119047619047622,
+          "background_detection_fraction": 0.26417370325693623,
+          "log2_fold_change": 1.3803699016571045,
+          "marker_score": 0.34196049706310994
+        }
+      ]
+    },
+    "3": {
+      "cluster": 3,
+      "n_cells": 157,
+      "top_markers": [
+        {
+          "gene": "AC090602.1",
+          "gene_index": 3344,
+          "cluster_mean_expression": 0.5285196304321289,
+          "background_mean_expression": 0.23597855865955353,
+          "cluster_detection_fraction": 0.7452229299363057,
+          "background_detection_fraction": 0.32804232804233013,
+          "log2_fold_change": 1.1633012294769287,
+          "marker_score": 0.4853067070971869
+        },
+        {
+          "gene": "AL049714.1",
+          "gene_index": 5812,
+          "cluster_mean_expression": 0.554726243019104,
+          "background_mean_expression": 0.25648611783981323,
+          "cluster_detection_fraction": 0.7643312101910827,
+          "background_detection_fraction": 0.3452380952380975,
+          "log2_fold_change": 1.1128952503204346,
+          "marker_score": 0.46640673707317315
+        },
+        {
+          "gene": "AP001992.1",
+          "gene_index": 8009,
+          "cluster_mean_expression": 0.13902686536312103,
+          "background_mean_expression": 0.04205399751663208,
+          "cluster_detection_fraction": 0.3375796178343949,
+          "background_detection_fraction": 0.082010582010582,
+          "log2_fold_change": 1.7250488996505737,
+          "marker_score": 0.4408690840326264
+        },
+        {
+          "gene": "AC079834.1",
+          "gene_index": 3079,
+          "cluster_mean_expression": 0.222943976521492,
+          "background_mean_expression": 0.0761786550283432,
+          "cluster_detection_fraction": 0.4203821656050955,
+          "background_detection_fraction": 0.14285714285714302,
+          "log2_fold_change": 1.549222469329834,
+          "marker_score": 0.42994800104240133
+        },
+        {
+          "gene": "RPS19P7",
+          "gene_index": 23257,
+          "cluster_mean_expression": 0.41751861572265625,
+          "background_mean_expression": 0.20062017440795898,
+          "cluster_detection_fraction": 0.6687898089171974,
+          "background_detection_fraction": 0.29629629629629806,
+          "log2_fold_change": 1.0573738813400269,
+          "marker_score": 0.3938649112139406
+        },
+        {
+          "gene": "RPL34P31",
+          "gene_index": 22865,
+          "cluster_mean_expression": 0.32980743050575256,
+          "background_mean_expression": 0.14185787737369537,
+          "cluster_detection_fraction": 0.5605095541401274,
+          "background_detection_fraction": 0.24074074074074192,
+          "log2_fold_change": 1.2171776294708252,
+          "marker_score": 0.38921544627216265
+        },
+        {
+          "gene": "AC090589.1",
+          "gene_index": 3342,
+          "cluster_mean_expression": 0.2824443578720093,
+          "background_mean_expression": 0.13036997616291046,
+          "cluster_detection_fraction": 0.554140127388535,
+          "background_detection_fraction": 0.2142857142857152,
+          "log2_fold_change": 1.1153550148010254,
+          "marker_score": 0.3790583239564894
+        },
+        {
+          "gene": "AL158156.1",
+          "gene_index": 6391,
+          "cluster_mean_expression": 0.2063654512166977,
+          "background_mean_expression": 0.08299123495817184,
+          "cluster_detection_fraction": 0.43949044585987257,
+          "background_detection_fraction": 0.1534391534391537,
+          "log2_fold_change": 1.314170479774475,
+          "marker_score": 0.3759201642006448
+        },
+        {
+          "gene": "RPL23AP75",
+          "gene_index": 22734,
+          "cluster_mean_expression": 0.19766971468925476,
+          "background_mean_expression": 0.07032477110624313,
+          "cluster_detection_fraction": 0.3885350318471337,
+          "background_detection_fraction": 0.13756613756613767,
+          "log2_fold_change": 1.490986943244934,
+          "marker_score": 0.3741913445335833
+        },
+        {
+          "gene": "ELOBP2",
+          "gene_index": 12271,
+          "cluster_mean_expression": 0.04862647131085396,
+          "background_mean_expression": 0.0059326388873159885,
+          "cluster_detection_fraction": 0.14012738853503184,
+          "background_detection_fraction": 0.017195767195767195,
+          "log2_fold_change": 3.0349957942962646,
+          "marker_score": 0.37309695375068913
+        },
+        {
+          "gene": "RPL26P19",
+          "gene_index": 22765,
+          "cluster_mean_expression": 0.4365234375,
+          "background_mean_expression": 0.21682792901992798,
+          "cluster_detection_fraction": 0.6815286624203821,
+          "background_detection_fraction": 0.3161375661375681,
+          "log2_fold_change": 1.009508490562439,
+          "marker_score": 0.3688654140734184
+        },
+        {
+          "gene": "RPL31P49",
+          "gene_index": 22829,
+          "cluster_mean_expression": 0.2965870201587677,
+          "background_mean_expression": 0.13568322360515594,
+          "cluster_detection_fraction": 0.5477707006369427,
+          "background_detection_fraction": 0.22354497354497455,
+          "log2_fold_change": 1.1282130479812622,
+          "marker_score": 0.3657956957963703
+        },
+        {
+          "gene": "RPS27P21",
+          "gene_index": 23345,
+          "cluster_mean_expression": 0.22069227695465088,
+          "background_mean_expression": 0.08916418999433517,
+          "cluster_detection_fraction": 0.4331210191082802,
+          "background_detection_fraction": 0.1534391534391537,
+          "log2_fold_change": 1.3074997663497925,
+          "marker_score": 0.36568397401465697
+        },
+        {
+          "gene": "AL023284.3",
+          "gene_index": 5657,
+          "cluster_mean_expression": 0.30243974924087524,
+          "background_mean_expression": 0.14072202146053314,
+          "cluster_detection_fraction": 0.5414012738853503,
+          "background_detection_fraction": 0.21031746031746118,
+          "log2_fold_change": 1.1037997007369995,
+          "marker_score": 0.36545021433510055
+        },
+        {
+          "gene": "AC007686.1",
+          "gene_index": 805,
+          "cluster_mean_expression": 0.3808678090572357,
+          "background_mean_expression": 0.1829008162021637,
+          "cluster_detection_fraction": 0.6242038216560509,
+          "background_detection_fraction": 0.2830687830687847,
+          "log2_fold_change": 1.0582287311553955,
+          "marker_score": 0.3609988990368496
+        },
+        {
+          "gene": "AC092798.1",
+          "gene_index": 3621,
+          "cluster_mean_expression": 0.5247523188591003,
+          "background_mean_expression": 0.27829158306121826,
+          "cluster_detection_fraction": 0.7579617834394904,
+          "background_detection_fraction": 0.3637566137566162,
+          "log2_fold_change": 0.9150393009185791,
+          "marker_score": 0.36071322288510704
+        },
+        {
+          "gene": "RPS12P26",
+          "gene_index": 23196,
+          "cluster_mean_expression": 0.21067292988300323,
+          "background_mean_expression": 0.08176550269126892,
+          "cluster_detection_fraction": 0.4203821656050955,
+          "background_detection_fraction": 0.15740740740740772,
+          "log2_fold_change": 1.3654407262802124,
+          "marker_score": 0.35907644482681406
+        },
+        {
+          "gene": "RPS18P6",
+          "gene_index": 23250,
+          "cluster_mean_expression": 0.22485053539276123,
+          "background_mean_expression": 0.0972316786646843,
+          "cluster_detection_fraction": 0.45859872611464964,
+          "background_detection_fraction": 0.1640211640211644,
+          "log2_fold_change": 1.209467887878418,
+          "marker_score": 0.3562821018415811
+        },
+        {
+          "gene": "AC125807.1",
+          "gene_index": 4669,
+          "cluster_mean_expression": 0.29795899987220764,
+          "background_mean_expression": 0.13183656334877014,
+          "cluster_detection_fraction": 0.5286624203821656,
+          "background_detection_fraction": 0.22619047619047722,
+          "log2_fold_change": 1.176363229751587,
+          "marker_score": 0.3558168731785763
+        },
+        {
+          "gene": "AL365357.1",
+          "gene_index": 6901,
+          "cluster_mean_expression": 0.25069040060043335,
+          "background_mean_expression": 0.10968464612960815,
+          "cluster_detection_fraction": 0.48407643312101906,
+          "background_detection_fraction": 0.18783068783068846,
+          "log2_fold_change": 1.1925451755523682,
+          "marker_score": 0.35328643432389945
+        }
+      ]
+    },
+    "4": {
+      "cluster": 4,
+      "n_cells": 110,
+      "top_markers": [
+        {
+          "gene": "AC006511.4",
+          "gene_index": 637,
+          "cluster_mean_expression": 0.5949370861053467,
+          "background_mean_expression": 0.1416751891374588,
+          "cluster_detection_fraction": 0.6272727272727266,
+          "background_detection_fraction": 0.24408468244084752,
+          "log2_fold_change": 2.0701498985290527,
+          "marker_score": 0.7932566921262607
+        },
+        {
+          "gene": "AL022311.1",
+          "gene_index": 5624,
+          "cluster_mean_expression": 0.6524704098701477,
+          "background_mean_expression": 0.23397858440876007,
+          "cluster_detection_fraction": 0.709090909090908,
+          "background_detection_fraction": 0.3661270236612714,
+          "log2_fold_change": 1.4795359373092651,
+          "marker_score": 0.5074273936923648
+        },
+        {
+          "gene": "RPL3P13",
+          "gene_index": 22954,
+          "cluster_mean_expression": 0.3634599447250366,
+          "background_mean_expression": 0.10673388838768005,
+          "cluster_detection_fraction": 0.47272727272727283,
+          "background_detection_fraction": 0.19925280199252854,
+          "log2_fold_change": 1.7677780389785767,
+          "marker_score": 0.4834421635861704
+        },
+        {
+          "gene": "CORO1B",
+          "gene_index": 10774,
+          "cluster_mean_expression": 0.354061484336853,
+          "background_mean_expression": 0.11130858957767487,
+          "cluster_detection_fraction": 0.45454545454545464,
+          "background_detection_fraction": 0.19800747198007523,
+          "log2_fold_change": 1.6694350242614746,
+          "marker_score": 0.42827349314802393
+        },
+        {
+          "gene": "EEF1A1P1",
+          "gene_index": 11982,
+          "cluster_mean_expression": 0.6766369938850403,
+          "background_mean_expression": 0.24726618826389313,
+          "cluster_detection_fraction": 0.6818181818181809,
+          "background_detection_fraction": 0.3897882938978842,
+          "log2_fold_change": 1.4523169994354248,
+          "marker_score": 0.42411997056986867
+        },
+        {
+          "gene": "EPHX1",
+          "gene_index": 12415,
+          "cluster_mean_expression": 0.5774788856506348,
+          "background_mean_expression": 0.2112920731306076,
+          "cluster_detection_fraction": 0.6181818181818176,
+          "background_detection_fraction": 0.34993773349937846,
+          "log2_fold_change": 1.4505295753479004,
+          "marker_score": 0.3890959782440047
+        },
+        {
+          "gene": "EEF1A1P38",
+          "gene_index": 12010,
+          "cluster_mean_expression": 0.5050618052482605,
+          "background_mean_expression": 0.19942371547222137,
+          "cluster_detection_fraction": 0.6090909090909086,
+          "background_detection_fraction": 0.3300124533001256,
+          "log2_fold_change": 1.3406230211257935,
+          "marker_score": 0.3741390025333607
+        },
+        {
+          "gene": "AC022018.1",
+          "gene_index": 2099,
+          "cluster_mean_expression": 0.3222433626651764,
+          "background_mean_expression": 0.11150656640529633,
+          "cluster_detection_fraction": 0.43636363636363645,
+          "background_detection_fraction": 0.20298879202988845,
+          "log2_fold_change": 1.5310219526290894,
+          "marker_score": 0.3573020098663646
+        },
+        {
+          "gene": "RPL3P6",
+          "gene_index": 22959,
+          "cluster_mean_expression": 1.0744823217391968,
+          "background_mean_expression": 0.4763714671134949,
+          "cluster_detection_fraction": 0.8545454545454526,
+          "background_detection_fraction": 0.556662515566627,
+          "log2_fold_change": 1.173482894897461,
+          "marker_score": 0.3495605335734359
+        },
+        {
+          "gene": "EEF1A1P12",
+          "gene_index": 11985,
+          "cluster_mean_expression": 0.8745718598365784,
+          "background_mean_expression": 0.37464240193367004,
+          "cluster_detection_fraction": 0.7727272727272713,
+          "background_detection_fraction": 0.49688667496886846,
+          "log2_fold_change": 1.2230627536773682,
+          "marker_score": 0.3373703610704034
+        },
+        {
+          "gene": "ABHD10",
+          "gene_index": 68,
+          "cluster_mean_expression": 0.3822988271713257,
+          "background_mean_expression": 0.1383902132511139,
+          "cluster_detection_fraction": 0.5000000000000001,
+          "background_detection_fraction": 0.27272727272727354,
+          "log2_fold_change": 1.465958833694458,
+          "marker_score": 0.3331724622032849
+        },
+        {
+          "gene": "PNP",
+          "gene_index": 20416,
+          "cluster_mean_expression": 0.2509101927280426,
+          "background_mean_expression": 0.08608931303024292,
+          "cluster_detection_fraction": 0.3545454545454546,
+          "background_detection_fraction": 0.15940224159402278,
+          "log2_fold_change": 1.5432649850845337,
+          "marker_score": 0.3011576876248394
+        },
+        {
+          "gene": "SLC39A1",
+          "gene_index": 24561,
+          "cluster_mean_expression": 0.35774996876716614,
+          "background_mean_expression": 0.1454073041677475,
+          "cluster_detection_fraction": 0.4818181818181819,
+          "background_detection_fraction": 0.25404732254047396,
+          "log2_fold_change": 1.2988518476486206,
+          "marker_score": 0.29584060141336493
+        },
+        {
+          "gene": "EEF1A1P17",
+          "gene_index": 11990,
+          "cluster_mean_expression": 0.46816936135292053,
+          "background_mean_expression": 0.18923355638980865,
+          "cluster_detection_fraction": 0.5363636363636363,
+          "background_detection_fraction": 0.3125778331257793,
+          "log2_fold_change": 1.3068625926971436,
+          "marker_score": 0.2924572950282386
+        },
+        {
+          "gene": "NEURL3",
+          "gene_index": 18762,
+          "cluster_mean_expression": 0.17959269881248474,
+          "background_mean_expression": 0.042930182069540024,
+          "cluster_detection_fraction": 0.23636363636363641,
+          "background_detection_fraction": 0.09713574097135752,
+          "log2_fold_change": 2.064664602279663,
+          "marker_score": 0.28745890726633405
+        },
+        {
+          "gene": "ADSL",
+          "gene_index": 5365,
+          "cluster_mean_expression": 0.427153080701828,
+          "background_mean_expression": 0.17759332060813904,
+          "cluster_detection_fraction": 0.5272727272727272,
+          "background_detection_fraction": 0.3051058530510595,
+          "log2_fold_change": 1.2661758661270142,
+          "marker_score": 0.2813023343923516
+        },
+        {
+          "gene": "SEC23A",
+          "gene_index": 23944,
+          "cluster_mean_expression": 0.30049586296081543,
+          "background_mean_expression": 0.11628182232379913,
+          "cluster_detection_fraction": 0.42727272727272736,
+          "background_detection_fraction": 0.22789539227895456,
+          "log2_fold_change": 1.3697195053100586,
+          "marker_score": 0.2730910246577083
+        },
+        {
+          "gene": "BSG",
+          "gene_index": 9148,
+          "cluster_mean_expression": 0.6881179809570312,
+          "background_mean_expression": 0.3194873332977295,
+          "cluster_detection_fraction": 0.699999999999999,
+          "background_detection_fraction": 0.4570361145703627,
+          "log2_fold_change": 1.106897234916687,
+          "marker_score": 0.2689360529666791
+        },
+        {
+          "gene": "RAB5C",
+          "gene_index": 21347,
+          "cluster_mean_expression": 0.34524551033973694,
+          "background_mean_expression": 0.12669430673122406,
+          "cluster_detection_fraction": 0.42727272727272736,
+          "background_detection_fraction": 0.2415940224159409,
+          "log2_fold_change": 1.4462709426879883,
+          "marker_score": 0.2685417155103093
+        },
+        {
+          "gene": "DHPS",
+          "gene_index": 11495,
+          "cluster_mean_expression": 0.664153516292572,
+          "background_mean_expression": 0.31614381074905396,
+          "cluster_detection_fraction": 0.718181818181817,
+          "background_detection_fraction": 0.47073474470734905,
+          "log2_fold_change": 1.0709357261657715,
+          "marker_score": 0.2649999113189744
+        }
+      ]
+    },
+    "5": {
+      "cluster": 5,
+      "n_cells": 60,
+      "top_markers": [
+        {
+          "gene": "AC006504.1",
+          "gene_index": 630,
+          "cluster_mean_expression": 0.8075369000434875,
+          "background_mean_expression": 0.2686379849910736,
+          "cluster_detection_fraction": 0.6500000000000004,
+          "background_detection_fraction": 0.3950762016412689,
+          "log2_fold_change": 1.587864875793457,
+          "marker_score": 0.40478454541768344
+        },
+        {
+          "gene": "MTCYBP35",
+          "gene_index": 18153,
+          "cluster_mean_expression": 0.21988016366958618,
+          "background_mean_expression": 0.035629574209451675,
+          "cluster_detection_fraction": 0.19999999999999998,
+          "background_detection_fraction": 0.0773739742086752,
+          "log2_fold_change": 2.625570297241211,
+          "marker_score": 0.321963250986437
+        },
+        {
+          "gene": "AUXG01000058.1",
+          "gene_index": 8785,
+          "cluster_mean_expression": 0.20344120264053345,
+          "background_mean_expression": 0.026915879920125008,
+          "cluster_detection_fraction": 0.16666666666666666,
+          "background_detection_fraction": 0.06916764361078541,
+          "log2_fold_change": 2.9180822372436523,
+          "marker_score": 0.2845101673279764
+        },
+        {
+          "gene": "ACVR2A",
+          "gene_index": 5231,
+          "cluster_mean_expression": 0.246660053730011,
+          "background_mean_expression": 0.05254517123103142,
+          "cluster_detection_fraction": 0.2333333333333333,
+          "background_detection_fraction": 0.10902696365767868,
+          "log2_fold_change": 2.230894088745117,
+          "marker_score": 0.2773143453027832
+        },
+        {
+          "gene": "RNF152",
+          "gene_index": 22099,
+          "cluster_mean_expression": 0.055109456181526184,
+          "background_mean_expression": 0.0013416694710031152,
+          "cluster_detection_fraction": 0.05,
+          "background_detection_fraction": 0.004689331770222743,
+          "log2_fold_change": 5.3601975440979,
+          "marker_score": 0.24287413256668683
+        },
+        {
+          "gene": "ITGA3",
+          "gene_index": 15327,
+          "cluster_mean_expression": 0.10493135452270508,
+          "background_mean_expression": 0.011857777833938599,
+          "cluster_detection_fraction": 0.09999999999999999,
+          "background_detection_fraction": 0.028135990621336447,
+          "log2_fold_change": 3.1455399990081787,
+          "marker_score": 0.22605111598968508
+        },
+        {
+          "gene": "AC127024.8",
+          "gene_index": 4692,
+          "cluster_mean_expression": 0.15616782009601593,
+          "background_mean_expression": 0.028366371989250183,
+          "cluster_detection_fraction": 0.15,
+          "background_detection_fraction": 0.06447831184056267,
+          "log2_fold_change": 2.460843563079834,
+          "marker_score": 0.2104554958108722
+        },
+        {
+          "gene": "ASB14",
+          "gene_index": 8522,
+          "cluster_mean_expression": 0.08565618842840195,
+          "background_mean_expression": 0.005310497246682644,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.015240328253223918,
+          "log2_fold_change": 4.011638164520264,
+          "marker_score": 0.20630386184090138
+        },
+        {
+          "gene": "CPE",
+          "gene_index": 10835,
+          "cluster_mean_expression": 0.27060607075691223,
+          "background_mean_expression": 0.06832270324230194,
+          "cluster_detection_fraction": 0.24999999999999997,
+          "background_detection_fraction": 0.14654161781946085,
+          "log2_fold_change": 1.9857572317123413,
+          "marker_score": 0.2054432305962648
+        },
+        {
+          "gene": "CLSTN3",
+          "gene_index": 10571,
+          "cluster_mean_expression": 0.1196257472038269,
+          "background_mean_expression": 0.018804697319865227,
+          "cluster_detection_fraction": 0.11666666666666665,
+          "background_detection_fraction": 0.03985932004689329,
+          "log2_fold_change": 2.669362783432007,
+          "marker_score": 0.2050266725609852
+        },
+        {
+          "gene": "ST14",
+          "gene_index": 25403,
+          "cluster_mean_expression": 0.3002139925956726,
+          "background_mean_expression": 0.09127166122198105,
+          "cluster_detection_fraction": 0.3,
+          "background_detection_fraction": 0.18991793669402168,
+          "log2_fold_change": 1.7177523374557495,
+          "marker_score": 0.18909372155579604
+        },
+        {
+          "gene": "P3H1",
+          "gene_index": 19526,
+          "cluster_mean_expression": 0.08463093638420105,
+          "background_mean_expression": 0.009744205512106419,
+          "cluster_detection_fraction": 0.08333333333333333,
+          "background_detection_fraction": 0.02344665885111371,
+          "log2_fold_change": 3.1185684204101562,
+          "marker_score": 0.18676069184363284
+        },
+        {
+          "gene": "FMO4",
+          "gene_index": 13133,
+          "cluster_mean_expression": 0.04991468787193298,
+          "background_mean_expression": 0.003032807493582368,
+          "cluster_detection_fraction": 0.05,
+          "background_detection_fraction": 0.004689331770222743,
+          "log2_fold_change": 4.040738105773926,
+          "marker_score": 0.18308854371414096
+        },
+        {
+          "gene": "COLEC12",
+          "gene_index": 10721,
+          "cluster_mean_expression": 0.7222304344177246,
+          "background_mean_expression": 0.3088858425617218,
+          "cluster_detection_fraction": 0.5666666666666668,
+          "background_detection_fraction": 0.41852286049238285,
+          "log2_fold_change": 1.2253854274749756,
+          "marker_score": 0.18153326125664482
+        },
+        {
+          "gene": "ALDH3B1",
+          "gene_index": 7500,
+          "cluster_mean_expression": 0.05505950748920441,
+          "background_mean_expression": 0.005606791470199823,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.01172332942555686,
+          "log2_fold_change": 3.2957441806793213,
+          "marker_score": 0.18107918397948908
+        },
+        {
+          "gene": "RHBDL2",
+          "gene_index": 21772,
+          "cluster_mean_expression": 0.07763125747442245,
+          "background_mean_expression": 0.01081989984959364,
+          "cluster_detection_fraction": 0.08333333333333333,
+          "background_detection_fraction": 0.02110199296600234,
+          "log2_fold_change": 2.8429503440856934,
+          "marker_score": 0.17692061051021754
+        },
+        {
+          "gene": "HLA-C",
+          "gene_index": 14428,
+          "cluster_mean_expression": 0.45712098479270935,
+          "background_mean_expression": 0.17580831050872803,
+          "cluster_detection_fraction": 0.39999999999999997,
+          "background_detection_fraction": 0.27198124267292056,
+          "log2_fold_change": 1.3785728216171265,
+          "marker_score": 0.17648317950831002
+        },
+        {
+          "gene": "LAMB2",
+          "gene_index": 15971,
+          "cluster_mean_expression": 0.20977334678173065,
+          "background_mean_expression": 0.05987587198615074,
+          "cluster_detection_fraction": 0.21666666666666665,
+          "background_detection_fraction": 0.11957796014067984,
+          "log2_fold_change": 1.8087847232818604,
+          "marker_score": 0.17561256916740078
+        },
+        {
+          "gene": "TPH1",
+          "gene_index": 26684,
+          "cluster_mean_expression": 0.03953158110380173,
+          "background_mean_expression": 0.0024061372969299555,
+          "cluster_detection_fraction": 0.05,
+          "background_detection_fraction": 0.007033997655334115,
+          "log2_fold_change": 4.038214206695557,
+          "marker_score": 0.1735059210731444
+        },
+        {
+          "gene": "AC027796.1",
+          "gene_index": 2530,
+          "cluster_mean_expression": 0.03717146813869476,
+          "background_mean_expression": 0.0023004210088402033,
+          "cluster_detection_fraction": 0.05,
+          "background_detection_fraction": 0.008206330597889801,
+          "log2_fold_change": 4.014225006103516,
+          "marker_score": 0.16776919281077413
+        }
+      ]
+    },
+    "6": {
+      "cluster": 6,
+      "n_cells": 45,
+      "top_markers": [
+        {
+          "gene": "LRFN2",
+          "gene_index": 16853,
+          "cluster_mean_expression": 0.12433512508869171,
+          "background_mean_expression": 0.0021000290289521217,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.004608294930875576,
+          "log2_fold_change": 5.8876800537109375,
+          "marker_score": 0.3653798374345958
+        },
+        {
+          "gene": "CATSPERZ",
+          "gene_index": 9718,
+          "cluster_mean_expression": 0.11205436289310455,
+          "background_mean_expression": 0.0022750834468752146,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.00576036866359447,
+          "log2_fold_change": 5.622135162353516,
+          "marker_score": 0.3424234396118539
+        },
+        {
+          "gene": "GALNT16",
+          "gene_index": 13418,
+          "cluster_mean_expression": 0.12283593416213989,
+          "background_mean_expression": 0.00430653989315033,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.0069124423963133645,
+          "log2_fold_change": 4.834059238433838,
+          "marker_score": 0.28885545986954886
+        },
+        {
+          "gene": "RPL17P44",
+          "gene_index": 22560,
+          "cluster_mean_expression": 0.11204676330089569,
+          "background_mean_expression": 0.00787416659295559,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.0184331797235023,
+          "log2_fold_change": 3.8308298587799072,
+          "marker_score": 0.18477428197494483
+        },
+        {
+          "gene": "RPSAP16",
+          "gene_index": 23525,
+          "cluster_mean_expression": 0.12738759815692902,
+          "background_mean_expression": 0.010616008192300797,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.026497695852534548,
+          "log2_fold_change": 3.584911346435547,
+          "marker_score": 0.14400219924622057
+        },
+        {
+          "gene": "RPS2P4",
+          "gene_index": 23388,
+          "cluster_mean_expression": 0.13343656063079834,
+          "background_mean_expression": 0.012496672570705414,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.03225806451612901,
+          "log2_fold_change": 3.4165380001068115,
+          "marker_score": 0.11755829677786886
+        },
+        {
+          "gene": "AC106872.3",
+          "gene_index": 4240,
+          "cluster_mean_expression": 0.12340425699949265,
+          "background_mean_expression": 0.015467011369764805,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.03225806451612901,
+          "log2_fold_change": 2.9961256980895996,
+          "marker_score": 0.10309249713856693
+        },
+        {
+          "gene": "BTF3P12",
+          "gene_index": 9176,
+          "cluster_mean_expression": 0.12016624212265015,
+          "background_mean_expression": 0.01547840517014265,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.036866359447004594,
+          "log2_fold_change": 2.956702709197998,
+          "marker_score": 0.0881106490913075
+        },
+        {
+          "gene": "MTRNR2L12",
+          "gene_index": 18279,
+          "cluster_mean_expression": 0.24279214441776276,
+          "background_mean_expression": 0.051809221506118774,
+          "cluster_detection_fraction": 0.13333333333333333,
+          "background_detection_fraction": 0.10253456221198143,
+          "log2_fold_change": 2.228440761566162,
+          "marker_score": 0.06863323697296736
+        },
+        {
+          "gene": "RPL22P19",
+          "gene_index": 22665,
+          "cluster_mean_expression": 0.1197056919336319,
+          "background_mean_expression": 0.01723230630159378,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.04377880184331797,
+          "log2_fold_change": 2.7963037490844727,
+          "marker_score": 0.06400142221406858
+        },
+        {
+          "gene": "CR392039.3",
+          "gene_index": 10877,
+          "cluster_mean_expression": 0.12317706644535065,
+          "background_mean_expression": 0.0182245671749115,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.044930875576036866,
+          "log2_fold_change": 2.756777048110962,
+          "marker_score": 0.05992073000118296
+        },
+        {
+          "gene": "RPS2P48",
+          "gene_index": 23392,
+          "cluster_mean_expression": 0.12220416963100433,
+          "background_mean_expression": 0.021690145134925842,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.044930875576036866,
+          "log2_fold_change": 2.4941816329956055,
+          "marker_score": 0.054213010916878364
+        },
+        {
+          "gene": "ZHX2",
+          "gene_index": 28270,
+          "cluster_mean_expression": 0.10832326114177704,
+          "background_mean_expression": 0.019254671409726143,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.044930875576036866,
+          "log2_fold_change": 2.492062568664551,
+          "marker_score": 0.054166951377270955
+        },
+        {
+          "gene": "RBM14-RBM4",
+          "gene_index": 21554,
+          "cluster_mean_expression": 0.12213079631328583,
+          "background_mean_expression": 0.019715161994099617,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.04608294930875576,
+          "log2_fold_change": 2.631049394607544,
+          "marker_score": 0.05415677709330428
+        },
+        {
+          "gene": "AC005562.1",
+          "gene_index": 457,
+          "cluster_mean_expression": 0.12514843046665192,
+          "background_mean_expression": 0.019702132791280746,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.04723502304147466,
+          "log2_fold_change": 2.6672163009643555,
+          "marker_score": 0.05182839663164222
+        },
+        {
+          "gene": "PPIAL4A",
+          "gene_index": 20573,
+          "cluster_mean_expression": 0.1565917432308197,
+          "background_mean_expression": 0.028889447450637817,
+          "cluster_detection_fraction": 0.08888888888888889,
+          "background_detection_fraction": 0.06912442396313365,
+          "log2_fold_change": 2.4383935928344727,
+          "marker_score": 0.04819354464076325
+        },
+        {
+          "gene": "AL445433.1",
+          "gene_index": 7030,
+          "cluster_mean_expression": 0.12335380911827087,
+          "background_mean_expression": 0.019453929737210274,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.04953917050691245,
+          "log2_fold_change": 2.664668560028076,
+          "marker_score": 0.04563910052889867
+        },
+        {
+          "gene": "AC015983.1",
+          "gene_index": 1767,
+          "cluster_mean_expression": 0.11523088812828064,
+          "background_mean_expression": 0.02233978733420372,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.048387096774193554,
+          "log2_fold_change": 2.366840124130249,
+          "marker_score": 0.04326481947334862
+        },
+        {
+          "gene": "AL355309.1",
+          "gene_index": 6639,
+          "cluster_mean_expression": 0.12407532334327698,
+          "background_mean_expression": 0.01980765163898468,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.05184331797235024,
+          "log2_fold_change": 2.6470861434936523,
+          "marker_score": 0.039238680928899726
+        },
+        {
+          "gene": "KIAA0556",
+          "gene_index": 15606,
+          "cluster_mean_expression": 0.11452527344226837,
+          "background_mean_expression": 0.026690762490034103,
+          "cluster_detection_fraction": 0.06666666666666667,
+          "background_detection_fraction": 0.05184331797235024,
+          "log2_fold_change": 2.1012535095214844,
+          "marker_score": 0.0311476134667931
+        }
+      ]
+    },
+    "7": {
+      "cluster": 7,
+      "n_cells": 117,
+      "top_markers": [
+        {
+          "gene": "PRELID1",
+          "gene_index": 20817,
+          "cluster_mean_expression": 0.8655952215194702,
+          "background_mean_expression": 0.38573139905929565,
+          "cluster_detection_fraction": 0.8632478632478626,
+          "background_detection_fraction": 0.4459798994974847,
+          "log2_fold_change": 1.1660959720611572,
+          "marker_score": 0.4865744917994767
+        },
+        {
+          "gene": "MAP1LC3A",
+          "gene_index": 17144,
+          "cluster_mean_expression": 0.2619576156139374,
+          "background_mean_expression": 0.10825005918741226,
+          "cluster_detection_fraction": 0.48717948717948784,
+          "background_detection_fraction": 0.18718592964824168,
+          "log2_fold_change": 1.274965524673462,
+          "marker_score": 0.3824814434764836
+        },
+        {
+          "gene": "NDUFAF8",
+          "gene_index": 18649,
+          "cluster_mean_expression": 0.40319958329200745,
+          "background_mean_expression": 0.17189297080039978,
+          "cluster_detection_fraction": 0.555555555555556,
+          "background_detection_fraction": 0.26005025125628195,
+          "log2_fold_change": 1.2299835681915283,
+          "marker_score": 0.3634666686015445
+        },
+        {
+          "gene": "MCRIP2",
+          "gene_index": 17330,
+          "cluster_mean_expression": 0.29822075366973877,
+          "background_mean_expression": 0.13320234417915344,
+          "cluster_detection_fraction": 0.521367521367522,
+          "background_detection_fraction": 0.23618090452261375,
+          "log2_fold_change": 1.1627612113952637,
+          "marker_score": 0.3316039360763024
+        },
+        {
+          "gene": "SMYD2",
+          "gene_index": 24808,
+          "cluster_mean_expression": 0.2220011204481125,
+          "background_mean_expression": 0.09340828657150269,
+          "cluster_detection_fraction": 0.444444444444445,
+          "background_detection_fraction": 0.1796482412060306,
+          "log2_fold_change": 1.2489445209503174,
+          "marker_score": 0.3307157672030643
+        },
+        {
+          "gene": "BPHL",
+          "gene_index": 9091,
+          "cluster_mean_expression": 0.2901668846607208,
+          "background_mean_expression": 0.13454005122184753,
+          "cluster_detection_fraction": 0.521367521367522,
+          "background_detection_fraction": 0.22864321608040267,
+          "log2_fold_change": 1.1088471412658691,
+          "marker_score": 0.32458650909665976
+        },
+        {
+          "gene": "CSNK1G3",
+          "gene_index": 10982,
+          "cluster_mean_expression": 0.22227640450000763,
+          "background_mean_expression": 0.08541528135538101,
+          "cluster_detection_fraction": 0.38461538461538497,
+          "background_detection_fraction": 0.1520100502512566,
+          "log2_fold_change": 1.3797886371612549,
+          "marker_score": 0.3209461972987187
+        },
+        {
+          "gene": "LTBP3",
+          "gene_index": 16992,
+          "cluster_mean_expression": 0.31278494000434875,
+          "background_mean_expression": 0.1363162249326706,
+          "cluster_detection_fraction": 0.47863247863247926,
+          "background_detection_fraction": 0.21482412060301567,
+          "log2_fold_change": 1.198213815689087,
+          "marker_score": 0.3160988192851563
+        },
+        {
+          "gene": "AC092017.1",
+          "gene_index": 3487,
+          "cluster_mean_expression": 0.05602005869150162,
+          "background_mean_expression": 0.007937561720609665,
+          "cluster_detection_fraction": 0.1282051282051282,
+          "background_detection_fraction": 0.016331658291457288,
+          "log2_fold_change": 2.8191754817962646,
+          "marker_score": 0.3153909434440931
+        },
+        {
+          "gene": "AC004148.1",
+          "gene_index": 203,
+          "cluster_mean_expression": 0.11857464909553528,
+          "background_mean_expression": 0.03539581969380379,
+          "cluster_detection_fraction": 0.24786324786324782,
+          "background_detection_fraction": 0.07160804020100502,
+          "log2_fold_change": 1.7441446781158447,
+          "marker_score": 0.3074145824343038
+        },
+        {
+          "gene": "TRIM4",
+          "gene_index": 26847,
+          "cluster_mean_expression": 0.2218576818704605,
+          "background_mean_expression": 0.0858001783490181,
+          "cluster_detection_fraction": 0.3760683760683764,
+          "background_detection_fraction": 0.15703517587939733,
+          "log2_fold_change": 1.370581865310669,
+          "marker_score": 0.3002029320799761
+        },
+        {
+          "gene": "ANTKMT",
+          "gene_index": 7732,
+          "cluster_mean_expression": 0.19361262023448944,
+          "background_mean_expression": 0.07654215395450592,
+          "cluster_detection_fraction": 0.3760683760683764,
+          "background_detection_fraction": 0.15703517587939733,
+          "log2_fold_change": 1.3388465642929077,
+          "marker_score": 0.2932518475390953
+        },
+        {
+          "gene": "JAK1",
+          "gene_index": 15384,
+          "cluster_mean_expression": 0.32127124071121216,
+          "background_mean_expression": 0.15243160724639893,
+          "cluster_detection_fraction": 0.5042735042735049,
+          "background_detection_fraction": 0.23492462311557857,
+          "log2_fold_change": 1.0756298303604126,
+          "marker_score": 0.28971969134766723
+        },
+        {
+          "gene": "PARD6B",
+          "gene_index": 19629,
+          "cluster_mean_expression": 0.13377593457698822,
+          "background_mean_expression": 0.04532631114125252,
+          "cluster_detection_fraction": 0.2820512820512821,
+          "background_detection_fraction": 0.09673366834170864,
+          "log2_fold_change": 1.5613980293273926,
+          "marker_score": 0.289354556845783
+        },
+        {
+          "gene": "SPIN2B",
+          "gene_index": 25207,
+          "cluster_mean_expression": 0.1752573400735855,
+          "background_mean_expression": 0.07473861426115036,
+          "cluster_detection_fraction": 0.3760683760683764,
+          "background_detection_fraction": 0.14447236180904552,
+          "log2_fold_change": 1.2295491695404053,
+          "marker_score": 0.28475868700142815
+        },
+        {
+          "gene": "RAB5IF",
+          "gene_index": 21348,
+          "cluster_mean_expression": 0.20011746883392334,
+          "background_mean_expression": 0.08208887279033661,
+          "cluster_detection_fraction": 0.35897435897435925,
+          "background_detection_fraction": 0.14447236180904552,
+          "log2_fold_change": 1.2855885028839111,
+          "marker_score": 0.2757613014013646
+        },
+        {
+          "gene": "RPS3AP49",
+          "gene_index": 23429,
+          "cluster_mean_expression": 0.5089427828788757,
+          "background_mean_expression": 0.2994128167629242,
+          "cluster_detection_fraction": 0.7692307692307689,
+          "background_detection_fraction": 0.4095477386934652,
+          "log2_fold_change": 0.7653674483299255,
+          "marker_score": 0.2752896832899108
+        },
+        {
+          "gene": "ZNF581",
+          "gene_index": 28631,
+          "cluster_mean_expression": 0.4360440969467163,
+          "background_mean_expression": 0.23082169890403748,
+          "cluster_detection_fraction": 0.6495726495726497,
+          "background_detection_fraction": 0.3530150753768833,
+          "log2_fold_change": 0.9176952242851257,
+          "marker_score": 0.27214946956503666
+        },
+        {
+          "gene": "C1QBP",
+          "gene_index": 9356,
+          "cluster_mean_expression": 0.7102952599525452,
+          "background_mean_expression": 0.33141863346099854,
+          "cluster_detection_fraction": 0.6752136752136753,
+          "background_detection_fraction": 0.4283919597989925,
+          "log2_fold_change": 1.0997642278671265,
+          "marker_score": 0.2714456932738682
+        },
+        {
+          "gene": "PRMT1",
+          "gene_index": 20882,
+          "cluster_mean_expression": 0.6206802129745483,
+          "background_mean_expression": 0.36864152550697327,
+          "cluster_detection_fraction": 0.82051282051282,
+          "background_detection_fraction": 0.464824120603012,
+          "log2_fold_change": 0.7516316175460815,
+          "marker_score": 0.26734687285607184
+        }
+      ]
+    },
+    "8": {
+      "cluster": 8,
+      "n_cells": 40,
+      "top_markers": [
+        {
+          "gene": "NMU",
+          "gene_index": 18921,
+          "cluster_mean_expression": 0.5722289085388184,
+          "background_mean_expression": 0.026465486735105515,
+          "cluster_detection_fraction": 0.6000000000000002,
+          "background_detection_fraction": 0.03665521191294387,
+          "log2_fold_change": 4.434408187866211,
+          "marker_score": 2.4981007408849982
+        },
+        {
+          "gene": "PCLAF",
+          "gene_index": 19785,
+          "cluster_mean_expression": 1.1497801542282104,
+          "background_mean_expression": 0.09292567521333694,
+          "cluster_detection_fraction": 0.7750000000000004,
+          "background_detection_fraction": 0.11798396334478796,
+          "log2_fold_change": 3.6291370391845703,
+          "marker_score": 2.3844012339636786
+        },
+        {
+          "gene": "KIF4A",
+          "gene_index": 15668,
+          "cluster_mean_expression": 0.5248495936393738,
+          "background_mean_expression": 0.02911663055419922,
+          "cluster_detection_fraction": 0.6000000000000002,
+          "background_detection_fraction": 0.04009163802978237,
+          "log2_fold_change": 4.171988487243652,
+          "marker_score": 2.3359312400512007
+        },
+        {
+          "gene": "BIRC5",
+          "gene_index": 9005,
+          "cluster_mean_expression": 0.8644942045211792,
+          "background_mean_expression": 0.052954819053411484,
+          "cluster_detection_fraction": 0.6500000000000002,
+          "background_detection_fraction": 0.07560137457044676,
+          "log2_fold_change": 4.029022216796875,
+          "marker_score": 2.314264823153257
+        },
+        {
+          "gene": "MKI67",
+          "gene_index": 17672,
+          "cluster_mean_expression": 0.900009274482727,
+          "background_mean_expression": 0.05581633001565933,
+          "cluster_detection_fraction": 0.6000000000000002,
+          "background_detection_fraction": 0.06185567010309285,
+          "log2_fold_change": 4.011180877685547,
+          "marker_score": 2.158594245517377
+        },
+        {
+          "gene": "PBK",
+          "gene_index": 19683,
+          "cluster_mean_expression": 0.48255518078804016,
+          "background_mean_expression": 0.026751171797513962,
+          "cluster_detection_fraction": 0.5500000000000002,
+          "background_detection_fraction": 0.03665521191294387,
+          "log2_fold_change": 4.173019886016846,
+          "marker_score": 2.1421980090703894
+        },
+        {
+          "gene": "TK1",
+          "gene_index": 26210,
+          "cluster_mean_expression": 0.9487418532371521,
+          "background_mean_expression": 0.09110593050718307,
+          "cluster_detection_fraction": 0.7250000000000003,
+          "background_detection_fraction": 0.12371134020618542,
+          "log2_fold_change": 3.380398750305176,
+          "marker_score": 2.0325954341396857
+        },
+        {
+          "gene": "CDKN3",
+          "gene_index": 10153,
+          "cluster_mean_expression": 0.6353709101676941,
+          "background_mean_expression": 0.03938889130949974,
+          "cluster_detection_fraction": 0.5500000000000002,
+          "background_detection_fraction": 0.054982817869415855,
+          "log2_fold_change": 4.011738300323486,
+          "marker_score": 1.985879388871472
+        },
+        {
+          "gene": "UBE2C",
+          "gene_index": 27248,
+          "cluster_mean_expression": 0.8695772290229797,
+          "background_mean_expression": 0.08461069315671921,
+          "cluster_detection_fraction": 0.7000000000000003,
+          "background_detection_fraction": 0.1122565864833905,
+          "log2_fold_change": 3.3614022731781006,
+          "marker_score": 1.9756420462401885
+        },
+        {
+          "gene": "PTTG1",
+          "gene_index": 21209,
+          "cluster_mean_expression": 0.7913444638252258,
+          "background_mean_expression": 0.047044817358255386,
+          "cluster_detection_fraction": 0.5500000000000002,
+          "background_detection_fraction": 0.06758304696449031,
+          "log2_fold_change": 4.072197914123535,
+          "marker_score": 1.9644973098890346
+        },
+        {
+          "gene": "NCAPG",
+          "gene_index": 18550,
+          "cluster_mean_expression": 0.6428364515304565,
+          "background_mean_expression": 0.038812559098005295,
+          "cluster_detection_fraction": 0.5250000000000001,
+          "background_detection_fraction": 0.05040091638029786,
+          "log2_fold_change": 4.049856185913086,
+          "marker_score": 1.922058034625933
+        },
+        {
+          "gene": "CENPU",
+          "gene_index": 10218,
+          "cluster_mean_expression": 1.081581473350525,
+          "background_mean_expression": 0.11624202132225037,
+          "cluster_detection_fraction": 0.7500000000000003,
+          "background_detection_fraction": 0.15463917525773171,
+          "log2_fold_change": 3.2179388999938965,
+          "marker_score": 1.9158347574705947
+        },
+        {
+          "gene": "CDK1",
+          "gene_index": 10108,
+          "cluster_mean_expression": 0.8637914657592773,
+          "background_mean_expression": 0.0707036703824997,
+          "cluster_detection_fraction": 0.6250000000000002,
+          "background_detection_fraction": 0.0973654066437571,
+          "log2_fold_change": 3.610826015472412,
+          "marker_score": 1.9051967163539296
+        },
+        {
+          "gene": "PARPBP",
+          "gene_index": 19654,
+          "cluster_mean_expression": 0.490001380443573,
+          "background_mean_expression": 0.037917688488960266,
+          "cluster_detection_fraction": 0.5750000000000002,
+          "background_detection_fraction": 0.06185567010309285,
+          "log2_fold_change": 3.691842794418335,
+          "marker_score": 1.894448196826522
+        },
+        {
+          "gene": "DLGAP5",
+          "gene_index": 11582,
+          "cluster_mean_expression": 0.44766199588775635,
+          "background_mean_expression": 0.019098127260804176,
+          "cluster_detection_fraction": 0.4500000000000001,
+          "background_detection_fraction": 0.034364261168384876,
+          "log2_fold_change": 4.550906658172607,
+          "marker_score": 1.891519451223289
+        },
+        {
+          "gene": "CKAP2L",
+          "gene_index": 10473,
+          "cluster_mean_expression": 0.28370940685272217,
+          "background_mean_expression": 0.009348854422569275,
+          "cluster_detection_fraction": 0.4000000000000001,
+          "background_detection_fraction": 0.016036655211912942,
+          "log2_fold_change": 4.92348051071167,
+          "marker_score": 1.8904360448918123
+        },
+        {
+          "gene": "DIAPH3",
+          "gene_index": 11532,
+          "cluster_mean_expression": 0.36352384090423584,
+          "background_mean_expression": 0.016390398144721985,
+          "cluster_detection_fraction": 0.4500000000000001,
+          "background_detection_fraction": 0.02863688430698739,
+          "log2_fold_change": 4.471127033233643,
+          "marker_score": 1.8839680173825841
+        },
+        {
+          "gene": "NDC80",
+          "gene_index": 18597,
+          "cluster_mean_expression": 0.4706008732318878,
+          "background_mean_expression": 0.02174907922744751,
+          "cluster_detection_fraction": 0.4500000000000001,
+          "background_detection_fraction": 0.029782359679266887,
+          "log2_fold_change": 4.4354777336120605,
+          "marker_score": 1.8638659869136138
+        },
+        {
+          "gene": "CENPF",
+          "gene_index": 10204,
+          "cluster_mean_expression": 0.9038617014884949,
+          "background_mean_expression": 0.07940207421779633,
+          "cluster_detection_fraction": 0.6250000000000002,
+          "background_detection_fraction": 0.09507445589919812,
+          "log2_fold_change": 3.5088534355163574,
+          "marker_score": 1.8594310659859743
+        },
+        {
+          "gene": "CDC20P1",
+          "gene_index": 10044,
+          "cluster_mean_expression": 0.02465013787150383,
+          "background_mean_expression": 0.0,
+          "cluster_detection_fraction": 0.07500000000000001,
+          "background_detection_fraction": 0.0,
+          "log2_fold_change": 24.555091857910156,
+          "marker_score": 1.841631889343262
+        }
+      ]
+    },
+    "9": {
+      "cluster": 9,
+      "n_cells": 122,
+      "top_markers": [
+        {
+          "gene": "RPS27P27",
+          "gene_index": 23350,
+          "cluster_mean_expression": 0.05340811237692833,
+          "background_mean_expression": 0.00898925494402647,
+          "cluster_detection_fraction": 0.05737704918032788,
+          "background_detection_fraction": 0.02402022756005058,
+          "log2_fold_change": 2.5707852840423584,
+          "marker_score": 0.08575322614383485
+        },
+        {
+          "gene": "AC010343.1",
+          "gene_index": 1306,
+          "cluster_mean_expression": 1.7575713396072388,
+          "background_mean_expression": 1.140850305557251,
+          "cluster_detection_fraction": 0.9344262295081975,
+          "background_detection_fraction": 0.8116308470290873,
+          "log2_fold_change": 0.6234737634658813,
+          "marker_score": 0.07655969925048323
+        },
+        {
+          "gene": "H4C3",
+          "gene_index": 14216,
+          "cluster_mean_expression": 1.5871690511703491,
+          "background_mean_expression": 0.9853535294532776,
+          "cluster_detection_fraction": 0.8524590163934433,
+          "background_detection_fraction": 0.7825537294563933,
+          "log2_fold_change": 0.6877424716949463,
+          "marker_score": 0.04807683482263121
+        },
+        {
+          "gene": "AC092757.1",
+          "gene_index": 3618,
+          "cluster_mean_expression": 0.0835084617137909,
+          "background_mean_expression": 0.02400536835193634,
+          "cluster_detection_fraction": 0.08196721311475409,
+          "background_detection_fraction": 0.05689001264222507,
+          "log2_fold_change": 1.7985652685165405,
+          "marker_score": 0.04510298180151728
+        },
+        {
+          "gene": "RPL39",
+          "gene_index": 22936,
+          "cluster_mean_expression": 1.879077672958374,
+          "background_mean_expression": 1.3207693099975586,
+          "cluster_detection_fraction": 0.9262295081967221,
+          "background_detection_fraction": 0.8394437420986206,
+          "log2_fold_change": 0.5086461305618286,
+          "marker_score": 0.04414324411364326
+        },
+        {
+          "gene": "RPL14P1",
+          "gene_index": 22526,
+          "cluster_mean_expression": 1.36191987991333,
+          "background_mean_expression": 0.9724183082580566,
+          "cluster_detection_fraction": 0.8524590163934433,
+          "background_detection_fraction": 0.7686472819216267,
+          "log2_fold_change": 0.4859929084777832,
+          "marker_score": 0.04073190860052586
+        },
+        {
+          "gene": "RPL18A",
+          "gene_index": 22567,
+          "cluster_mean_expression": 2.098241090774536,
+          "background_mean_expression": 1.5423310995101929,
+          "cluster_detection_fraction": 0.9672131147540992,
+          "background_detection_fraction": 0.8874841972187236,
+          "log2_fold_change": 0.44406789541244507,
+          "marker_score": 0.035405052613446626
+        },
+        {
+          "gene": "NME2",
+          "gene_index": 18905,
+          "cluster_mean_expression": 1.4336735010147095,
+          "background_mean_expression": 1.0565767288208008,
+          "cluster_detection_fraction": 0.8524590163934433,
+          "background_detection_fraction": 0.7825537294563933,
+          "log2_fold_change": 0.4403189420700073,
+          "marker_score": 0.03078062198922216
+        },
+        {
+          "gene": "RNF139-AS1",
+          "gene_index": 22088,
+          "cluster_mean_expression": 0.08227812498807907,
+          "background_mean_expression": 0.024810969829559326,
+          "cluster_detection_fraction": 0.07377049180327869,
+          "background_detection_fraction": 0.05689001264222507,
+          "log2_fold_change": 1.729530692100525,
+          "marker_score": 0.029195306806405554
+        },
+        {
+          "gene": "AL590867.2",
+          "gene_index": 7266,
+          "cluster_mean_expression": 1.729473352432251,
+          "background_mean_expression": 1.3038691282272339,
+          "cluster_detection_fraction": 0.9016393442622959,
+          "background_detection_fraction": 0.8305941845764964,
+          "log2_fold_change": 0.40753373503685,
+          "marker_score": 0.02895329928304331
+        },
+        {
+          "gene": "SCARNA9",
+          "gene_index": 23834,
+          "cluster_mean_expression": 0.05170716345310211,
+          "background_mean_expression": 0.017322108149528503,
+          "cluster_detection_fraction": 0.05737704918032788,
+          "background_detection_fraction": 0.040455120101137824,
+          "log2_fold_change": 1.577749490737915,
+          "marker_score": 0.026698564986995223
+        },
+        {
+          "gene": "RPS28",
+          "gene_index": 23353,
+          "cluster_mean_expression": 1.7217411994934082,
+          "background_mean_expression": 1.3010424375534058,
+          "cluster_detection_fraction": 0.9180327868852467,
+          "background_detection_fraction": 0.8571428571428691,
+          "log2_fold_change": 0.40420034527778625,
+          "marker_score": 0.024611730625809177
+        },
+        {
+          "gene": "AC026304.1",
+          "gene_index": 2407,
+          "cluster_mean_expression": 0.05643148347735405,
+          "background_mean_expression": 0.0229090116918087,
+          "cluster_detection_fraction": 0.06557377049180328,
+          "background_detection_fraction": 0.04677623261694061,
+          "log2_fold_change": 1.3005849123001099,
+          "marker_score": 0.02444779414843626
+        },
+        {
+          "gene": "AL590365.1",
+          "gene_index": 7226,
+          "cluster_mean_expression": 0.06436757743358612,
+          "background_mean_expression": 0.018220022320747375,
+          "cluster_detection_fraction": 0.05737704918032788,
+          "background_detection_fraction": 0.04551201011378005,
+          "log2_fold_change": 1.8208093643188477,
+          "marker_score": 0.021603974240379235
+        },
+        {
+          "gene": "RPS3A",
+          "gene_index": 23399,
+          "cluster_mean_expression": 1.797446370124817,
+          "background_mean_expression": 1.4807391166687012,
+          "cluster_detection_fraction": 0.9672131147540992,
+          "background_detection_fraction": 0.8900126422250448,
+          "log2_fold_change": 0.27963125705718994,
+          "marker_score": 0.021587665178708533
+        },
+        {
+          "gene": "RPS17",
+          "gene_index": 23236,
+          "cluster_mean_expression": 2.9622981548309326,
+          "background_mean_expression": 2.2841439247131348,
+          "cluster_detection_fraction": 1.0000000000000009,
+          "background_detection_fraction": 0.9481668773704327,
+          "log2_fold_change": 0.37506330013275146,
+          "marker_score": 0.019440702029631444
+        },
+        {
+          "gene": "RPS27",
+          "gene_index": 23321,
+          "cluster_mean_expression": 2.8062710762023926,
+          "background_mean_expression": 2.112048625946045,
+          "cluster_detection_fraction": 0.9754098360655746,
+          "background_detection_fraction": 0.9292035398230236,
+          "log2_fold_change": 0.410011351108551,
+          "marker_score": 0.018945105952130305
+        },
+        {
+          "gene": "IRX4-AS1",
+          "gene_index": 15296,
+          "cluster_mean_expression": 0.09804007411003113,
+          "background_mean_expression": 0.039930086582899094,
+          "cluster_detection_fraction": 0.0983606557377049,
+          "background_detection_fraction": 0.0847029077117572,
+          "log2_fold_change": 1.2958954572677612,
+          "marker_score": 0.017699013623333357
+        },
+        {
+          "gene": "AC004453.1",
+          "gene_index": 226,
+          "cluster_mean_expression": 1.6697940826416016,
+          "background_mean_expression": 1.3060173988342285,
+          "cluster_detection_fraction": 0.8934426229508204,
+          "background_detection_fraction": 0.8520859671302267,
+          "log2_fold_change": 0.3544960916042328,
+          "marker_score": 0.01466077285022194
+        },
+        {
+          "gene": "RPL17",
+          "gene_index": 22538,
+          "cluster_mean_expression": 2.076448917388916,
+          "background_mean_expression": 1.6792218685150146,
+          "cluster_detection_fraction": 0.9590163934426238,
+          "background_detection_fraction": 0.915297092288257,
+          "log2_fold_change": 0.3063255548477173,
+          "marker_score": 0.013392339183665869
+        }
+      ]
+    }
+  }
+}

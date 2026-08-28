@@ -1,0 +1,404 @@
+{
+  "0": {
+    "n_cells": 41,
+    "supported": true,
+    "immune_state_distribution": {
+      "Insufficient-Evidence": 41
+    },
+    "pathways": {
+      "glycolysis": {
+        "mean": -0.28700777888298035,
+        "median": -0.2119261622428894,
+        "std": 0.473882257938385
+      },
+      "oxidative_phosphorylation": {
+        "mean": -0.5421315431594849,
+        "median": -0.5220033526420593,
+        "std": 0.48171529173851013
+      },
+      "fatty_acid_metabolism": {
+        "mean": -0.05746443569660187,
+        "median": -0.1451810896396637,
+        "std": 0.481227308511734
+      },
+      "interferon_response": {
+        "mean": -0.14781607687473297,
+        "median": -0.2697497308254242,
+        "std": 0.2502553164958954
+      },
+      "inflammatory_signaling": {
+        "mean": 0.13428005576133728,
+        "median": -0.24283885955810547,
+        "std": 0.780225932598114
+      },
+      "chemokine_activity": {
+        "mean": 0.0595710463821888,
+        "median": -0.09351689368486404,
+        "std": 0.9682132005691528
+      }
+    }
+  },
+  "1": {
+    "n_cells": 137,
+    "supported": true,
+    "immune_state_distribution": {
+      "Insufficient-Evidence": 121,
+      "Immune-Excluded": 10,
+      "Immune-Suppressed": 6
+    },
+    "pathways": {
+      "glycolysis": {
+        "mean": -0.03884371742606163,
+        "median": -0.030688514932990074,
+        "std": 0.25798553228378296
+      },
+      "oxidative_phosphorylation": {
+        "mean": 0.03985704854130745,
+        "median": 0.048364099115133286,
+        "std": 0.24825835227966309
+      },
+      "fatty_acid_metabolism": {
+        "mean": 0.11864787340164185,
+        "median": 0.1069849506020546,
+        "std": 0.27895671129226685
+      },
+      "interferon_response": {
+        "mean": 0.018628733232617378,
+        "median": -0.05069473385810852,
+        "std": 0.3154672682285309
+      },
+      "inflammatory_signaling": {
+        "mean": 0.00785610731691122,
+        "median": -0.03721852973103523,
+        "std": 0.2926836311817169
+      },
+      "chemokine_activity": {
+        "mean": -0.010748854838311672,
+        "median": -0.09351689368486404,
+        "std": 0.3841722011566162
+      }
+    }
+  },
+  "2": {
+    "n_cells": 84,
+    "supported": true,
+    "immune_state_distribution": {
+      "Insufficient-Evidence": 77,
+      "Immune-Excluded": 4,
+      "Immune-Suppressed": 2,
+      "Myeloid-Dominant": 1
+    },
+    "pathways": {
+      "glycolysis": {
+        "mean": -0.2223062813282013,
+        "median": -0.22194653749465942,
+        "std": 0.34889060258865356
+      },
+      "oxidative_phosphorylation": {
+        "mean": -0.033308275043964386,
+        "median": -0.006644957698881626,
+        "std": 0.2617248296737671
+      },
+      "fatty_acid_metabolism": {
+        "mean": 0.06987813115119934,
+        "median": 0.03775544837117195,
+        "std": 0.3320739269256592
+      },
+      "interferon_response": {
+        "mean": 0.12043799459934235,
+        "median": 0.036295585334300995,
+        "std": 0.39401811361312866
+      },
+      "inflammatory_signaling": {
+        "mean": 0.1279304325580597,
+        "median": -0.04044339060783386,
+        "std": 0.44867751002311707
+      },
+      "chemokine_activity": {
+        "mean": 0.074980229139328,
+        "median": -0.09351689368486404,
+        "std": 0.5131301879882812
+      }
+    }
+  },
+  "3": {
+    "n_cells": 157,
+    "supported": true,
+    "immune_state_distribution": {
+      "Insufficient-Evidence": 148,
+      "Immune-Excluded": 7,
+      "Immune-Suppressed": 2
+    },
+    "pathways": {
+      "glycolysis": {
+        "mean": 0.06641770899295807,
+        "median": 0.0830259844660759,
+        "std": 0.253140926361084
+      },
+      "oxidative_phosphorylation": {
+        "mean": 0.21856042742729187,
+        "median": 0.23382045328617096,
+        "std": 0.23086722195148468
+      },
+      "fatty_acid_metabolism": {
+        "mean": -0.008019885048270226,
+        "median": 0.011581122875213623,
+        "std": 0.2753911018371582
+      },
+      "interferon_response": {
+        "mean": 0.005140639841556549,
+        "median": -0.019959742203354836,
+        "std": 0.2358771711587906
+      },
+      "inflammatory_signaling": {
+        "mean": -0.028454838320612907,
+        "median": -0.09434916079044342,
+        "std": 0.5951764583587646
+      },
+      "chemokine_activity": {
+        "mean": -7.681330316700041e-05,
+        "median": -0.09351689368486404,
+        "std": 0.9093247056007385
+      }
+    }
+  },
+  "4": {
+    "n_cells": 110,
+    "supported": true,
+    "immune_state_distribution": {
+      "Insufficient-Evidence": 106,
+      "Immune-Excluded": 3,
+      "Immune-Suppressed": 1
+    },
+    "pathways": {
+      "glycolysis": {
+        "mean": 0.5343946814537048,
+        "median": 0.5994278192520142,
+        "std": 0.3729095458984375
+      },
+      "oxidative_phosphorylation": {
+        "mean": 0.21607281267642975,
+        "median": 0.23211854696273804,
+        "std": 0.29585063457489014
+      },
+      "fatty_acid_metabolism": {
+        "mean": 0.08113383501768112,
+        "median": 0.08731351792812347,
+        "std": 0.3721410930156708
+      },
+      "interferon_response": {
+        "mean": 0.03248158469796181,
+        "median": -0.05233822017908096,
+        "std": 0.3560373783111572
+      },
+      "inflammatory_signaling": {
+        "mean": 0.08304191380739212,
+        "median": -0.24283885955810547,
+        "std": 0.78793865442276
+      },
+      "chemokine_activity": {
+        "mean": 0.12458659708499908,
+        "median": -0.09351689368486404,
+        "std": 1.0265653133392334
+      }
+    }
+  },
+  "5": {
+    "n_cells": 60,
+    "supported": true,
+    "immune_state_distribution": {
+      "Insufficient-Evidence": 60
+    },
+    "pathways": {
+      "glycolysis": {
+        "mean": -0.3770994246006012,
+        "median": -0.4030916690826416,
+        "std": 0.41698628664016724
+      },
+      "oxidative_phosphorylation": {
+        "mean": -0.36620041728019714,
+        "median": -0.3740496039390564,
+        "std": 0.3351117670536041
+      },
+      "fatty_acid_metabolism": {
+        "mean": -0.03520512580871582,
+        "median": -0.035575926303863525,
+        "std": 0.3887513279914856
+      },
+      "interferon_response": {
+        "mean": -0.04253293201327324,
+        "median": -0.2697497308254242,
+        "std": 0.32077014446258545
+      },
+      "inflammatory_signaling": {
+        "mean": -0.008050953969359398,
+        "median": -0.24283885955810547,
+        "std": 0.49527743458747864
+      },
+      "chemokine_activity": {
+        "mean": -0.01022923830896616,
+        "median": -0.09351689368486404,
+        "std": 0.46196073293685913
+      }
+    }
+  },
+  "6": {
+    "n_cells": 45,
+    "supported": true,
+    "immune_state_distribution": {
+      "Insufficient-Evidence": 45
+    },
+    "pathways": {
+      "glycolysis": {
+        "mean": -0.42648276686668396,
+        "median": -0.4594036638736725,
+        "std": 0.4399374723434448
+      },
+      "oxidative_phosphorylation": {
+        "mean": -0.8223993182182312,
+        "median": -0.8099927306175232,
+        "std": 0.4460998475551605
+      },
+      "fatty_acid_metabolism": {
+        "mean": -0.2656964361667633,
+        "median": -0.3619871437549591,
+        "std": 0.4153420925140381
+      },
+      "interferon_response": {
+        "mean": -0.09176676720380783,
+        "median": -0.2697497308254242,
+        "std": 0.4163995087146759
+      },
+      "inflammatory_signaling": {
+        "mean": -0.132240429520607,
+        "median": -0.24283885955810547,
+        "std": 0.28755173087120056
+      },
+      "chemokine_activity": {
+        "mean": -0.09351689368486404,
+        "median": -0.09351689368486404,
+        "std": 0.0
+      }
+    }
+  },
+  "7": {
+    "n_cells": 117,
+    "supported": true,
+    "immune_state_distribution": {
+      "Insufficient-Evidence": 106,
+      "Immune-Suppressed": 3,
+      "Immune-Excluded": 8
+    },
+    "pathways": {
+      "glycolysis": {
+        "mean": 0.23255500197410583,
+        "median": 0.2254089117050171,
+        "std": 0.25803977251052856
+      },
+      "oxidative_phosphorylation": {
+        "mean": 0.1915643811225891,
+        "median": 0.18388202786445618,
+        "std": 0.2486935406923294
+      },
+      "fatty_acid_metabolism": {
+        "mean": 0.09811071306467056,
+        "median": 0.11246983706951141,
+        "std": 0.2983558177947998
+      },
+      "interferon_response": {
+        "mean": 0.015286167152225971,
+        "median": -0.030619114637374878,
+        "std": 0.25795814394950867
+      },
+      "inflammatory_signaling": {
+        "mean": 0.020984474569559097,
+        "median": -0.04260053113102913,
+        "std": 0.2909093201160431
+      },
+      "chemokine_activity": {
+        "mean": -0.041061583906412125,
+        "median": -0.09351689368486404,
+        "std": 0.24592375755310059
+      }
+    }
+  },
+  "8": {
+    "n_cells": 40,
+    "supported": true,
+    "immune_state_distribution": {
+      "Insufficient-Evidence": 40
+    },
+    "pathways": {
+      "glycolysis": {
+        "mean": 0.29873985052108765,
+        "median": 0.32944363355636597,
+        "std": 0.30424079298973083
+      },
+      "oxidative_phosphorylation": {
+        "mean": 0.32055923342704773,
+        "median": 0.32593291997909546,
+        "std": 0.33321434259414673
+      },
+      "fatty_acid_metabolism": {
+        "mean": 0.07294641435146332,
+        "median": 0.04072288051247597,
+        "std": 0.29457202553749084
+      },
+      "interferon_response": {
+        "mean": 0.08420715481042862,
+        "median": -0.00036169285885989666,
+        "std": 0.3855963945388794
+      },
+      "inflammatory_signaling": {
+        "mean": -0.04224789887666702,
+        "median": -0.10804899036884308,
+        "std": 0.2435629665851593
+      },
+      "chemokine_activity": {
+        "mean": 0.0018662214279174805,
+        "median": -0.09351689368486404,
+        "std": 0.3151271641254425
+      }
+    }
+  },
+  "9": {
+    "n_cells": 122,
+    "supported": true,
+    "immune_state_distribution": {
+      "Insufficient-Evidence": 121,
+      "Immune-Suppressed": 1
+    },
+    "pathways": {
+      "glycolysis": {
+        "mean": -0.25237056612968445,
+        "median": -0.2710833251476288,
+        "std": 0.32812342047691345
+      },
+      "oxidative_phosphorylation": {
+        "mean": -0.12108653783798218,
+        "median": -0.0970182940363884,
+        "std": 0.3854638338088989
+      },
+      "fatty_acid_metabolism": {
+        "mean": -0.22755922377109528,
+        "median": -0.23701992630958557,
+        "std": 0.3378712832927704
+      },
+      "interferon_response": {
+        "mean": -0.07757212221622467,
+        "median": -0.2697497308254242,
+        "std": 0.36732256412506104
+      },
+      "inflammatory_signaling": {
+        "mean": -0.13382385671138763,
+        "median": -0.24283885955810547,
+        "std": 0.24112026393413544
+      },
+      "chemokine_activity": {
+        "mean": -0.09351691603660583,
+        "median": -0.09351689368486404,
+        "std": 2.2351741790771484e-08
+      }
+    }
+  }
+}

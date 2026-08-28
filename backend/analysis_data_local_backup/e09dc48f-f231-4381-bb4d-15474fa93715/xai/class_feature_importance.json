@@ -1,0 +1,308 @@
+{
+  "Immune-Excluded": [
+    {
+      "feature": "immune_myeloid_signal",
+      "mean_absolute_shap": 0.18818510166505475,
+      "feature_index": 52
+    },
+    {
+      "feature": "immune_immune_suppression",
+      "mean_absolute_shap": 0.03662940502559663,
+      "feature_index": 53
+    },
+    {
+      "feature": "immune_antigen_presentation",
+      "mean_absolute_shap": 0.02615531105271764,
+      "feature_index": 55
+    },
+    {
+      "feature": "PC1",
+      "mean_absolute_shap": 0.017448105980050393,
+      "feature_index": 0
+    },
+    {
+      "feature": "PC8",
+      "mean_absolute_shap": 0.012381076620784758,
+      "feature_index": 7
+    },
+    {
+      "feature": "PC39",
+      "mean_absolute_shap": 0.010485025396421313,
+      "feature_index": 38
+    },
+    {
+      "feature": "PC15",
+      "mean_absolute_shap": 0.00997489252921273,
+      "feature_index": 14
+    },
+    {
+      "feature": "PC36",
+      "mean_absolute_shap": 0.00837199482099382,
+      "feature_index": 35
+    },
+    {
+      "feature": "PC9",
+      "mean_absolute_shap": 0.0072249297238345086,
+      "feature_index": 8
+    },
+    {
+      "feature": "PC26",
+      "mean_absolute_shap": 0.0064671468884431385,
+      "feature_index": 25
+    },
+    {
+      "feature": "PC42",
+      "mean_absolute_shap": 0.005960698454756559,
+      "feature_index": 41
+    },
+    {
+      "feature": "PC40",
+      "mean_absolute_shap": 0.005937903330377015,
+      "feature_index": 39
+    },
+    {
+      "feature": "immune_inflammatory_signal",
+      "mean_absolute_shap": 0.005932724498981166,
+      "feature_index": 54
+    },
+    {
+      "feature": "PC18",
+      "mean_absolute_shap": 0.005578212321285632,
+      "feature_index": 17
+    },
+    {
+      "feature": "PC3",
+      "mean_absolute_shap": 0.005312153665029835,
+      "feature_index": 2
+    },
+    {
+      "feature": "PC34",
+      "mean_absolute_shap": 0.004667898510288135,
+      "feature_index": 33
+    },
+    {
+      "feature": "PC27",
+      "mean_absolute_shap": 0.004625921544403394,
+      "feature_index": 26
+    },
+    {
+      "feature": "PC44",
+      "mean_absolute_shap": 0.00433085004622549,
+      "feature_index": 43
+    },
+    {
+      "feature": "PC11",
+      "mean_absolute_shap": 0.00413508842568218,
+      "feature_index": 10
+    },
+    {
+      "feature": "PC14",
+      "mean_absolute_shap": 0.0040568679381716025,
+      "feature_index": 13
+    }
+  ],
+  "Immune-Suppressed": [
+    {
+      "feature": "immune_immune_suppression",
+      "mean_absolute_shap": 0.1766576371886952,
+      "feature_index": 53
+    },
+    {
+      "feature": "PC39",
+      "mean_absolute_shap": 0.016458194545948227,
+      "feature_index": 38
+    },
+    {
+      "feature": "immune_myeloid_signal",
+      "mean_absolute_shap": 0.01616600035366246,
+      "feature_index": 52
+    },
+    {
+      "feature": "PC22",
+      "mean_absolute_shap": 0.01574320940597033,
+      "feature_index": 21
+    },
+    {
+      "feature": "PC1",
+      "mean_absolute_shap": 0.013877607416094992,
+      "feature_index": 0
+    },
+    {
+      "feature": "PC28",
+      "mean_absolute_shap": 0.010934975603570596,
+      "feature_index": 27
+    },
+    {
+      "feature": "PC36",
+      "mean_absolute_shap": 0.010607065507442727,
+      "feature_index": 35
+    },
+    {
+      "feature": "immune_antigen_presentation",
+      "mean_absolute_shap": 0.009733554735684378,
+      "feature_index": 55
+    },
+    {
+      "feature": "PC35",
+      "mean_absolute_shap": 0.009553530696693341,
+      "feature_index": 34
+    },
+    {
+      "feature": "PC3",
+      "mean_absolute_shap": 0.009069400082460165,
+      "feature_index": 2
+    },
+    {
+      "feature": "PC34",
+      "mean_absolute_shap": 0.007937841008730956,
+      "feature_index": 33
+    },
+    {
+      "feature": "PC8",
+      "mean_absolute_shap": 0.007811309427961178,
+      "feature_index": 7
+    },
+    {
+      "feature": "PC15",
+      "mean_absolute_shap": 0.007691464559169684,
+      "feature_index": 14
+    },
+    {
+      "feature": "PC4",
+      "mean_absolute_shap": 0.007186545425691479,
+      "feature_index": 3
+    },
+    {
+      "feature": "PC20",
+      "mean_absolute_shap": 0.006413559045053049,
+      "feature_index": 19
+    },
+    {
+      "feature": "PC6",
+      "mean_absolute_shap": 0.005788011700413015,
+      "feature_index": 5
+    },
+    {
+      "feature": "PC19",
+      "mean_absolute_shap": 0.005283665950181683,
+      "feature_index": 18
+    },
+    {
+      "feature": "PC18",
+      "mean_absolute_shap": 0.005008035473613493,
+      "feature_index": 17
+    },
+    {
+      "feature": "PC43",
+      "mean_absolute_shap": 0.004821175099408219,
+      "feature_index": 42
+    },
+    {
+      "feature": "PC38",
+      "mean_absolute_shap": 0.0037412044997617304,
+      "feature_index": 37
+    }
+  ],
+  "Insufficient-Evidence": [
+    {
+      "feature": "immune_myeloid_signal",
+      "mean_absolute_shap": 0.17207550935811455,
+      "feature_index": 52
+    },
+    {
+      "feature": "immune_immune_suppression",
+      "mean_absolute_shap": 0.1400282321630986,
+      "feature_index": 53
+    },
+    {
+      "feature": "immune_antigen_presentation",
+      "mean_absolute_shap": 0.0350031768588313,
+      "feature_index": 55
+    },
+    {
+      "feature": "PC1",
+      "mean_absolute_shap": 0.031185376422701475,
+      "feature_index": 0
+    },
+    {
+      "feature": "PC36",
+      "mean_absolute_shap": 0.0188092507305485,
+      "feature_index": 35
+    },
+    {
+      "feature": "PC22",
+      "mean_absolute_shap": 0.01589929442452255,
+      "feature_index": 21
+    },
+    {
+      "feature": "PC3",
+      "mean_absolute_shap": 0.012698452892074406,
+      "feature_index": 2
+    },
+    {
+      "feature": "PC28",
+      "mean_absolute_shap": 0.01029473231093162,
+      "feature_index": 27
+    },
+    {
+      "feature": "PC35",
+      "mean_absolute_shap": 0.009541880827602474,
+      "feature_index": 34
+    },
+    {
+      "feature": "PC39",
+      "mean_absolute_shap": 0.00953724718928325,
+      "feature_index": 38
+    },
+    {
+      "feature": "PC34",
+      "mean_absolute_shap": 0.00923922024584489,
+      "feature_index": 33
+    },
+    {
+      "feature": "PC15",
+      "mean_absolute_shap": 0.009121960108444483,
+      "feature_index": 14
+    },
+    {
+      "feature": "PC4",
+      "mean_absolute_shap": 0.009087497290987439,
+      "feature_index": 3
+    },
+    {
+      "feature": "immune_inflammatory_signal",
+      "mean_absolute_shap": 0.008447875505611784,
+      "feature_index": 54
+    },
+    {
+      "feature": "PC42",
+      "mean_absolute_shap": 0.008079947501634443,
+      "feature_index": 41
+    },
+    {
+      "feature": "PC40",
+      "mean_absolute_shap": 0.007666754868084257,
+      "feature_index": 39
+    },
+    {
+      "feature": "PC8",
+      "mean_absolute_shap": 0.006604505738810135,
+      "feature_index": 7
+    },
+    {
+      "feature": "PC9",
+      "mean_absolute_shap": 0.006545752413394907,
+      "feature_index": 8
+    },
+    {
+      "feature": "PC20",
+      "mean_absolute_shap": 0.006307807953892179,
+      "feature_index": 19
+    },
+    {
+      "feature": "PC14",
+      "mean_absolute_shap": 0.006233193580961023,
+      "feature_index": 13
+    }
+  ]
+}

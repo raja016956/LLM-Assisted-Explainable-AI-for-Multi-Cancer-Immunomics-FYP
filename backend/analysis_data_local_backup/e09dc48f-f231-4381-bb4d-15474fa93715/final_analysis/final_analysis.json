@@ -1,0 +1,555 @@
+{
+  "pipeline": "IMMUNO-XAI",
+  "purpose": "Integrated immune-state prediction and evidence package for downstream LLM biological reasoning.",
+  "input_cells": 913,
+  "immune_state_summary": {
+    "Insufficient-Evidence": {
+      "cell_count": 865,
+      "fraction": 0.9474260679079957,
+      "mean_confidence": 0.0
+    },
+    "Immune-Excluded": {
+      "cell_count": 32,
+      "fraction": 0.03504928806133625,
+      "mean_confidence": 1.0
+    },
+    "Immune-Suppressed": {
+      "cell_count": 15,
+      "fraction": 0.01642935377875137,
+      "mean_confidence": 0.7798924573407727
+    },
+    "Myeloid-Dominant": {
+      "cell_count": 1,
+      "fraction": 0.001095290251916758,
+      "mean_confidence": 0.25786871493026986
+    }
+  },
+  "cluster_summary": {
+    "1": {
+      "cluster": 1,
+      "n_cells": 137,
+      "dominant_state": "Insufficient-Evidence",
+      "dominant_state_count": 121,
+      "dominant_state_fraction": 0.8832116788321168,
+      "state_distribution": {
+        "Insufficient-Evidence": 121,
+        "Immune-Excluded": 10,
+        "Immune-Suppressed": 6
+      },
+      "mean_cell_confidence": 0.1051485239778693
+    },
+    "8": {
+      "cluster": 8,
+      "n_cells": 40,
+      "dominant_state": "Insufficient-Evidence",
+      "dominant_state_count": 40,
+      "dominant_state_fraction": 1.0,
+      "state_distribution": {
+        "Insufficient-Evidence": 40
+      },
+      "mean_cell_confidence": 0.0
+    },
+    "3": {
+      "cluster": 3,
+      "n_cells": 157,
+      "dominant_state": "Insufficient-Evidence",
+      "dominant_state_count": 148,
+      "dominant_state_fraction": 0.9426751592356688,
+      "state_distribution": {
+        "Insufficient-Evidence": 148,
+        "Immune-Excluded": 7,
+        "Immune-Suppressed": 2
+      },
+      "mean_cell_confidence": 0.05709785684188223
+    },
+    "2": {
+      "cluster": 2,
+      "n_cells": 84,
+      "dominant_state": "Insufficient-Evidence",
+      "dominant_state_count": 77,
+      "dominant_state_fraction": 0.9166666666666666,
+      "state_distribution": {
+        "Insufficient-Evidence": 77,
+        "Immune-Excluded": 4,
+        "Immune-Suppressed": 2,
+        "Myeloid-Dominant": 1
+      },
+      "mean_cell_confidence": 0.06894288248902775
+    },
+    "7": {
+      "cluster": 7,
+      "n_cells": 117,
+      "dominant_state": "Insufficient-Evidence",
+      "dominant_state_count": 106,
+      "dominant_state_fraction": 0.905982905982906,
+      "state_distribution": {
+        "Insufficient-Evidence": 106,
+        "Immune-Suppressed": 3,
+        "Immune-Excluded": 8
+      },
+      "mean_cell_confidence": 0.08372087296427289
+    },
+    "4": {
+      "cluster": 4,
+      "n_cells": 110,
+      "dominant_state": "Insufficient-Evidence",
+      "dominant_state_count": 106,
+      "dominant_state_fraction": 0.9636363636363636,
+      "state_distribution": {
+        "Insufficient-Evidence": 106,
+        "Immune-Excluded": 3,
+        "Immune-Suppressed": 1
+      },
+      "mean_cell_confidence": 0.03636363636363636
+    },
+    "5": {
+      "cluster": 5,
+      "n_cells": 60,
+      "dominant_state": "Insufficient-Evidence",
+      "dominant_state_count": 60,
+      "dominant_state_fraction": 1.0,
+      "state_distribution": {
+        "Insufficient-Evidence": 60
+      },
+      "mean_cell_confidence": 0.0
+    },
+    "9": {
+      "cluster": 9,
+      "n_cells": 122,
+      "dominant_state": "Insufficient-Evidence",
+      "dominant_state_count": 121,
+      "dominant_state_fraction": 0.9918032786885246,
+      "state_distribution": {
+        "Insufficient-Evidence": 121,
+        "Immune-Suppressed": 1
+      },
+      "mean_cell_confidence": 0.00819672131147541
+    },
+    "0": {
+      "cluster": 0,
+      "n_cells": 41,
+      "dominant_state": "Insufficient-Evidence",
+      "dominant_state_count": 41,
+      "dominant_state_fraction": 1.0,
+      "state_distribution": {
+        "Insufficient-Evidence": 41
+      },
+      "mean_cell_confidence": 0.0
+    },
+    "6": {
+      "cluster": 6,
+      "n_cells": 45,
+      "dominant_state": "Insufficient-Evidence",
+      "dominant_state_count": 45,
+      "dominant_state_fraction": 1.0,
+      "state_distribution": {
+        "Insufficient-Evidence": 45
+      },
+      "mean_cell_confidence": 0.0
+    }
+  },
+  "cluster_states": {
+    "0": {
+      "cluster": 0,
+      "n_cells": 41,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 1.0,
+      "confidence": 0.0,
+      "reason": "No cells in this cluster provide sufficient evidence for a specific immune-state assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.0,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.0,
+        "immune_suppression": 0.0,
+        "inflammatory_signal": 0.0186228723060794,
+        "antigen_presentation": 0.03823099103642673
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 41
+      }
+    },
+    "1": {
+      "cluster": 1,
+      "n_cells": 137,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 0.8832116788321168,
+      "confidence": 0.072992700729927,
+      "reason": "No specific immune state is represented by enough cells in the cluster to support a cluster-level assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.0,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.007994947642305471,
+        "immune_suppression": 0.007582628106983909,
+        "inflammatory_signal": 0.01070195681204761,
+        "antigen_presentation": 0.044874895336854195
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 121,
+        "Immune-Excluded": 10,
+        "Immune-Suppressed": 6
+      }
+    },
+    "2": {
+      "cluster": 2,
+      "n_cells": 84,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 0.9166666666666666,
+      "confidence": 0.047619047619047616,
+      "reason": "No specific immune state is represented by enough cells in the cluster to support a cluster-level assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.0,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.021455359113003527,
+        "immune_suppression": 0.002724571597008478,
+        "inflammatory_signal": 0.02007254825106689,
+        "antigen_presentation": 0.05426397784391329
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 77,
+        "Immune-Excluded": 4,
+        "Immune-Suppressed": 2,
+        "Myeloid-Dominant": 1
+      }
+    },
+    "3": {
+      "cluster": 3,
+      "n_cells": 157,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 0.9426751592356688,
+      "confidence": 0.044585987261146494,
+      "reason": "No specific immune state is represented by enough cells in the cluster to support a cluster-level assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.0,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.0054437086508152596,
+        "immune_suppression": 0.00777456278254272,
+        "inflammatory_signal": 0.00970157606017058,
+        "antigen_presentation": 0.04655036642245806
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 148,
+        "Immune-Excluded": 7,
+        "Immune-Suppressed": 2
+      }
+    },
+    "4": {
+      "cluster": 4,
+      "n_cells": 110,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 0.9636363636363636,
+      "confidence": 0.02727272727272727,
+      "reason": "No specific immune state is represented by enough cells in the cluster to support a cluster-level assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.0,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.004438755254853856,
+        "immune_suppression": 0.00630674037066373,
+        "inflammatory_signal": 0.027111586115577003,
+        "antigen_presentation": 0.039467381279576906
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 106,
+        "Immune-Excluded": 3,
+        "Immune-Suppressed": 1
+      }
+    },
+    "5": {
+      "cluster": 5,
+      "n_cells": 60,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 1.0,
+      "confidence": 0.0,
+      "reason": "No cells in this cluster provide sufficient evidence for a specific immune-state assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.01097039779027303,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.0033077572782834372,
+        "immune_suppression": 0.005902748803297679,
+        "inflammatory_signal": 0.009274898966153463,
+        "antigen_presentation": 0.01278440977136294
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 60
+      }
+    },
+    "6": {
+      "cluster": 6,
+      "n_cells": 45,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 1.0,
+      "confidence": 0.0,
+      "reason": "No cells in this cluster provide sufficient evidence for a specific immune-state assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.0,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.0,
+        "immune_suppression": 0.0,
+        "inflammatory_signal": 0.0,
+        "antigen_presentation": 0.01875091592470805
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 45
+      }
+    },
+    "7": {
+      "cluster": 7,
+      "n_cells": 117,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 0.905982905982906,
+      "confidence": 0.06837606837606838,
+      "reason": "No specific immune state is represented by enough cells in the cluster to support a cluster-level assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.0,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.006084959603782393,
+        "immune_suppression": 0.006030346274885357,
+        "inflammatory_signal": 0.007102148909854074,
+        "antigen_presentation": 0.05110759647865581
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 106,
+        "Immune-Suppressed": 3,
+        "Immune-Excluded": 8
+      }
+    },
+    "8": {
+      "cluster": 8,
+      "n_cells": 40,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 1.0,
+      "confidence": 0.0,
+      "reason": "No cells in this cluster provide sufficient evidence for a specific immune-state assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.0,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.0,
+        "immune_suppression": 0.0037608370184898376,
+        "inflammatory_signal": 0.014281005412340165,
+        "antigen_presentation": 0.04114692551083863
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 40
+      }
+    },
+    "9": {
+      "cluster": 9,
+      "n_cells": 122,
+      "state": "Insufficient-Evidence",
+      "dominant_cell_state": "Insufficient-Evidence",
+      "dominant_cell_fraction": 0.9918032786885246,
+      "confidence": 0.00819672131147541,
+      "reason": "No specific immune state is represented by enough cells in the cluster to support a cluster-level assignment.",
+      "mean_scores": {
+        "t_cell_activity": 0.0,
+        "cytotoxic_activity": 0.0,
+        "myeloid_signal": 0.008225596097649121,
+        "immune_suppression": 0.003548858229254113,
+        "inflammatory_signal": 0.0,
+        "antigen_presentation": 0.03314834747646676
+      },
+      "cell_state_distribution": {
+        "Insufficient-Evidence": 121,
+        "Immune-Suppressed": 1
+      }
+    }
+  },
+  "immune_score_summary": {
+    "t_cell_activity": {
+      "mean": 0.0007209461855601115,
+      "median": 0.0,
+      "std": 0.021772097350875305,
+      "min": 0.0,
+      "max": 0.6582238674163818
+    },
+    "cytotoxic_activity": {
+      "mean": 0.0,
+      "median": 0.0,
+      "std": 0.0,
+      "min": 0.0,
+      "max": 0.0
+    },
+    "myeloid_signal": {
+      "mean": 0.006740867210244036,
+      "median": 0.0,
+      "std": 0.028836309438487712,
+      "min": 0.0,
+      "max": 0.2954922020435333
+    },
+    "immune_suppression": {
+      "mean": 0.0052849304375747735,
+      "median": 0.0,
+      "std": 0.03379259114965632,
+      "min": 0.0,
+      "max": 0.4781990647315979
+    },
+    "inflammatory_signal": {
+      "mean": 0.011369011382218389,
+      "median": 0.0,
+      "std": 0.0748500682404329,
+      "min": 0.0,
+      "max": 1.3925079107284546
+    },
+    "antigen_presentation": {
+      "mean": 0.04074889912932034,
+      "median": 0.0,
+      "std": 0.06652393457772857,
+      "min": 0.0,
+      "max": 0.41265416145324707
+    }
+  },
+  "ml_summary": {
+    "prediction_count": 912,
+    "class_distribution": {
+      "Insufficient-Evidence": 869,
+      "Immune-Excluded": 31,
+      "Immune-Suppressed": 12
+    }
+  },
+  "pathway_summary": {
+    "glycolysis": {
+      "mean": 0.0,
+      "median": -0.00654021417722106,
+      "std": 0.4339180886745453
+    },
+    "oxidative_phosphorylation": {
+      "mean": -2.506920360190179e-08,
+      "median": 0.07229924201965332,
+      "std": 0.4197688102722168
+    },
+    "fatty_acid_metabolism": {
+      "mean": 1.6712803585505753e-08,
+      "median": 0.011447399854660034,
+      "std": 0.35539790987968445
+    },
+    "interferon_response": {
+      "mean": 1.2534601800950895e-08,
+      "median": -0.07319080084562302,
+      "std": 0.3307969868183136
+    },
+    "inflammatory_signaling": {
+      "mean": 6.267300900475448e-09,
+      "median": -0.24283885955810547,
+      "std": 0.49246907234191895
+    },
+    "chemokine_activity": {
+      "mean": -1.0445502240941096e-08,
+      "median": -0.09351689368486404,
+      "std": 0.6230077147483826
+    }
+  },
+  "xai_summary": {
+    "features": [
+      {
+        "feature": "immune_myeloid_signal",
+        "mean_absolute_shap": 0.12547553712561071,
+        "feature_index": 52
+      },
+      {
+        "feature": "immune_immune_suppression",
+        "mean_absolute_shap": 0.11777175812579678,
+        "feature_index": 53
+      },
+      {
+        "feature": "immune_antigen_presentation",
+        "mean_absolute_shap": 0.023630680882411107,
+        "feature_index": 55
+      },
+      {
+        "feature": "PC1",
+        "mean_absolute_shap": 0.020837029939615614,
+        "feature_index": 0
+      },
+      {
+        "feature": "PC36",
+        "mean_absolute_shap": 0.012596103686328346,
+        "feature_index": 35
+      },
+      {
+        "feature": "PC39",
+        "mean_absolute_shap": 0.01216015571055093,
+        "feature_index": 38
+      },
+      {
+        "feature": "PC22",
+        "mean_absolute_shap": 0.011507316737236858,
+        "feature_index": 21
+      },
+      {
+        "feature": "PC3",
+        "mean_absolute_shap": 0.0090266688798548,
+        "feature_index": 2
+      },
+      {
+        "feature": "PC8",
+        "mean_absolute_shap": 0.008932297262518683,
+        "feature_index": 7
+      },
+      {
+        "feature": "PC15",
+        "mean_absolute_shap": 0.008929439065608962,
+        "feature_index": 14
+      },
+      {
+        "feature": "PC28",
+        "mean_absolute_shap": 0.00756786092631517,
+        "feature_index": 27
+      },
+      {
+        "feature": "PC34",
+        "mean_absolute_shap": 0.007281653254954659,
+        "feature_index": 33
+      },
+      {
+        "feature": "PC35",
+        "mean_absolute_shap": 0.007246305329145331,
+        "feature_index": 34
+      },
+      {
+        "feature": "PC4",
+        "mean_absolute_shap": 0.006573560458993421,
+        "feature_index": 3
+      },
+      {
+        "feature": "immune_inflammatory_signal",
+        "mean_absolute_shap": 0.005631917003741189,
+        "feature_index": 54
+      },
+      {
+        "feature": "PC42",
+        "mean_absolute_shap": 0.005514914335273113,
+        "feature_index": 41
+      },
+      {
+        "feature": "PC18",
+        "mean_absolute_shap": 0.0054271693767107936,
+        "feature_index": 17
+      },
+      {
+        "feature": "PC9",
+        "mean_absolute_shap": 0.005237435990248279,
+        "feature_index": 8
+      },
+      {
+        "feature": "PC40",
+        "mean_absolute_shap": 0.005210337856023815,
+        "feature_index": 39
+      },
+      {
+        "feature": "PC20",
+        "mean_absolute_shap": 0.0049771135334252545,
+        "feature_index": 19
+      }
+    ],
+    "n_cells_explained": 200,
+    "n_features": 56
+  }
+}

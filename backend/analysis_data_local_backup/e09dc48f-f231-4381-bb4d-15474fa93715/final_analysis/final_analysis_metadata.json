@@ -1,0 +1,12 @@
+{
+  "input_cells": 913,
+  "immune_score_count": 6,
+  "cluster_count": 10,
+  "ml_available": true,
+  "pathway_available": true,
+  "xai_available": true,
+  "outputs": {
+    "final_analysis": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\final_analysis\\final_analysis.json",
+    "llm_reasoning_input": "F:\\Bs-Cs\\Spring 2026\\FYP\\immuno-xai-insight\\backend\\analysis_data\\e09dc48f-f231-4381-bb4d-15474fa93715\\final_analysis\\llm_reasoning_input.json"
+  }
+}

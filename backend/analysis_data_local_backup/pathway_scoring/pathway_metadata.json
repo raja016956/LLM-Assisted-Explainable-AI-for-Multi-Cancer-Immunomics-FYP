@@ -1,0 +1,128 @@
+{
+  "input_cells": 913,
+  "input_genes": 28928,
+  "pathway_count": 6,
+  "score_shape": [
+    913,
+    6
+  ],
+  "expression_orientation": "cells_by_genes",
+  "pathways": {
+    "glycolysis": {
+      "requested_genes": 12,
+      "available_genes": 12,
+      "available": [
+        "ALDOA",
+        "ENO1",
+        "GAPDH",
+        "GPI",
+        "HK1",
+        "HK2",
+        "LDHA",
+        "PFKL",
+        "PFKM",
+        "PGAM1",
+        "PKM",
+        "TPI1"
+      ],
+      "missing": [],
+      "supported": true
+    },
+    "oxidative_phosphorylation": {
+      "requested_genes": 14,
+      "available_genes": 14,
+      "available": [
+        "ATP5F1A",
+        "ATP5F1B",
+        "COX4I1",
+        "COX5A",
+        "COX6C",
+        "NDUFA1",
+        "NDUFA2",
+        "NDUFB8",
+        "NDUFS1",
+        "NDUFS2",
+        "SDHA",
+        "SDHB",
+        "UQCRC1",
+        "UQCRC2"
+      ],
+      "missing": [],
+      "supported": true
+    },
+    "fatty_acid_metabolism": {
+      "requested_genes": 10,
+      "available_genes": 10,
+      "available": [
+        "ACACA",
+        "ACLY",
+        "CPT1A",
+        "CPT2",
+        "FABP5",
+        "FASN",
+        "HADHA",
+        "HADHB",
+        "HMGCR",
+        "SCD"
+      ],
+      "missing": [],
+      "supported": true
+    },
+    "interferon_response": {
+      "requested_genes": 11,
+      "available_genes": 10,
+      "available": [
+        "IFIT1",
+        "IFIT2",
+        "IFIT3",
+        "ISG15",
+        "MX1",
+        "MX2",
+        "OAS1",
+        "OAS3",
+        "STAT1",
+        "IRF7"
+      ],
+      "missing": [
+        "OAS2"
+      ],
+      "supported": true
+    },
+    "inflammatory_signaling": {
+      "requested_genes": 10,
+      "available_genes": 5,
+      "available": [
+        "CCL2",
+        "CXCL10",
+        "CXCL11",
+        "NFKB1",
+        "NFKBIA"
+      ],
+      "missing": [
+        "CCL3",
+        "CCL4",
+        "CXCL9",
+        "IL1B",
+        "TNF"
+      ],
+      "supported": true
+    },
+    "chemokine_activity": {
+      "requested_genes": 8,
+      "available_genes": 3,
+      "available": [
+        "CCL2",
+        "CXCL10",
+        "CXCL11"
+      ],
+      "missing": [
+        "CCL3",
+        "CCL4",
+        "CCL5",
+        "CXCL9",
+        "CXCL13"
+      ],
+      "supported": true
+    }
+  }
+}

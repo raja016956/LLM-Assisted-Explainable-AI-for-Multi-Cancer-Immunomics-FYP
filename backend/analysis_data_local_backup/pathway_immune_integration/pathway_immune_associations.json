@@ -1,0 +1,158 @@
+{
+  "glycolysis": {
+    "t_cell_activity": {
+      "pearson_correlation": -0.009175974342691667,
+      "absolute_correlation": 0.009175974342691667
+    },
+    "cytotoxic_activity": {
+      "pearson_correlation": 0.0,
+      "absolute_correlation": 0.0
+    },
+    "myeloid_signal": {
+      "pearson_correlation": -0.044585374279431544,
+      "absolute_correlation": 0.044585374279431544
+    },
+    "immune_suppression": {
+      "pearson_correlation": -0.009656953389352959,
+      "absolute_correlation": 0.009656953389352959
+    },
+    "inflammatory_signal": {
+      "pearson_correlation": 0.023116354537396803,
+      "absolute_correlation": 0.023116354537396803
+    },
+    "antigen_presentation": {
+      "pearson_correlation": 0.0673989175313,
+      "absolute_correlation": 0.0673989175313
+    }
+  },
+  "oxidative_phosphorylation": {
+    "t_cell_activity": {
+      "pearson_correlation": -0.0008923945371449004,
+      "absolute_correlation": 0.0008923945371449004
+    },
+    "cytotoxic_activity": {
+      "pearson_correlation": 0.0,
+      "absolute_correlation": 0.0
+    },
+    "myeloid_signal": {
+      "pearson_correlation": 0.020506272424365136,
+      "absolute_correlation": 0.020506272424365136
+    },
+    "immune_suppression": {
+      "pearson_correlation": -0.0020970514925004067,
+      "absolute_correlation": 0.0020970514925004067
+    },
+    "inflammatory_signal": {
+      "pearson_correlation": 0.02841058411347426,
+      "absolute_correlation": 0.02841058411347426
+    },
+    "antigen_presentation": {
+      "pearson_correlation": 0.1000534934219155,
+      "absolute_correlation": 0.1000534934219155
+    }
+  },
+  "fatty_acid_metabolism": {
+    "t_cell_activity": {
+      "pearson_correlation": -0.025363245626666343,
+      "absolute_correlation": 0.025363245626666343
+    },
+    "cytotoxic_activity": {
+      "pearson_correlation": 0.0,
+      "absolute_correlation": 0.0
+    },
+    "myeloid_signal": {
+      "pearson_correlation": 0.0019379147824775908,
+      "absolute_correlation": 0.0019379147824775908
+    },
+    "immune_suppression": {
+      "pearson_correlation": -0.01160640484749901,
+      "absolute_correlation": 0.01160640484749901
+    },
+    "inflammatory_signal": {
+      "pearson_correlation": 0.007121281786009721,
+      "absolute_correlation": 0.007121281786009721
+    },
+    "antigen_presentation": {
+      "pearson_correlation": 0.10865360320281008,
+      "absolute_correlation": 0.10865360320281008
+    }
+  },
+  "interferon_response": {
+    "t_cell_activity": {
+      "pearson_correlation": -0.027002383196128816,
+      "absolute_correlation": 0.027002383196128816
+    },
+    "cytotoxic_activity": {
+      "pearson_correlation": 0.0,
+      "absolute_correlation": 0.0
+    },
+    "myeloid_signal": {
+      "pearson_correlation": 0.056210913938968404,
+      "absolute_correlation": 0.056210913938968404
+    },
+    "immune_suppression": {
+      "pearson_correlation": -0.0503814182603285,
+      "absolute_correlation": 0.0503814182603285
+    },
+    "inflammatory_signal": {
+      "pearson_correlation": -0.02025183887659853,
+      "absolute_correlation": 0.02025183887659853
+    },
+    "antigen_presentation": {
+      "pearson_correlation": 0.033185080460589336,
+      "absolute_correlation": 0.033185080460589336
+    }
+  },
+  "inflammatory_signaling": {
+    "t_cell_activity": {
+      "pearson_correlation": -0.01632833098091319,
+      "absolute_correlation": 0.01632833098091319
+    },
+    "cytotoxic_activity": {
+      "pearson_correlation": 0.0,
+      "absolute_correlation": 0.0
+    },
+    "myeloid_signal": {
+      "pearson_correlation": 0.019998434465992587,
+      "absolute_correlation": 0.019998434465992587
+    },
+    "immune_suppression": {
+      "pearson_correlation": 0.16712913457017098,
+      "absolute_correlation": 0.16712913457017098
+    },
+    "inflammatory_signal": {
+      "pearson_correlation": 0.8182733022071734,
+      "absolute_correlation": 0.8182733022071734
+    },
+    "antigen_presentation": {
+      "pearson_correlation": -0.007386591871895451,
+      "absolute_correlation": 0.007386591871895451
+    }
+  },
+  "chemokine_activity": {
+    "t_cell_activity": {
+      "pearson_correlation": -0.00497049022799987,
+      "absolute_correlation": 0.00497049022799987
+    },
+    "cytotoxic_activity": {
+      "pearson_correlation": 0.0,
+      "absolute_correlation": 0.0
+    },
+    "myeloid_signal": {
+      "pearson_correlation": 0.0005149131026721376,
+      "absolute_correlation": 0.0005149131026721376
+    },
+    "immune_suppression": {
+      "pearson_correlation": 0.16316660271180705,
+      "absolute_correlation": 0.16316660271180705
+    },
+    "inflammatory_signal": {
+      "pearson_correlation": 0.9811678812256027,
+      "absolute_correlation": 0.9811678812256027
+    },
+    "antigen_presentation": {
+      "pearson_correlation": -0.02305548222133089,
+      "absolute_correlation": 0.02305548222133089
+    }
+  }
+}
