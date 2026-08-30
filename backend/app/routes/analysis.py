@@ -119,6 +119,100 @@ def get_job(job_id: str) -> Dict[str, Any] | None:
 
         return dict(job)
 
+def recover_completed_job(
+    job_id: str,
+) -> Dict[str, Any] | None:
+    """
+    Recover a completed analysis job from disk.
+
+    Jobs are normally stored in the in-memory JOBS dictionary.
+    After a Uvicorn restart, that dictionary is empty even though
+    analysis output may still exist on disk.
+
+    If the expected completed output files exist, reconstruct
+    the job metadata so status/result endpoints continue to work.
+    """
+
+    analysis_dir = (
+        ANALYSIS_DATA_DIR / job_id
+    )
+
+    if not analysis_dir.exists():
+        return None
+
+    final_analysis_path = (
+        analysis_dir
+        / "final_analysis"
+        / "final_analysis.json"
+    )
+
+    interpretation_path = (
+        analysis_dir
+        / "llm_reasoning"
+        / "biological_interpretation.json"
+    )
+
+    report_path = (
+        analysis_dir
+        / "llm_reasoning"
+        / "biological_report.md"
+    )
+
+    metadata_path = (
+        analysis_dir
+        / "llm_reasoning"
+        / "llm_reasoning_metadata.json"
+    )
+
+    required_files = [
+        final_analysis_path,
+        interpretation_path,
+        report_path,
+        metadata_path,
+    ]
+
+    if not all(
+        path.exists()
+        for path in required_files
+    ):
+        return None
+
+    job = {
+        "job_id": job_id,
+
+        "status": "completed",
+
+        "step": "llm_reasoning",
+
+        "step_number": TOTAL_STEPS,
+
+        "total_steps": TOTAL_STEPS,
+
+        "progress": 100.0,
+
+        "message": (
+            "Analysis completed successfully."
+        ),
+
+        "dataset": None,
+
+        "analysis_dir": str(
+            analysis_dir
+        ),
+
+        "started_at": None,
+
+        "completed_at": None,
+
+        "error": None,
+
+        "result": None,
+    }
+
+    with JOBS_LOCK:
+        JOBS[job_id] = job
+
+    return dict(job)
 
 def update_job(
     job_id: str,
@@ -175,6 +269,336 @@ def create_job(
             "result": None,
         }
 
+def analysis_files_exist(job_id: str) -> bool:
+    """
+    Check whether a completed analysis exists on disk.
+
+    This allows completed jobs to survive a Uvicorn restart.
+    """
+
+    analysis_dir = ANALYSIS_DATA_DIR / job_id
+
+    required_files = [
+        analysis_dir
+        / "final_analysis"
+        / "final_analysis.json",
+
+        analysis_dir
+        / "final_analysis"
+        / "llm_reasoning_input.json",
+
+        analysis_dir
+        / "llm_reasoning"
+        / "biological_interpretation.json",
+
+        analysis_dir
+        / "llm_reasoning"
+        / "biological_report.md",
+
+        analysis_dir
+        / "llm_reasoning"
+        / "llm_reasoning_metadata.json",
+    ]
+
+    return all(
+        path.exists()
+        for path in required_files
+    )
+
+
+def recover_completed_job(
+    job_id: str,
+) -> Dict[str, Any] | None:
+    """
+    Recover a completed analysis job from disk.
+
+    JOBS is in-memory and disappears after a server restart.
+    The analysis output directory is therefore used as the
+    persistent source of truth for completed analyses.
+    """
+
+    analysis_dir = ANALYSIS_DATA_DIR / job_id
+
+    if not analysis_dir.exists():
+        return None
+
+    if not analysis_files_exist(job_id):
+        return None
+
+    return {
+        "job_id": job_id,
+
+        "status": "completed",
+
+        "step": "llm_reasoning",
+
+        "step_number": TOTAL_STEPS,
+
+        "total_steps": TOTAL_STEPS,
+
+        "progress": 100.0,
+
+        "message": (
+            "Analysis completed successfully."
+        ),
+
+        "dataset": "",
+
+        "analysis_dir": str(
+            analysis_dir
+        ),
+
+        "started_at": None,
+
+        "completed_at": None,
+
+        "error": None,
+
+        "result": None,
+    }
+
+
+def analysis_files_exist(job_id: str) -> bool:
+    """
+    Check whether a completed analysis exists on disk.
+
+    This allows completed jobs to survive a Uvicorn restart.
+    """
+
+    analysis_dir = ANALYSIS_DATA_DIR / job_id
+
+    required_files = [
+        analysis_dir
+        / "final_analysis"
+        / "final_analysis.json",
+
+        analysis_dir
+        / "final_analysis"
+        / "llm_reasoning_input.json",
+
+        analysis_dir
+        / "llm_reasoning"
+        / "biological_interpretation.json",
+
+        analysis_dir
+        / "llm_reasoning"
+        / "biological_report.md",
+
+        analysis_dir
+        / "llm_reasoning"
+        / "llm_reasoning_metadata.json",
+    ]
+
+    return all(
+        path.exists()
+        for path in required_files
+    )
+
+
+def recover_completed_job(
+    job_id: str,
+) -> Dict[str, Any] | None:
+    """
+    Recover a completed analysis job from disk.
+
+    JOBS is in-memory and disappears after a server restart.
+    The analysis output directory is therefore used as the
+    persistent source of truth for completed analyses.
+    """
+
+    analysis_dir = ANALYSIS_DATA_DIR / job_id
+
+    if not analysis_dir.exists():
+        return None
+
+    if not analysis_files_exist(job_id):
+        return None
+
+    return {
+        "job_id": job_id,
+
+        "status": "completed",
+
+        "step": "llm_reasoning",
+
+        "step_number": TOTAL_STEPS,
+
+        "total_steps": TOTAL_STEPS,
+
+        "progress": 100.0,
+
+        "message": (
+            "Analysis completed successfully."
+        ),
+
+        "dataset": "",
+
+        "analysis_dir": str(
+            analysis_dir
+        ),
+
+        "started_at": None,
+
+        "completed_at": None,
+
+        "error": None,
+
+        "result": None,
+    }
+
+
+def get_job_or_recover(
+    job_id: str,
+) -> Dict[str, Any] | None:
+    """
+    Retrieve a job from memory.
+
+    If it is not present in memory, attempt to recover
+    a completed job from persistent analysis output.
+    """
+
+    job = get_job(job_id)
+
+    if job is not None:
+        return job
+
+    recovered = recover_completed_job(
+        job_id
+    )
+
+    if recovered is None:
+        return None
+
+    # Restore it into the in-memory store so subsequent
+    # requests behave normally.
+    with JOBS_LOCK:
+        JOBS[job_id] = recovered
+
+    return dict(recovered)
+
+def recover_completed_job(
+    job_id: str,
+) -> Dict[str, Any] | None:
+    """
+    Recover a completed analysis job from disk after
+    the in-memory JOBS store has been lost, for example
+    after a Uvicorn restart.
+    """
+
+    analysis_dir = ANALYSIS_DATA_DIR / job_id
+
+    # --------------------------------------------------------
+    # ANALYSIS DIRECTORY MUST EXIST
+    # --------------------------------------------------------
+
+    if not analysis_dir.exists():
+        return None
+
+    # --------------------------------------------------------
+    # REQUIRED COMPLETION FILE
+    # --------------------------------------------------------
+
+    final_analysis_path = (
+        analysis_dir
+        / "final_analysis"
+        / "final_analysis.json"
+    )
+
+    if not final_analysis_path.exists():
+        return None
+
+    # --------------------------------------------------------
+    # OPTIONAL TIMESTAMP FROM MANIFEST
+    # --------------------------------------------------------
+
+    completed_at = None
+
+    manifest_path = (
+        analysis_dir
+        / "analysis_run_manifest.json"
+    )
+
+    if manifest_path.exists():
+
+        try:
+
+            with open(
+                manifest_path,
+                "r",
+                encoding="utf-8",
+            ) as handle:
+
+                manifest = json.load(handle)
+
+            completed_at = (
+                manifest.get("completed_at")
+                or manifest.get("finished_at")
+                or manifest.get("timestamp")
+            )
+
+        except Exception:
+            completed_at = None
+
+    # --------------------------------------------------------
+    # FALLBACK TIMESTAMP
+    # --------------------------------------------------------
+
+    if completed_at is None:
+
+        try:
+
+            completed_at = datetime.fromtimestamp(
+                final_analysis_path.stat().st_mtime,
+                tz=timezone.utc,
+            ).isoformat()
+
+        except Exception:
+            completed_at = None
+
+    # --------------------------------------------------------
+    # RECONSTRUCT JOB
+    # --------------------------------------------------------
+
+    recovered_job: Dict[str, Any] = {
+
+        "job_id": job_id,
+
+        "status": "completed",
+
+        "step": "llm_reasoning",
+
+        "step_number": TOTAL_STEPS,
+
+        "total_steps": TOTAL_STEPS,
+
+        "progress": 100.0,
+
+        "message": (
+            "Analysis completed successfully."
+        ),
+
+        "dataset": None,
+
+        "analysis_dir": str(analysis_dir),
+
+        "started_at": None,
+
+        "completed_at": completed_at,
+
+        "error": None,
+
+        "result": None,
+    }
+
+    # --------------------------------------------------------
+    # PUT RECOVERED JOB BACK INTO MEMORY
+    # --------------------------------------------------------
+
+    with JOBS_LOCK:
+
+        JOBS[job_id] = recovered_job
+
+    return dict(recovered_job)
 
 # ============================================================
 # PROGRESS CALLBACK
@@ -617,11 +1041,12 @@ def get_analysis_status(
     job = get_job(job_id)
 
     if job is None:
+        job = recover_completed_job(job_id)
+
+    if job is None:
 
         raise HTTPException(
-
             status_code=404,
-
             detail=(
                 f"Analysis job not found: {job_id}"
             ),
@@ -649,7 +1074,7 @@ def get_analysis_status(
 
         "completed_at": job["completed_at"],
     }
-
+    
     # --------------------------------------------------------
     # ERROR INFORMATION
     # --------------------------------------------------------
@@ -672,20 +1097,229 @@ def get_analysis_result(
     """
     Return complete analysis results after the pipeline
     has finished.
+
+    Completed results are loaded from disk so they remain
+    available even after the API process restarts.
     """
 
-    job = get_job(job_id)
+        # --------------------------------------------------------
+    # TRY IN-MEMORY JOB FIRST
+    # --------------------------------------------------------
+
+    job = get_job_or_recover(
+        job_id
+    )
+
+    # --------------------------------------------------------
+    # LOCATE PERSISTED ANALYSIS DIRECTORY
+    # --------------------------------------------------------
+
+    analysis_dir = (
+        ANALYSIS_DATA_DIR
+        / job_id
+    )
+
+    # --------------------------------------------------------
+    # JOB DOES NOT EXIST IN MEMORY
+    #
+    # This can happen after Uvicorn restarts.
+    # If the completed analysis directory exists, recover it
+    # from disk.
+    # --------------------------------------------------------
 
     if job is None:
 
-        raise HTTPException(
-
-            status_code=404,
-
-            detail=(
-                f"Analysis job not found: {job_id}"
-            ),
+        final_analysis_path = (
+            analysis_dir
+            / "final_analysis"
+            / "final_analysis.json"
         )
+
+        interpretation_path = (
+            analysis_dir
+            / "llm_reasoning"
+            / "biological_interpretation.json"
+        )
+
+        report_path = (
+            analysis_dir
+            / "llm_reasoning"
+            / "biological_report.md"
+        )
+
+        metadata_path = (
+            analysis_dir
+            / "llm_reasoning"
+            / "llm_reasoning_metadata.json"
+        )
+
+        # ----------------------------------------------------
+        # A completed analysis must have the final analysis
+        # file.
+        # ----------------------------------------------------
+
+        if not final_analysis_path.exists():
+
+            raise HTTPException(
+                status_code=404,
+                detail=(
+                    f"Analysis job not found: {job_id}"
+                ),
+            )
+
+        # ----------------------------------------------------
+        # RECOVER COMPLETED JOB
+        # ----------------------------------------------------
+
+        job = {
+            "job_id": job_id,
+
+            "status": "completed",
+
+            "step": "llm_reasoning",
+
+            "step_number": TOTAL_STEPS,
+
+            "total_steps": TOTAL_STEPS,
+
+            "progress": 100.0,
+
+            "message": (
+                "Analysis completed successfully."
+            ),
+
+            "dataset": None,
+
+            "analysis_dir": str(
+                analysis_dir
+            ),
+
+            "started_at": None,
+
+            "completed_at": None,
+
+            "error": None,
+
+            "result": None,
+        }
+
+        # ----------------------------------------------------
+        # RECOVER COMPLETED RESULT FROM DISK
+        # ----------------------------------------------------
+
+        response: Dict[str, Any] = {
+
+            "success": True,
+
+            "job_id": job_id,
+
+            "status": "completed",
+
+            "progress": 100.0,
+
+            "message": (
+                "Analysis completed successfully."
+            ),
+        }
+
+        # ----------------------------------------------------
+        # FINAL ANALYSIS
+        # ----------------------------------------------------
+
+        try:
+
+            with open(
+                final_analysis_path,
+                "r",
+                encoding="utf-8",
+            ) as handle:
+
+                response["final_analysis"] = json.load(
+                    handle
+                )
+
+        except Exception as exc:
+
+            raise HTTPException(
+                status_code=500,
+                detail=(
+                    f"Failed to read final analysis: {exc}"
+                ),
+            )
+
+        # ----------------------------------------------------
+        # BIOLOGICAL INTERPRETATION
+        # ----------------------------------------------------
+
+        if interpretation_path.exists():
+
+            try:
+
+                with open(
+                    interpretation_path,
+                    "r",
+                    encoding="utf-8",
+                ) as handle:
+
+                    response[
+                        "biological_interpretation"
+                    ] = json.load(handle)
+
+            except Exception as exc:
+
+                response[
+                    "biological_interpretation_error"
+                ] = str(exc)
+
+        # ----------------------------------------------------
+        # BIOLOGICAL REPORT
+        # ----------------------------------------------------
+
+        if report_path.exists():
+
+            try:
+
+                response[
+                    "biological_report"
+                ] = report_path.read_text(
+                    encoding="utf-8"
+                )
+
+            except Exception as exc:
+
+                response[
+                    "biological_report_error"
+                ] = str(exc)
+
+        # ----------------------------------------------------
+        # LLM METADATA
+        # ----------------------------------------------------
+
+        if metadata_path.exists():
+
+            try:
+
+                with open(
+                    metadata_path,
+                    "r",
+                    encoding="utf-8",
+                ) as handle:
+
+                    response[
+                        "llm_reasoning_metadata"
+                    ] = json.load(handle)
+
+            except Exception as exc:
+
+                response[
+                    "llm_reasoning_metadata_error"
+                ] = str(exc)
+
+        return response
+
+    # ========================================================
+    # NORMAL IN-MEMORY JOB
+    # ========================================================
 
     # --------------------------------------------------------
     # QUEUED
@@ -751,9 +1385,9 @@ def get_analysis_result(
             },
         )
 
-    # --------------------------------------------------------
+    # ========================================================
     # COMPLETED
-    # --------------------------------------------------------
+    # ========================================================
 
     analysis_dir = Path(
         job["analysis_dir"]
@@ -784,18 +1418,28 @@ def get_analysis_result(
     )
 
     response: Dict[str, Any] = {
+
         "success": True,
+
         "job_id": job_id,
+
         "status": "completed",
+
         "progress": 100.0,
+
         "message": (
             "Analysis completed successfully."
         ),
     }
 
-    # ========================================================
+    # IMPORTANT:
+    # Do NOT include job["result"] here.
+    # The raw pipeline result can contain NumPy/sklearn/
+    # other Python objects that FastAPI cannot JSON encode.
+
+    # --------------------------------------------------------
     # FINAL ANALYSIS
-    # ========================================================
+    # --------------------------------------------------------
 
     if final_analysis_path.exists():
 
@@ -817,9 +1461,9 @@ def get_analysis_result(
                 "final_analysis_error"
             ] = str(exc)
 
-    # ========================================================
+    # --------------------------------------------------------
     # BIOLOGICAL INTERPRETATION
-    # ========================================================
+    # --------------------------------------------------------
 
     if interpretation_path.exists():
 
@@ -841,9 +1485,9 @@ def get_analysis_result(
                 "biological_interpretation_error"
             ] = str(exc)
 
-    # ========================================================
+    # --------------------------------------------------------
     # BIOLOGICAL REPORT
-    # ========================================================
+    # --------------------------------------------------------
 
     if report_path.exists():
 
@@ -861,9 +1505,9 @@ def get_analysis_result(
                 "biological_report_error"
             ] = str(exc)
 
-    # ========================================================
+    # --------------------------------------------------------
     # LLM METADATA
-    # ========================================================
+    # --------------------------------------------------------
 
     if metadata_path.exists():
 
