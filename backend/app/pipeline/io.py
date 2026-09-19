@@ -150,7 +150,43 @@ def _is_comment_or_empty(line: str) -> bool:
     if not stripped:
         return True
 
+    # Common metadata/comment prefixes used by GEO and
+    # other public genomics repositories.
     if stripped.startswith("#"):
+        return True
+
+    if stripped.startswith("!"):
+        return True
+
+    if stripped.startswith("^"):
+        return True
+
+    return False
+
+
+def _row_is_comment_or_empty(row: list[str]) -> bool:
+    """
+    Detect blank rows and metadata rows after CSV parsing.
+
+    GEO series-matrix files can contain metadata lines both
+    before and after the expression table.
+    """
+
+    if not row:
+        return True
+
+    first = row[0].strip()
+
+    if not first:
+        return True
+
+    if first.startswith("#"):
+        return True
+
+    if first.startswith("!"):
+        return True
+
+    if first.startswith("^"):
         return True
 
     return False
@@ -199,6 +235,7 @@ def _read_matrix_layout(
         - comma-separated files
         - tab-separated files
         - semicolon-separated files
+        - matrices without an explicit header
     """
 
     path = Path(path)
@@ -228,6 +265,19 @@ def _read_matrix_layout(
     # --------------------------------------------------------
     # Try each candidate line as the header.
     # --------------------------------------------------------
+    #
+    # A normal matrix has:
+    #
+    #   Gene    Cell1    Cell2 ...
+    #
+    # But many GEO supplementary matrices do NOT contain an
+    # explicit header. In that case the first row may already
+    # look like:
+    #
+    #   GeneA   10   4   0
+    #
+    # We detect that layout and create synthetic cell names.
+    # --------------------------------------------------------
 
     for index, candidate in enumerate(lines):
 
@@ -254,32 +304,59 @@ def _read_matrix_layout(
             continue
 
         # ----------------------------------------------------
-        # Header plausibility
-        # ----------------------------------------------------
-        #
-        # A valid matrix header should have:
-        #
-        #   Gene    Cell1    Cell2 ...
-        #
-        # We reject lines where every field is numeric.
+        # Explicit header
         # ----------------------------------------------------
 
-        if all(
+        if not all(
             _looks_numeric(column)
             for column in columns[1:]
         ):
-            continue
+            return (
+                delimiter,
+                index,
+                columns,
+            )
 
-        return (
-            delimiter,
-            index,
-            columns,
-        )
+        # ----------------------------------------------------
+        # Headerless expression matrix
+        # ----------------------------------------------------
+        #
+        # If the first field is a gene identifier and every
+        # remaining field is numeric, this is very likely the
+        # first data row rather than a header.
+        #
+        # We only infer this from the FIRST non-metadata line.
+        # ----------------------------------------------------
+
+        if (
+            index == 0
+            and not _looks_numeric(columns[0])
+            and all(
+                _looks_numeric(column)
+                for column in columns[1:]
+            )
+        ):
+            synthetic_header = [
+                "gene"
+            ] + [
+                f"Cell_{cell_index}"
+                for cell_index in range(
+                    1,
+                    len(columns),
+                )
+            ]
+
+            return (
+                delimiter,
+                -1,
+                synthetic_header,
+            )
 
     raise ValueError(
         "Could not detect a valid expression-matrix "
-        "header. The file must contain a gene column "
-        "followed by one or more cell columns."
+        "header or headerless expression matrix. "
+        "Expected a gene identifier followed by "
+        "one or more numeric cell-expression values."
     )
 
 
@@ -368,6 +445,7 @@ def inspect_expression_matrix(
         - delimiter
         - compression
         - metadata/comment lines
+        - explicit or headerless matrix layout
     """
 
     path = Path(path)
@@ -407,13 +485,7 @@ def inspect_expression_matrix(
 
         for row in reader:
 
-            if not row:
-                continue
-
-            if not any(
-                value.strip()
-                for value in row
-            ):
+            if _row_is_comment_or_empty(row):
                 continue
 
             gene_name = (
@@ -440,13 +512,7 @@ def inspect_expression_matrix(
 
         for row in reader:
 
-            if not row:
-                continue
-
-            if not any(
-                value.strip()
-                for value in row
-            ):
+            if _row_is_comment_or_empty(row):
                 continue
 
             if not row[0].strip():
@@ -561,13 +627,7 @@ def iter_expression_rows(
             start=2,
         ):
 
-            if not row:
-                continue
-
-            if not any(
-                value.strip()
-                for value in row
-            ):
+            if _row_is_comment_or_empty(row):
                 continue
 
             gene_name = (
