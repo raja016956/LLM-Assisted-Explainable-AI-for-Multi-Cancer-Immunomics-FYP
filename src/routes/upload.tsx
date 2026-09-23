@@ -217,6 +217,14 @@ type UploadResponse = {
   message: string;
 };
 
+type PreloadedDataset = {
+  id: string;
+  cancer_type: string;
+  name: string;
+  description: string;
+  accession: string;
+};
+
 
 // ============================================================
 // TIME FORMATTER
@@ -282,6 +290,43 @@ function UploadPage() {
   const [startedAt, setStartedAt] =
     useState<string | null>(null);
 
+  const [preloadedDatasets, setPreloadedDatasets] =
+    useState<PreloadedDataset[]>([]);
+
+  const [selectedPreloaded, setSelectedPreloaded] =
+    useState<PreloadedDataset | null>(null);
+
+  const [preloadedLoadingId, setPreloadedLoadingId] =
+    useState<string | null>(null);
+
+
+  useEffect(() => {
+    async function loadPreloadedDatasets() {
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/upload/preloaded`,
+          { headers: { Accept: "application/json" } },
+        );
+
+        if (!response.ok) return;
+
+        const data = (await response.json()) as {
+          datasets?: PreloadedDataset[];
+        };
+
+        setPreloadedDatasets(
+          Array.isArray(data.datasets) ? data.datasets : [],
+        );
+      } catch (err) {
+        console.error(
+          "[ImmunoXAI] Failed to load preloaded datasets:",
+          err,
+        );
+      }
+    }
+
+    void loadPreloadedDatasets();
+  }, []);
 
   // ==========================================================
   // RUNNING
@@ -406,6 +451,7 @@ function UploadPage() {
     }
 
     setFile(selectedFile);
+    setSelectedPreloaded(null);
     setStatus("ready");
     setJobId(null);
     setBackendStep(null);
@@ -426,6 +472,7 @@ function UploadPage() {
     }
 
     setFile(null);
+    setSelectedPreloaded(null);
     setStatus("idle");
     setError("");
     setJobId(null);
@@ -651,10 +698,25 @@ function UploadPage() {
   // RUN COMPLETE ANALYSIS
   // ==========================================================
 
+  function selectPreloadedDataset(dataset: PreloadedDataset) {
+    if (isRunning) return;
+
+    setSelectedPreloaded(dataset);
+    setFile(null);
+    setStatus("ready");
+    setError("");
+    setJobId(null);
+    setBackendStep(null);
+    setCurrentStep(0);
+    setProgress(0);
+    setElapsedSeconds(0);
+    setStartedAt(null);
+  }
+
   async function handleAnalyze() {
-    if (!file) {
+    if (!file && !selectedPreloaded) {
       setError(
-        "Please upload a dataset first.",
+        "Please upload a dataset or select a preloaded dataset first.",
       );
 
       return;
@@ -674,11 +736,36 @@ function UploadPage() {
       // STEP A — UPLOAD DATASET
       // --------------------------------------------------------
 
-      const upload =
-        await uploadDataset(file);
+      let uploadedJobId: string;
 
-      const uploadedJobId =
-        upload.job_id;
+      if (selectedPreloaded) {
+        const userId = auth.currentUser?.uid;
+        const query = userId
+          ? `?user_id=${encodeURIComponent(userId)}`
+          : "";
+
+        const response = await fetch(
+          `${API_BASE_URL}/api/upload/preloaded/${encodeURIComponent(
+            selectedPreloaded.id,
+          )}${query}`,
+          { method: "POST", headers: { Accept: "application/json" } },
+        );
+
+        const data = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          throw new Error(
+            typeof data?.detail === "string"
+              ? data.detail
+              : "Unable to prepare the preloaded dataset.",
+          );
+        }
+
+        uploadedJobId = (data as UploadResponse).job_id;
+      } else {
+        const upload = await uploadDataset(file as File);
+        uploadedJobId = upload.job_id;
+      }
 
       setJobId(
         uploadedJobId,
@@ -888,22 +975,36 @@ function UploadPage() {
       <div className="mx-auto max-w-5xl">
 
         {!isRunning ? (
-          <UploadCard
-            file={file}
-            status={status}
-            error={error}
-            jobId={jobId}
-            onFileChange={
-              handleFileChange
-            }
-            onClear={clearFile}
-            onAnalyze={
-              handleAnalyze
-            }
-          />
+          <>
+            <PreloadedDatasetCard
+              datasets={preloadedDatasets}
+              selectedId={selectedPreloaded?.id ?? null}
+              loadingId={preloadedLoadingId}
+              onSelect={selectPreloadedDataset}
+              onLoadingChange={setPreloadedLoadingId}
+            />
+
+            <div className="mt-6">
+              <UploadCard
+                file={file}
+                selectedPreloaded={selectedPreloaded}
+                status={status}
+                error={error}
+                jobId={jobId}
+                onFileChange={
+                  handleFileChange
+                }
+                onClear={clearFile}
+                onAnalyze={
+                  handleAnalyze
+                }
+              />
+            </div>
+          </>
         ) : (
           <AnalysisProgressCard
             file={file}
+            datasetName={selectedPreloaded?.name ?? null}
             jobId={jobId}
             currentStep={
               currentStep
@@ -927,12 +1028,82 @@ function UploadPage() {
 }
 
 
+
+function PreloadedDatasetCard({
+  datasets,
+  selectedId,
+  loadingId,
+  onSelect,
+}: {
+  datasets: PreloadedDataset[];
+  selectedId: string | null;
+  loadingId: string | null;
+  onSelect: (dataset: PreloadedDataset) => void;
+  onLoadingChange: (id: string | null) => void;
+}) {
+  if (datasets.length === 0) return null;
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
+      <div className="flex items-start gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
+          <Database className="h-5 w-5" />
+        </div>
+        <div>
+          <h2 className="text-base font-semibold text-foreground">
+            Preloaded cancer datasets
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Select a curated public dataset and run the same analysis pipeline without uploading a file.
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-3">
+        {datasets.map((dataset) => (
+          <div
+            key={dataset.id}
+            className={[
+              "rounded-xl border p-4 transition",
+              selectedId === dataset.id
+                ? "border-primary bg-primary-soft/40"
+                : "border-border bg-background",
+            ].join(" ")}
+          >
+            <div className="text-xs font-semibold uppercase tracking-wide text-primary">
+              {dataset.cancer_type}
+            </div>
+            <div className="mt-1 text-sm font-semibold text-foreground">
+              {dataset.name}
+            </div>
+            <p className="mt-2 min-h-10 text-xs leading-5 text-muted-foreground">
+              {dataset.description}
+            </p>
+            <div className="mt-3 text-[10px] text-muted-foreground">
+              {dataset.accession}
+            </div>
+            <button
+              type="button"
+              disabled={loadingId !== null}
+              onClick={() => onSelect(dataset)}
+              className="mt-3 inline-flex h-9 w-full items-center justify-center rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loadingId === dataset.id ? "Preparing..." : selectedId === dataset.id ? "Selected" : "Use Dataset"}
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ============================================================
 // UPLOAD CARD
 // ============================================================
 
 function UploadCard({
   file,
+  selectedPreloaded,
   status,
   error,
   jobId,
@@ -941,6 +1112,7 @@ function UploadCard({
   onAnalyze,
 }: {
   file: File | null;
+  selectedPreloaded: PreloadedDataset | null;
   status: AnalysisStatus;
   error: string;
   jobId: string | null;
@@ -986,7 +1158,7 @@ function UploadCard({
 
       <div className="p-8">
 
-        {!file ? (
+        {!file && !selectedPreloaded ? (
 
           <label className="group flex min-h-[300px] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-primary-soft/30 px-6 text-center transition hover:border-primary/50 hover:bg-primary-soft/60">
 
@@ -1030,13 +1202,13 @@ function UploadCard({
               <div className="min-w-0 flex-1">
 
                 <div className="truncate text-sm font-semibold text-foreground">
-                  {file.name}
+                  {file?.name ?? selectedPreloaded?.name}
                 </div>
 
                 <div className="mt-1 text-xs text-muted-foreground">
-                  {formatFileSize(
-                    file.size,
-                  )}
+                  {file
+                    ? formatFileSize(file.size)
+                    : selectedPreloaded?.accession}
                 </div>
 
               </div>
@@ -1076,7 +1248,7 @@ function UploadCard({
 
               <InfoItem
                 label="Input"
-                value="Expression matrix"
+                value={selectedPreloaded ? selectedPreloaded.cancer_type : "Expression matrix"}
               />
 
               <InfoItem
@@ -1128,7 +1300,7 @@ function UploadCard({
 
         <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
 
-          {file && (
+          {(file || selectedPreloaded) && (
             <button
               type="button"
               onClick={onClear}
@@ -1142,7 +1314,7 @@ function UploadCard({
           <button
             type="button"
             disabled={
-              !file ||
+              (!file && !selectedPreloaded) ||
               status ===
                 "uploading" ||
               status ===
@@ -1191,6 +1363,7 @@ function UploadCard({
 
 function AnalysisProgressCard({
   file,
+  datasetName,
   jobId,
   currentStep,
   backendStep,
@@ -1199,6 +1372,7 @@ function AnalysisProgressCard({
   remainingSeconds,
 }: {
   file: File | null;
+  datasetName: string | null;
   jobId: string | null;
   currentStep: number;
   backendStep: string | null;
@@ -1243,7 +1417,7 @@ function AnalysisProgressCard({
               </h2>
 
               <p className="mt-1 truncate text-sm text-muted-foreground">
-                {file?.name}
+                {file?.name ?? datasetName ?? "Preloaded dataset"}
               </p>
 
               {jobId && (
