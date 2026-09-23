@@ -1,4 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { onAuthStateChanged, type User } from "firebase/auth";
+import { useEffect, useState } from "react";
+import { auth } from "@/lib/firebase";
 import { AppLayout } from "@/components/AppLayout";
 import {
   Database,
@@ -85,11 +88,28 @@ function statusStyle(s: string) {
 }
 
 function Dashboard() {
+  const [user, setUser] = useState<User | null>(auth.currentUser);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const firstName =
+    user?.displayName?.trim()?.split(/\s+/)[0] ||
+    user?.email?.split("@")[0] ||
+    "there";
+
   return (
     <AppLayout title="Dashboard" subtitle="Overview of your immunomics workspace">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-foreground">Welcome back, Elena</h2>
+          <h2 className="text-2xl font-semibold text-foreground">
+            Welcome back, {firstName}
+          </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             5 cohorts across 3 cancer types are ready for review.
           </p>
