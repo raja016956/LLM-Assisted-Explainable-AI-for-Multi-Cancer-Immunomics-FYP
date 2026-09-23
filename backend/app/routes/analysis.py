@@ -9,9 +9,11 @@ from pathlib import Path
 from typing import Any, Dict
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from app.pipeline.analysis_runner import run_full_analysis
+from app.pipeline.report_generator import generate_analysis_report
 
 
 # ============================================================
@@ -1578,6 +1580,91 @@ def list_analysis_jobs():
 
         "jobs": jobs,
     }
+
+
+# ============================================================
+# PDF REPORT
+# ============================================================
+
+@router.get("/{job_id}/report")
+def download_analysis_report(job_id: str):
+    """
+    Generate and download the completed analysis as a PDF.
+    """
+
+    job = get_job_or_recover(job_id)
+
+    if job is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Analysis job not found: {job_id}",
+        )
+
+    if job["status"] != "completed":
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "PDF report is available only after the analysis "
+                f"has completed. Current status: {job['status']}."
+            ),
+        )
+
+    analysis_dir = ANALYSIS_DATA_DIR / job_id
+    final_analysis_path = (
+        analysis_dir / "final_analysis" / "final_analysis.json"
+    )
+
+    if not final_analysis_path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="Completed analysis output was not found.",
+        )
+
+    dataset_name = None
+    dataset_value = job.get("dataset")
+
+    if dataset_value:
+        dataset_name = Path(str(dataset_value)).name
+
+    if not dataset_name:
+        upload_dir = UPLOADS_DIR / job_id
+        if upload_dir.exists():
+            candidates = [
+                path
+                for path in upload_dir.iterdir()
+                if path.is_file()
+                and path.name.lower().endswith(
+                    (".txt", ".txt.gz", ".csv", ".csv.gz", ".tsv", ".tsv.gz")
+                )
+            ]
+            if len(candidates) == 1:
+                dataset_name = candidates[0].name
+
+    try:
+        pdf_path = generate_analysis_report(
+            job_id=job_id,
+            analysis_dir=analysis_dir,
+            dataset_name=dataset_name,
+        )
+    except Exception as exc:
+        traceback_text = traceback.format_exc()
+        print("PDF REPORT GENERATION FAILED")
+        print(traceback_text)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate PDF report: {exc}",
+        )
+
+    return FileResponse(
+        path=pdf_path,
+        media_type="application/pdf",
+        filename=f"IMMUNO_XAI_Report_{job_id}.pdf",
+        headers={
+            "Content-Disposition": (
+                f'attachment; filename="IMMUNO_XAI_Report_{job_id}.pdf"'
+            )
+        },
+    )
 
 # ============================================================
 # UMAP VISUALIZATION
