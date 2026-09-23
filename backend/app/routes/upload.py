@@ -1,7 +1,9 @@
+import json
+from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 
 from app.models import UploadResponse
 
@@ -33,6 +35,7 @@ ALLOWED_EXTENSIONS = (
 )
 async def upload_dataset(
     file: UploadFile = File(...),
+    user_id: str | None = Form(default=None),
 ):
     if not file.filename:
         raise HTTPException(
@@ -86,6 +89,24 @@ async def upload_dataset(
             status_code=500,
             detail=f"Failed to save dataset: {exc}",
         )
+
+    metadata = {
+        "job_id": job_id,
+        "user_id": user_id.strip() if user_id else None,
+        "filename": filename,
+        "file_size": total_size,
+        "uploaded_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    try:
+        (job_dir / "upload_metadata.json").write_text(
+            json.dumps(metadata, indent=2),
+            encoding="utf-8",
+        )
+    except Exception:
+        # Metadata is helpful for dashboard history but must not
+        # make an otherwise successful dataset upload fail.
+        pass
 
     return UploadResponse(
         job_id=job_id,
