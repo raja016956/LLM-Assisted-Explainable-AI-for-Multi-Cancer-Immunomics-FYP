@@ -174,7 +174,7 @@ DEFAULT_PATHWAY_IMMUNE_CONFIG = (
 
 DEFAULT_LLM_CONFIG = LLMReasoningConfig(
     provider="groq",
-    model="groq/compound-mini",
+    model="openai/gpt-oss-20b",
     temperature=0.2,
     max_tokens=4000,
 )
