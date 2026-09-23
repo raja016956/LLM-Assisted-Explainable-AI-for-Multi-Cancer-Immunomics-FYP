@@ -138,6 +138,7 @@ def generate_analysis_report(
     job_id: str,
     analysis_dir: str | Path,
     output_path: str | Path | None = None,
+    dataset_name: str | None = None,
 ) -> Path:
     """
     Generate a PDF report from the persisted IMMUNO-XAI outputs.
@@ -274,8 +275,9 @@ def generate_analysis_report(
         ],
     ]
 
-    if manifest.get("dataset"):
-        metadata_rows.append(["Dataset", _safe_text(manifest["dataset"])])
+    dataset_value = dataset_name or manifest.get("dataset")
+    if dataset_value:
+        metadata_rows.append(["Dataset", _safe_text(dataset_value)])
 
     story.append(_table(metadata_rows, widths=[42 * mm, 128 * mm]))
     story.append(Spacer(1, 4 * mm))
