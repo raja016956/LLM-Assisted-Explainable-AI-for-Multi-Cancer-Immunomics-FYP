@@ -468,6 +468,7 @@ def run_ml(
     immune_scores_path: str | Path,
     cell_states_path: str | Path,
     output_dir: str | Path,
+    cluster_labels_path: str | Path | None = None,
     config: MLConfig | None = None,
 ) -> dict[str, Any]:
 
@@ -546,12 +547,59 @@ def run_ml(
     # PREPARE LABELS
     # --------------------------------------------------------
 
-    labels, class_distribution, keep_mask = (
-        _prepare_labels(
+    # --------------------------------------------------------
+    # PREPARE ML TARGET
+    # --------------------------------------------------------
+    #
+    # If the biological state assignment contains only one
+    # class (for example, every cell is Unclassified), a
+    # supervised classifier cannot be trained on that target.
+    # In that case, use the unsupervised cluster assignments
+    # already produced by the pipeline as the ML target.
+    # This keeps every QC-retained cell in the quantitative
+    # ML/XAI analysis instead of dropping the dataset.
+    # --------------------------------------------------------
+
+    target_source = "immune_state"
+    target_fallback_reason = None
+
+    try:
+        labels, class_distribution, keep_mask = _prepare_labels(
             cell_states,
             config.minimum_class_size,
         )
-    )
+    except ValueError as exc:
+        if cluster_labels_path is None:
+            raise
+
+        cluster_labels = _load_numpy(cluster_labels_path)
+        if cluster_labels.ndim != 1 or len(cluster_labels) != input_cells:
+            raise ValueError(
+                "Cluster labels do not match the number of cells "
+                "available for ML fallback. "
+                f"Clusters: {len(cluster_labels)}, cells: {input_cells}"
+            )
+
+        labels = np.asarray(
+            [f"Cluster-{int(value)}" for value in cluster_labels],
+            dtype=str,
+        )
+        class_values, class_counts = np.unique(labels, return_counts=True)
+        class_distribution = {
+            str(label): int(count)
+            for label, count in zip(class_values, class_counts)
+        }
+
+        if len(class_distribution) < 2:
+            raise ValueError(
+                "ML training requires at least two classes. "
+                f"Immune-state labels were unusable ({exc}), and the "
+                f"clustering result contains only one class: {class_distribution}"
+            )
+
+        keep_mask = np.ones(input_cells, dtype=bool)
+        target_source = "cluster"
+        target_fallback_reason = str(exc)
 
     if len(cell_states) != input_cells:
 
@@ -961,6 +1009,10 @@ def run_ml(
             input_cells - usable_cells
         ),
 
+        "target_source": target_source,
+
+        "target_fallback_reason": target_fallback_reason,
+
         "pca_components": int(
             pca_coordinates.shape[1]
         ),
@@ -972,6 +1024,10 @@ def run_ml(
         "feature_count": int(
             features.shape[1]
         ),
+
+        "target_source": target_source,
+
+        "target_fallback_reason": target_fallback_reason,
 
         "class_distribution": (
             class_distribution
@@ -993,6 +1049,10 @@ def run_ml(
         ],
 
         "primary_model": config.primary_model,
+
+        "target_source": target_source,
+
+        "target_fallback_reason": target_fallback_reason,
 
         "random_forest_model": str(
             rf_model_path
