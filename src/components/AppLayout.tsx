@@ -5,7 +5,6 @@ import {
   FlaskConical,
   FileText,
   LogOut,
-  Search,
   Dna,
 } from "lucide-react";
 import { onAuthStateChanged, type User } from "firebase/auth";
@@ -189,15 +188,6 @@ export function AppLayout({
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="relative hidden md:block">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-
-              <input
-                placeholder="Search datasets, genes, cohorts…"
-                className="h-9 w-72 rounded-lg border border-input bg-background pl-9 pr-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
-              />
-            </div>
-
             <div className="relative" ref={profileMenuRef}>
               <button
                 type="button"
