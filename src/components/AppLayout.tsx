@@ -53,7 +53,9 @@ export function AppLayout({
   children: ReactNode;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const [user, setUser] = useState<User | null>(auth.currentUser);\n  const [profileMenuOpen, setProfileMenuOpen] = useState(false);\n  const profileMenuRef = useRef<HTMLDivElement | null>(null);
+  const [user, setUser] = useState<User | null>(auth.currentUser);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -93,10 +95,19 @@ export function AppLayout({
   const profilePhotoUrl =
     user?.photoURL || googleProfile?.photoURL || null;
 
-  const initials = useMemo(
-    () => getInitials(user),
-    [user],
-  );
+  const initials = useMemo(() => {
+    if (profileName && profileName !== "User") {
+      const parts = profileName.split(/\s+/).filter(Boolean);
+      return (
+        parts
+          .slice(0, 2)
+          .map((part) => part[0]?.toUpperCase() ?? "")
+          .join("") || "U"
+      );
+    }
+
+    return getInitials(user);
+  }, [profileName, user]);
 
   async function handleLogout() {
     try {
