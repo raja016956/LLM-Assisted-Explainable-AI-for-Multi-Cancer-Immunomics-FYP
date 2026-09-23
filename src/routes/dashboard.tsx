@@ -368,7 +368,7 @@ function Dashboard() {
       <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[
           {
-            label: "Uploaded Datasets",
+            label: "Analyzed Datasets",
             value: stats.uploaded,
             detail: "Analysis history",
             icon: Database,
