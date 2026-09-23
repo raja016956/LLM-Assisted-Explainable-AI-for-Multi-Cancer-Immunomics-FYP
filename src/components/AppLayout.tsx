@@ -79,12 +79,19 @@ export function AppLayout({
     };
   }, []);
 
+  const googleProfile = user?.providerData.find(
+    (profile) => profile.providerId === "google.com",
+  );
+
   const profileName =
     user?.displayName?.trim() ||
+    googleProfile?.displayName?.trim() ||
     user?.email?.split("@")[0] ||
     "User";
 
   const profileEmail = user?.email || "";
+  const profilePhotoUrl =
+    user?.photoURL || googleProfile?.photoURL || null;
 
   const initials = useMemo(
     () => getInitials(user),
@@ -201,9 +208,9 @@ export function AppLayout({
                   )}
                 </div>
 
-                {user?.photoURL ? (
+                {profilePhotoUrl ? (
                   <img
-                    src={user.photoURL}
+                    src={profilePhotoUrl}
                     alt={profileName}
                     referrerPolicy="no-referrer"
                     className="h-9 w-9 shrink-0 rounded-full object-cover ring-2 ring-background"
@@ -216,7 +223,7 @@ export function AppLayout({
 
                 <div
                   className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-sm font-semibold text-primary ${
-                    user?.photoURL ? "hidden" : ""
+                    profilePhotoUrl ? "hidden" : ""
                   }`}
                   aria-label={profileName}
                 >
