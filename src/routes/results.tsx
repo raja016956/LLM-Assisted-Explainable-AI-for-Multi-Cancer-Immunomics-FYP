@@ -364,6 +364,7 @@ function Results() {
     const jobId = result?.job_id;
     if (!jobId) return;
 
+    const analysisJobId = jobId;
     let cancelled = false;
 
     async function loadUmap() {
@@ -372,7 +373,7 @@ function Results() {
         setUmapError(null);
 
         const response = await fetch(
-          `${API_BASE_URL}/api/analysis/${encodeURIComponent(jobId)}/visualizations/umap`,
+          `${API_BASE_URL}/api/analysis/${encodeURIComponent(analysisJobId)}/visualizations/umap`,
           { headers: { Accept: "application/json" } },
         );
 
