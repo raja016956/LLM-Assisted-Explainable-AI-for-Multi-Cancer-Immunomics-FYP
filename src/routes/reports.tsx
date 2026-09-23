@@ -1,128 +1,158 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Download, FileText, Info, Loader2 } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { onAuthStateChanged, type User } from "firebase/auth";
+import {
+  Download,
+  FileText,
+  Loader2,
+  RefreshCw,
+} from "lucide-react";
 import { useEffect, useState } from "react";
+
 import { AppLayout } from "@/components/AppLayout";
+import { auth } from "@/lib/firebase";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   "http://127.0.0.1:8000";
 
-type AnalysisSummary = {
+type AnalysisHistoryItem = {
   job_id: string;
   status: string;
-  final_analysis?: {
-    pipeline?: string;
-    input_cells?: number;
-  };
+  completed_at?: string | null;
+  started_at?: string | null;
+  dataset_name?: string | null;
+  file_size?: number | null;
+  owner_uid?: string | null;
+  report_available?: boolean;
+};
+
+type AnalysisHistoryResponse = {
+  jobs?: AnalysisHistoryItem[];
 };
 
 export const Route = createFileRoute("/reports")({
   head: () => ({
     meta: [
-      { title: "PDF Report — ImmunoXAI" },
+      { title: "Reports — ImmunoXAI" },
       {
         name: "description",
-        content: "Download the PDF report generated from a completed IMMUNO-XAI analysis.",
+        content:
+          "Download PDF reports generated from your completed IMMUNO-XAI analyses.",
       },
     ],
   }),
   component: Reports,
 });
 
+function formatDate(value?: string | null) {
+  if (!value) return "—";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return new Intl.DateTimeFormat(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(date);
+}
+
 function Reports() {
-  const [analysis, setAnalysis] =
-    useState<AnalysisSummary | null>(null);
-  const [loading, setLoading] =
-    useState(true);
-  const [downloading, setDownloading] =
-    useState(false);
-  const [error, setError] =
-    useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(auth.currentUser);
+  const [jobs, setJobs] = useState<AnalysisHistoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [downloadingJobId, setDownloadingJobId] = useState<string | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    let cancelled = false;
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
 
-    async function loadAnalysis() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const jobId =
-          sessionStorage.getItem(
-            "immunoxai-job-id",
-          );
-
-        if (!jobId) {
-          throw new Error(
-            "No analysis job was found. Please complete an analysis first.",
-          );
-        }
-
-        const response = await fetch(
-          `${API_BASE_URL}/api/analysis/${encodeURIComponent(jobId)}/result`,
-          {
-            headers: {
-              Accept: "application/json",
-            },
-          },
-        );
-
-        const data =
-          await response.json().catch(() => null);
-
-        if (!response.ok) {
-          throw new Error(
-            typeof data?.detail === "string"
-              ? data.detail
-              : "Unable to load the completed analysis.",
-          );
-        }
-
-        if (!cancelled) {
-          setAnalysis(
-            data as AnalysisSummary,
-          );
-        }
-      } catch (err) {
-        console.error(
-          "Failed to load report information:",
-          err,
-        );
-
-        if (!cancelled) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Unable to load report information.",
-          );
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadAnalysis();
-
-    return () => {
-      cancelled = true;
-    };
+    return unsubscribe;
   }, []);
 
-  async function downloadPdf() {
-    if (!analysis?.job_id) return;
-
+  async function loadReports(showRefreshState = false) {
     try {
-      setDownloading(true);
-      setError(null);
+      if (showRefreshState) setRefreshing(true);
+      else setLoading(true);
+
+      setError("");
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/analysis/`,
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        },
+      );
+
+      const data =
+        (await response.json().catch(() => null)) as
+          | AnalysisHistoryResponse
+          | { detail?: string }
+          | null;
+
+      if (!response.ok) {
+        throw new Error(
+          typeof data?.detail === "string"
+            ? data.detail
+            : "Unable to load report history.",
+        );
+      }
+
+      const currentUid = auth.currentUser?.uid;
+
+      const completedJobs = (
+        "jobs" in (data || {}) && Array.isArray(data?.jobs)
+          ? data.jobs
+          : []
+      ).filter(
+        (job) =>
+          job.status === "completed" &&
+          job.report_available &&
+          (!job.owner_uid ||
+            !currentUid ||
+            job.owner_uid === currentUid),
+      );
+
+      setJobs(completedJobs);
+    } catch (err) {
+      console.error("[ImmunoXAI] Failed to load reports:", err);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to load report history.",
+      );
+      setJobs([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }
+
+  useEffect(() => {
+    if (user) {
+      void loadReports();
+    } else {
+      setJobs([]);
+      setLoading(false);
+    }
+  }, [user]);
+
+  async function downloadPdf(job: AnalysisHistoryItem) {
+    try {
+      setDownloadingJobId(job.job_id);
+      setError("");
 
       const response = await fetch(
         `${API_BASE_URL}/api/analysis/${encodeURIComponent(
-          analysis.job_id,
+          job.job_id,
         )}/report`,
         {
-          method: "GET",
           headers: {
             Accept: "application/pdf",
           },
@@ -130,9 +160,7 @@ function Reports() {
       );
 
       if (!response.ok) {
-        const data =
-          await response.json().catch(() => null);
-
+        const data = await response.json().catch(() => null);
         throw new Error(
           typeof data?.detail === "string"
             ? data.detail
@@ -145,144 +173,135 @@ function Reports() {
       const anchor = document.createElement("a");
 
       anchor.href = url;
-      anchor.download =
-        `IMMUNO_XAI_Report_${analysis.job_id}.pdf`;
+      anchor.download = `IMMUNO_XAI_Report_${job.job_id}.pdf`;
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error(
-        "Failed to download PDF report:",
-        err,
-      );
-
+      console.error("[ImmunoXAI] PDF download failed:", err);
       setError(
         err instanceof Error
           ? err.message
           : "Unable to download the PDF report.",
       );
     } finally {
-      setDownloading(false);
+      setDownloadingJobId(null);
     }
-  }
-
-  if (loading) {
-    return (
-      <AppLayout
-        title="PDF Report"
-        subtitle="Preparing report information..."
-      >
-        <div className="rounded-xl border border-border bg-card p-8 text-sm text-muted-foreground">
-          Loading completed analysis...
-        </div>
-      </AppLayout>
-    );
   }
 
   return (
     <AppLayout
-      title="PDF Report"
-      subtitle="Download the completed IMMUNO-XAI analysis as a PDF"
+      title="Reports"
+      subtitle="Download PDF reports from your completed analyses"
     >
-      <div className="mx-auto max-w-3xl">
-        <div className="rounded-xl border border-border bg-card p-8 shadow-sm">
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
-              <FileText className="h-6 w-6" />
-            </div>
-
-            <div className="min-w-0">
-              <h2 className="text-lg font-semibold text-foreground">
-                IMMUNO-XAI Analysis Report
-              </h2>
-
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                Generate a PDF containing the completed analysis summary,
-                immune-state results, immune scores, clusters, pathways,
-                machine-learning results, XAI feature importance, and
-                biological interpretation.
-              </p>
-            </div>
+      <div className="rounded-xl border border-border bg-card shadow-sm">
+        <div className="flex flex-col gap-3 border-b border-border px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">
+              Generated Reports
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Each completed analysis has its own downloadable PDF report.
+            </p>
           </div>
 
-          {analysis && (
-            <div className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div className="rounded-lg border border-border bg-background p-4">
-                <div className="text-xs text-muted-foreground">
-                  Status
-                </div>
-                <div className="mt-1 text-sm font-semibold text-green-600">
-                  {analysis.status}
-                </div>
-              </div>
-
-              <div className="rounded-lg border border-border bg-background p-4">
-                <div className="text-xs text-muted-foreground">
-                  Input cells
-                </div>
-                <div className="mt-1 text-sm font-semibold text-foreground">
-                  {(
-                    analysis.final_analysis?.input_cells ||
-                    0
-                  ).toLocaleString()}
-                </div>
-              </div>
-
-              <div className="rounded-lg border border-border bg-background p-4">
-                <div className="text-xs text-muted-foreground">
-                  Pipeline
-                </div>
-                <div className="mt-1 text-sm font-semibold text-foreground">
-                  {analysis.final_analysis?.pipeline ||
-                    "IMMUNO-XAI"}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {error && (
-            <div className="mt-6 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-              <Info className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Link
-              to="/results"
-              className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-card px-4 text-sm font-medium text-foreground hover:bg-muted"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Results
-            </Link>
-
-            <button
-              type="button"
-              onClick={downloadPdf}
-              disabled={
-                !analysis ||
-                analysis.status !== "completed" ||
-                downloading
-              }
-              className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {downloading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Download className="h-4 w-4" />
-              )}
-              {downloading
-                ? "Generating PDF..."
-                : "Download PDF"}
-            </button>
-          </div>
-
-          <div className="mt-6 rounded-lg border border-border bg-muted/60 p-4 text-xs leading-relaxed text-muted-foreground">
-            The report is generated directly from the completed analysis
-            stored by the backend. Only PDF download is provided here.
-          </div>
+          <button
+            type="button"
+            onClick={() => void loadReports(true)}
+            disabled={refreshing}
+            className="inline-flex h-9 items-center gap-2 self-start rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </button>
         </div>
+
+        {error && (
+          <div className="mx-6 mt-5 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+            {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="flex items-center justify-center gap-2 p-12 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading reports...
+          </div>
+        ) : jobs.length === 0 ? (
+          <div className="p-12 text-center">
+            <FileText className="mx-auto h-9 w-9 text-muted-foreground" />
+            <h3 className="mt-3 text-sm font-semibold text-foreground">
+              No PDF reports yet
+            </h3>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Complete an analysis and its report will appear here.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
+                  <th className="px-6 py-3 font-medium">Dataset</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Completed</th>
+                  <th className="px-6 py-3 text-right font-medium">
+                    Report
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {jobs.map((job) => (
+                  <tr
+                    key={job.job_id}
+                    className="border-b border-border last:border-0"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="max-w-[420px] truncate font-medium text-foreground">
+                        {job.dataset_name || job.job_id}
+                      </div>
+                      <div className="mt-0.5 text-xs text-muted-foreground">
+                        {job.job_id}
+                      </div>
+                    </td>
+
+                    <td className="px-4 py-4">
+                      <span className="inline-flex rounded-full bg-[oklch(0.95_0.06_155)] px-2.5 py-0.5 text-xs font-medium text-[oklch(0.35_0.12_155)]">
+                        Completed
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-4 text-xs text-muted-foreground">
+                      {formatDate(
+                        job.completed_at || job.started_at,
+                      )}
+                    </td>
+
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        type="button"
+                        onClick={() => void downloadPdf(job)}
+                        disabled={downloadingJobId === job.job_id}
+                        className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {downloadingJobId === job.job_id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Download className="h-3.5 w-3.5" />
+                        )}
+                        Download PDF
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </AppLayout>
   );
