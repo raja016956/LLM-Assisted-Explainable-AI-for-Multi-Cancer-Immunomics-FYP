@@ -221,7 +221,7 @@ function Dashboard() {
     }
 
     return {
-      uploaded: jobs.length,
+      uploaded: completed.length,
       completed: completed.length,
       reports: reportCount,
       cancerTypes: cancerTypes.size,
@@ -370,7 +370,7 @@ function Dashboard() {
           {
             label: "Analyzed Datasets",
             value: stats.uploaded,
-            detail: "Analysis history",
+            detail: "Completed dataset analyses",
             icon: Database,
           },
           {
