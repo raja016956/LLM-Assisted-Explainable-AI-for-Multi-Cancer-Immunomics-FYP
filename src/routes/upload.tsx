@@ -296,9 +296,6 @@ function UploadPage() {
   const [selectedPreloaded, setSelectedPreloaded] =
     useState<PreloadedDataset | null>(null);
 
-  const [preloadedLoadingId, setPreloadedLoadingId] =
-    useState<string | null>(null);
-
 
   useEffect(() => {
     async function loadPreloadedDatasets() {
@@ -979,9 +976,7 @@ function UploadPage() {
             <PreloadedDatasetCard
               datasets={preloadedDatasets}
               selectedId={selectedPreloaded?.id ?? null}
-              loadingId={preloadedLoadingId}
               onSelect={selectPreloadedDataset}
-              onLoadingChange={setPreloadedLoadingId}
             />
 
             <div className="mt-6">
@@ -1032,14 +1027,11 @@ function UploadPage() {
 function PreloadedDatasetCard({
   datasets,
   selectedId,
-  loadingId,
   onSelect,
 }: {
   datasets: PreloadedDataset[];
   selectedId: string | null;
-  loadingId: string | null;
   onSelect: (dataset: PreloadedDataset) => void;
-  onLoadingChange: (id: string | null) => void;
 }) {
   if (datasets.length === 0) return null;
 
@@ -1084,11 +1076,10 @@ function PreloadedDatasetCard({
             </div>
             <button
               type="button"
-              disabled={loadingId !== null}
               onClick={() => onSelect(dataset)}
               className="mt-3 inline-flex h-9 w-full items-center justify-center rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loadingId === dataset.id ? "Preparing..." : selectedId === dataset.id ? "Selected" : "Use Dataset"}
+              {selectedId === dataset.id ? "Selected" : "Use Dataset"}
             </button>
           </div>
         ))}
