@@ -206,8 +206,14 @@ function Dashboard() {
       (job) => job.report_available,
     ).length;
 
+    const uniqueDatasets = new Set(
+      completed
+        .map((job) => (job.dataset_name || "").trim().toLowerCase())
+        .filter(Boolean),
+    );
+
     return {
-      uploaded: completed.length,
+      uploaded: uniqueDatasets.size,
       completed: completed.length,
       reports: reportCount,
     };
