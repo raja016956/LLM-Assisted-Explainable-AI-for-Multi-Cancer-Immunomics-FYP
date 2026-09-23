@@ -1578,3 +1578,77 @@ def list_analysis_jobs():
 
         "jobs": jobs,
     }
+
+# ============================================================
+# UMAP VISUALIZATION
+# ============================================================
+
+@router.get("/{job_id}/visualizations/umap")
+def get_umap_visualization(job_id: str):
+    """Return UMAP coordinates with cluster and immune-state labels."""
+
+    analysis_dir = ANALYSIS_DATA_DIR / job_id
+    umap_path = analysis_dir / "umap" / "umap_coordinates.npy"
+    cluster_path = analysis_dir / "clustering" / "cluster_labels.npy"
+    states_path = analysis_dir / "immune_state_assignment" / "cell_immune_states.json"
+
+    if not analysis_dir.exists():
+        raise HTTPException(status_code=404, detail=f"Analysis job not found: {job_id}")
+
+    missing = [
+        str(path.relative_to(analysis_dir))
+        for path in (umap_path, cluster_path, states_path)
+        if not path.exists()
+    ]
+    if missing:
+        raise HTTPException(
+            status_code=404,
+            detail="UMAP visualization data is incomplete: " + ", ".join(missing),
+        )
+
+    try:
+        import numpy as np
+
+        embedding = np.load(umap_path)
+        clusters = np.load(cluster_path)
+
+        if embedding.ndim != 2 or embedding.shape[1] < 2:
+            raise ValueError("UMAP coordinates must contain at least two dimensions.")
+        if clusters.ndim != 1 or clusters.shape[0] != embedding.shape[0]:
+            raise ValueError("UMAP coordinates and cluster labels have different cell counts.")
+
+        with open(states_path, "r", encoding="utf-8") as handle:
+            state_payload = json.load(handle)
+        cells = state_payload.get("cells", [])
+
+        if len(cells) != embedding.shape[0]:
+            raise ValueError("UMAP coordinates and immune-state assignments have different cell counts.")
+
+        n_cells = int(embedding.shape[0])
+        max_points = 12000
+        if n_cells > max_points:
+            indices = np.linspace(0, n_cells - 1, max_points, dtype=int)
+        else:
+            indices = np.arange(n_cells)
+
+        points = [
+            {
+                "x": float(embedding[int(index), 0]),
+                "y": float(embedding[int(index), 1]),
+                "cluster": int(clusters[int(index)]),
+                "state": str(cells[int(index)].get("state", "Unclassified")),
+            }
+            for index in indices
+        ]
+
+        return {
+            "success": True,
+            "n_cells": n_cells,
+            "plotted_cells": len(points),
+            "points": points,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to load UMAP visualization: {exc}")
