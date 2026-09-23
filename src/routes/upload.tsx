@@ -19,6 +19,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import { AppLayout } from "@/components/AppLayout";
+import { auth } from "@/lib/firebase";
 
 
 // ============================================================
@@ -450,6 +451,12 @@ function UploadPage() {
       "file",
       selectedFile,
     );
+
+    const userId = auth.currentUser?.uid;
+
+    if (userId) {
+      formData.append("user_id", userId);
+    }
 
     const response =
       await fetch(
