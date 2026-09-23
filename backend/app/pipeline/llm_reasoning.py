@@ -535,96 +535,15 @@ def _build_reasoning_prompt(
     return f"""
 Interpret the following IMMUNO-XAI computational analysis.
 
-Produce a scientifically cautious biological interpretation.
-
-Use the following structure:
-
-# 1. Overall Finding
-
-Summarize the major computational findings.
-
-# 2. Immune-State Interpretation
-
-Explain:
-
-- detected immune states
-- relative abundance
-- confidence where available
-- significance of Insufficient-Evidence
-- whether the dataset provides strong or limited evidence
-
-# 3. Cluster-Level Interpretation
-
-Discuss meaningful cluster-level patterns.
-
-Do NOT force biological interpretation of clusters dominated
-by Insufficient-Evidence.
-
-# 4. Immune-Signal Interpretation
-
-Interpret the supplied immune scores.
-
-Only discuss signals actually present in the data.
-
-# 5. Pathway Interpretation
-
-Interpret the supplied metabolic and inflammatory pathway
-scores.
-
-Do not invent pathway activity that is not represented in the
-analysis package.
-
-# 6. Machine-Learning Interpretation
-
-Explain the ML results.
-
-Pay particular attention to:
-
-- class imbalance
-- accuracy versus balanced accuracy
-- minority-class performance
-- whether predictions should be interpreted cautiously
-
-# 7. XAI Interpretation
-
-Explain the most important XAI features.
-
-Make clear that SHAP importance indicates model contribution,
-not biological causation.
-
-# 8. Integrated Biological Interpretation
-
-Integrate:
-
-- immune states
-- immune scores
-- clusters
-- pathways
-- machine learning
-- XAI
-
-ONLY where the supplied evidence supports the connection.
-
-# 9. Limitations
-
-Explicitly discuss limitations supported by the computational
-results.
-
-# 10. Final Conclusion
-
-Give a concise scientifically cautious conclusion.
-
-Finally provide:
-
-## One-Line Conclusion
-
-A single sentence summarizing the overall interpretation.
-
-------------------------------------------------------------
+Give ONLY a concise biological interpretation in 2-3 sentences.
+Keep it to the point and directly connected to the supplied results.
+Mention the most important immune-state finding and the strongest
+supporting immune/pathway/XAI evidence. If evidence is weak,
+say so briefly. Do not invent findings, causes, clinical meaning,
+or mechanisms. Do not use headings, bullet points, Markdown,
+tables, or a separate conclusion.
 
 COMPUTATIONAL ANALYSIS PACKAGE
-
-------------------------------------------------------------
 
 {package_json}
 """
