@@ -7,7 +7,6 @@ import {
   FileText,
   FlaskConical,
   Loader2,
-  Microscope,
   RefreshCw,
   Upload,
 } from "lucide-react";
@@ -207,24 +206,10 @@ function Dashboard() {
       (job) => job.report_available,
     ).length;
 
-    const cancerTypes = new Set<string>();
-
-    for (const job of completed) {
-      const name = job.dataset_name || "";
-      const match = name.toUpperCase().match(
-        /(?:^|[^A-Z])(BRCA|LUAD|COAD|SKCM|GBM)(?:[^A-Z]|$)/,
-      );
-
-      if (match?.[1]) {
-        cancerTypes.add(match[1]);
-      }
-    }
-
     return {
       uploaded: completed.length,
       completed: completed.length,
       reports: reportCount,
-      cancerTypes: cancerTypes.size,
     };
   }, [jobs]);
 
@@ -365,7 +350,7 @@ function Dashboard() {
         </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
         {[
           {
             label: "Analyzed Datasets",
@@ -378,15 +363,6 @@ function Dashboard() {
             value: stats.completed,
             detail: "Ready to review",
             icon: FlaskConical,
-          },
-          {
-            label: "Cancer Types",
-            value: stats.cancerTypes,
-            detail:
-              stats.cancerTypes > 0
-                ? "Detected from dataset names"
-                : "Available after analysis",
-            icon: Microscope,
           },
           {
             label: "Generated Reports",
