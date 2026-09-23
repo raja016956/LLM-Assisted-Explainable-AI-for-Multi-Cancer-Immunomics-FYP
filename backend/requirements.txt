@@ -1,2 +1,26 @@
-reportlab==5.0.1
-matplotlib==3.10.6
+# Core API
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic
+
+# Configuration / LLM
+python-dotenv
+groq
+
+# Scientific computing
+numpy
+pandas
+scipy
+scikit-learn
+
+# Single-cell / dimensionality reduction
+umap-learn
+
+# Machine learning / explainable AI
+xgboost
+shap
+
+# Visualization / PDF reporting
+matplotlib
+reportlab
