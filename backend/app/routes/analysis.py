@@ -1538,46 +1538,196 @@ def get_analysis_result(
 # LIST ANALYSIS JOBS
 # ============================================================
 
+def _read_upload_metadata(job_id: str) -> Dict[str, Any]:
+    """
+    Read persistent upload metadata for a job.
+
+    Older uploads may not have metadata; those records are
+    treated as legacy history entries.
+    """
+    metadata_path = (
+        UPLOADS_DIR
+        / job_id
+        / "upload_metadata.json"
+    )
+
+    if not metadata_path.exists():
+        return {}
+
+    try:
+        with metadata_path.open(
+            "r",
+            encoding="utf-8",
+        ) as handle:
+            data = json.load(handle)
+
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _persistent_analysis_history() -> list[Dict[str, Any]]:
+    """
+    Scan persisted analysis directories so history survives
+    Uvicorn restarts.
+    """
+    history: list[Dict[str, Any]] = []
+
+    if not ANALYSIS_DATA_DIR.exists():
+        return history
+
+    for analysis_dir in ANALYSIS_DATA_DIR.iterdir():
+        if not analysis_dir.is_dir():
+            continue
+
+        job_id = analysis_dir.name
+        final_path = (
+            analysis_dir
+            / "final_analysis"
+            / "final_analysis.json"
+        )
+
+        if not final_path.exists():
+            continue
+
+        metadata = _read_upload_metadata(job_id)
+        completed_at = None
+
+        manifest_path = (
+            analysis_dir
+            / "analysis_run_manifest.json"
+        )
+
+        if manifest_path.exists():
+            try:
+                with manifest_path.open(
+                    "r",
+                    encoding="utf-8",
+                ) as handle:
+                    manifest = json.load(handle)
+
+                completed_at = (
+                    manifest.get("completed_at")
+                    or manifest.get("finished_at")
+                )
+            except Exception:
+                completed_at = None
+
+        if completed_at is None:
+            try:
+                completed_at = datetime.fromtimestamp(
+                    final_path.stat().st_mtime,
+                    tz=timezone.utc,
+                ).isoformat()
+            except Exception:
+                completed_at = None
+
+        dataset_name = metadata.get("filename")
+        if not dataset_name:
+            upload_dir = UPLOADS_DIR / job_id
+            if upload_dir.exists():
+                candidates = [
+                    path
+                    for path in upload_dir.iterdir()
+                    if path.is_file()
+                    and path.name.lower().endswith(
+                        (
+                            ".txt",
+                            ".txt.gz",
+                            ".csv",
+                            ".csv.gz",
+                            ".tsv",
+                            ".tsv.gz",
+                        )
+                    )
+                ]
+                if len(candidates) == 1:
+                    dataset_name = candidates[0].name
+
+        history.append(
+            {
+                "job_id": job_id,
+                "status": "completed",
+                "progress": 100.0,
+                "step": "llm_reasoning",
+                "step_number": TOTAL_STEPS,
+                "total_steps": TOTAL_STEPS,
+                "message": "Analysis completed successfully.",
+                "started_at": None,
+                "completed_at": completed_at,
+                "dataset_name": dataset_name or job_id,
+                "file_size": metadata.get("file_size"),
+                "owner_uid": metadata.get("user_id"),
+                "report_available": True,
+                "legacy": not bool(metadata.get("user_id")),
+            }
+        )
+
+    return history
+
+
 @router.get("/")
 def list_analysis_jobs():
     """
-    Return all analysis jobs known to this API process.
+    Return persisted analysis history plus currently running jobs.
+
+    Completed analyses are discovered from disk so dashboard history
+    remains available after the API process restarts.
     """
+    persisted = _persistent_analysis_history()
+
+    by_job_id = {
+        item["job_id"]: item
+        for item in persisted
+    }
 
     with JOBS_LOCK:
+        memory_jobs = list(JOBS.values())
 
-        jobs = [
+    for job in memory_jobs:
+        job_id = job["job_id"]
+        metadata = _read_upload_metadata(job_id)
+        dataset_name = metadata.get("filename")
 
-            {
+        if not dataset_name:
+            dataset_value = job.get("dataset")
+            if dataset_value:
+                dataset_name = Path(str(dataset_value)).name
 
-                "job_id": job["job_id"],
+        entry = {
+            "job_id": job_id,
+            "status": job["status"],
+            "step": job.get("step"),
+            "step_number": job.get("step_number", 0),
+            "total_steps": job.get("total_steps", TOTAL_STEPS),
+            "progress": job.get("progress", 0.0),
+            "message": job.get("message"),
+            "started_at": job.get("started_at"),
+            "completed_at": job.get("completed_at"),
+            "dataset_name": dataset_name or job_id,
+            "file_size": metadata.get("file_size"),
+            "owner_uid": metadata.get("user_id") or job.get("owner_uid"),
+            "report_available": job["status"] == "completed",
+            "legacy": not bool(
+                metadata.get("user_id") or job.get("owner_uid")
+            ),
+        }
 
-                "status": job["status"],
+        by_job_id[job_id] = entry
 
-                "step": job["step"],
-
-                "step_number": job["step_number"],
-
-                "total_steps": job["total_steps"],
-
-                "progress": job["progress"],
-
-                "message": job["message"],
-
-                "started_at": job["started_at"],
-
-                "completed_at": job["completed_at"],
-            }
-
-            for job in JOBS.values()
-        ]
+    jobs = sorted(
+        by_job_id.values(),
+        key=lambda item: (
+            item.get("completed_at")
+            or item.get("started_at")
+            or "",
+        ),
+        reverse=True,
+    )
 
     return {
-
         "success": True,
-
         "count": len(jobs),
-
         "jobs": jobs,
     }
 
