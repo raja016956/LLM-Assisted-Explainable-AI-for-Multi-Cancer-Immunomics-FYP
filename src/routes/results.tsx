@@ -172,6 +172,7 @@ type BackendResult = {
   progress?: number;
   message?: string;
   final_analysis: FinalAnalysis;
+  biological_interpretation?: BiologicalInterpretation;
 };
 
 
@@ -556,8 +557,18 @@ function Results() {
 
 
   const biologicalReasoning =
-    analysis.biological_interpretation
-      ?.reasoning || "";
+    result?.biological_interpretation?.reasoning ||
+    analysis.biological_interpretation?.reasoning ||
+    "";
+
+  const conciseBiologicalReasoning =
+    biologicalReasoning
+      .replace(/\s+/g, " ")
+      .trim()
+      .split(/(?<=[.!?])\s+/)
+      .filter(Boolean)
+      .slice(0, 3)
+      .join(" ");
 
 
   return (
@@ -1265,9 +1276,9 @@ function Results() {
         </div>
 
 
-        {biologicalReasoning ? (
-          <div className="mt-5 whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-            {biologicalReasoning}
+        {conciseBiologicalReasoning ? (
+          <div className="mt-5 text-sm leading-6 text-foreground">
+            {conciseBiologicalReasoning}
           </div>
         ) : (
           <p className="mt-5 text-sm text-muted-foreground">
