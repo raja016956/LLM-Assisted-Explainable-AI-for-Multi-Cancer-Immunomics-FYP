@@ -329,7 +329,7 @@ def generate_analysis_report(
         story.append(
             _table(
                 score_rows,
-                widths=[55 * mm, 25 * mm, 25 * mm, 25 * mm, 25 * mm, 25 * mm],
+                widths=[49 * mm, 25 * mm, 25 * mm, 25 * mm, 25 * mm, 25 * mm],
             )
         )
     else:
@@ -368,7 +368,7 @@ def generate_analysis_report(
         story.append(
             _table(
                 cluster_rows,
-                widths=[25 * mm, 30 * mm, 60 * mm, 35 * mm, 40 * mm],
+                widths=[22 * mm, 27 * mm, 55 * mm, 34 * mm, 36 * mm],
             )
         )
     else:
@@ -394,7 +394,7 @@ def generate_analysis_report(
         story.append(
             _table(
                 pathway_rows,
-                widths=[90 * mm, 30 * mm, 30 * mm, 30 * mm],
+                widths=[84 * mm, 30 * mm, 30 * mm, 30 * mm],
             )
         )
     else:
