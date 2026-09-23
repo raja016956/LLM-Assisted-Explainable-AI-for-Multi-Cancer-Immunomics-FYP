@@ -17,6 +17,17 @@ import {
   Layers,
 } from "lucide-react";
 
+import {
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Scatter,
+  ScatterChart,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+
 import { useEffect, useMemo, useState } from "react";
 
 import { AppLayout } from "@/components/AppLayout";
@@ -75,6 +86,20 @@ type XAISummary = {
   features?: XAIFeature[];
   n_cells_explained?: number;
   n_features?: number;
+};
+
+type UMAPPoint = {
+  x: number;
+  y: number;
+  cluster: number;
+  state: string;
+};
+
+type UMAPResponse = {
+  success: boolean;
+  n_cells: number;
+  plotted_cells: number;
+  points: UMAPPoint[];
 };
 
 type BiologicalInterpretation = {
@@ -186,6 +211,15 @@ function Results() {
     useState(true);
 
   const [error, setError] =
+    useState<string | null>(null);
+
+  const [umapData, setUmapData] =
+    useState<UMAPResponse | null>(null);
+
+  const [umapLoading, setUmapLoading] =
+    useState(false);
+
+  const [umapError, setUmapError] =
     useState<string | null>(null);
 
 
@@ -324,6 +358,52 @@ function Results() {
     };
 
   }, []);
+
+  useEffect(() => {
+    const jobId = result?.job_id;
+    if (!jobId) return;
+
+    let cancelled = false;
+
+    async function loadUmap() {
+      try {
+        setUmapLoading(true);
+        setUmapError(null);
+
+        const response = await fetch(
+          `${API_BASE_URL}/api/analysis/${encodeURIComponent(jobId)}/visualizations/umap`,
+          { headers: { Accept: "application/json" } },
+        );
+
+        const data = await response.json().catch(() => null);
+        if (!response.ok) {
+          throw new Error(
+            typeof data?.detail === "string"
+              ? data.detail
+              : "Failed to load UMAP visualization.",
+          );
+        }
+
+        if (!cancelled) setUmapData(data as UMAPResponse);
+      } catch (err) {
+        console.error("Failed to load UMAP visualization:", err);
+        if (!cancelled) {
+          setUmapError(
+            err instanceof Error
+              ? err.message
+              : "Unable to load UMAP visualization.",
+          );
+        }
+      } finally {
+        if (!cancelled) setUmapLoading(false);
+      }
+    }
+
+    loadUmap();
+    return () => {
+      cancelled = true;
+    };
+  }, [result?.job_id]);
 
 
   // ==========================================================
@@ -1000,6 +1080,90 @@ function Results() {
 
 
       {/* ======================================================
+          UMAP VISUALIZATION
+      ====================================================== */}
+
+      <section className="mt-6 rounded-xl border border-border bg-card p-6 shadow-sm">
+        <div className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-soft text-primary">
+            <Layers className="h-4 w-4" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-foreground">UMAP Visualization</h3>
+            <p className="text-xs text-muted-foreground">
+              QC-retained cells projected into two dimensions and colored by cluster.
+            </p>
+          </div>
+        </div>
+
+        {umapLoading && (
+          <div className="mt-6 rounded-lg border border-border bg-background p-6 text-sm text-muted-foreground">
+            Loading UMAP coordinates...
+          </div>
+        )}
+
+        {umapError && !umapLoading && (
+          <div className="mt-6 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+            {umapError}
+          </div>
+        )}
+
+        {umapData && !umapLoading && !umapError && (
+          <>
+            <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground">
+              <span>{umapData.n_cells.toLocaleString()} analyzed cells</span>
+              <span>·</span>
+              <span>{umapData.plotted_cells.toLocaleString()} cells plotted</span>
+              {umapData.plotted_cells < umapData.n_cells && (
+                <span>· visualization sampled for browser performance</span>
+              )}
+            </div>
+
+            <div className="mt-5 h-[520px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <ScatterChart margin={{ top: 16, right: 24, bottom: 24, left: 8 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis type="number" dataKey="x" name="UMAP 1" tick={{ fontSize: 11 }} />
+                  <YAxis type="number" dataKey="y" name="UMAP 2" tick={{ fontSize: 11 }} />
+                  <Tooltip
+                    cursor={{ strokeDasharray: "3 3" }}
+                    content={({ active, payload }) => {
+                      if (!active || !payload?.length) return null;
+                      const point = payload[0]?.payload as UMAPPoint;
+                      return (
+                        <div className="rounded-lg border border-border bg-card p-3 text-xs shadow-lg">
+                          <div className="font-semibold text-foreground">Cluster {point.cluster}</div>
+                          <div className="mt-1 text-muted-foreground">State: {point.state}</div>
+                          <div className="mt-1 text-muted-foreground">UMAP 1: {point.x.toFixed(3)}</div>
+                          <div className="text-muted-foreground">UMAP 2: {point.y.toFixed(3)}</div>
+                        </div>
+                      );
+                    }}
+                  />
+                  <Legend />
+                  {Array.from(new Set(umapData.points.map((point) => point.cluster)))
+                    .sort((a, b) => a - b)
+                    .map((cluster, index) => (
+                      <Scatter
+                        key={cluster}
+                        name={`Cluster ${cluster}`}
+                        data={umapData.points.filter((point) => point.cluster === cluster)}
+                        fill={[
+                          "#2563eb", "#16a34a", "#dc2626", "#9333ea", "#ea580c",
+                          "#0891b2", "#db2777", "#65a30d", "#7c3aed", "#0f766e",
+                        ][index % 10]}
+                        line={false}
+                      />
+                    ))}
+                </ScatterChart>
+              </ResponsiveContainer>
+            </div>
+          </>
+        )}
+      </section>
+
+
+      {/* ======================================================
           XAI
       ====================================================== */}
 
@@ -1031,37 +1195,30 @@ function Results() {
 
               <div
                 key={`${feature.feature}-${feature.feature_index}`}
-                className="grid grid-cols-[180px_1fr_80px] items-center gap-3"
+                className="grid grid-cols-1 items-center gap-2 md:grid-cols-[minmax(260px,1.4fr)_minmax(220px,2fr)_90px] md:gap-4"
               >
 
-                <div className="truncate text-sm font-medium text-foreground">
+                <div className="min-w-0 whitespace-normal break-words text-sm font-medium leading-5 text-foreground">
                   {feature.feature}
                 </div>
 
-                <div className="h-6 overflow-hidden rounded-md bg-muted">
-
+                <div className="h-6 min-w-0 overflow-hidden rounded-md bg-muted">
                   <div
                     className="h-full rounded-md bg-primary"
                     style={{
                       width: `${Math.min(
-                        (feature.mean_absolute_shap /
-                          maxShap) *
-                          100,
+                        (feature.mean_absolute_shap / maxShap) * 100,
                         100,
                       )}%`,
                     }}
                   />
-
                 </div>
 
-                <div className="text-right font-mono text-xs text-muted-foreground">
-                  {feature.mean_absolute_shap.toFixed(
-                    4,
-                  )}
+                <div className="text-right font-mono text-xs tabular-nums text-muted-foreground">
+                  {feature.mean_absolute_shap.toFixed(4)}
                 </div>
 
               </div>
-
             ),
           )}
 
