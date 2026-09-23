@@ -23,7 +23,7 @@ class ImmuneStateAssignmentConfig:
         - Immune-Suppressed
         - Myeloid-Dominant
         - Immune-Active
-        - Insufficient-Evidence
+        - Unclassified
 
     The classifier is intentionally conservative:
         insufficient evidence is preferred over unsupported
@@ -292,7 +292,7 @@ def _assign_cell_state(
     ):
 
         return (
-            "Insufficient-Evidence",
+            "Unclassified",
             0.0,
             "Too few immune signatures exceed the minimum signal threshold.",
         )
@@ -576,7 +576,7 @@ def _assign_cell_state(
     # ========================================================
 
     return (
-        "Insufficient-Evidence",
+        "Unclassified",
         0.0,
         "Available immune signatures do not provide sufficient evidence for a specific immune-state assignment.",
     )
@@ -596,7 +596,7 @@ def _assign_cluster_state(
     if cluster_size <= 0:
 
         return (
-            "Insufficient-Evidence",
+            "Unclassified",
             0.0,
             "Cluster contains no cells.",
         )
@@ -621,7 +621,7 @@ def _assign_cluster_state(
         for state, fraction
         in fractions.items()
         if (
-            state != "Insufficient-Evidence"
+            state != "Unclassified"
             and fraction > 0.0
         )
     }
@@ -633,7 +633,7 @@ def _assign_cluster_state(
     if not supported_states:
 
         return (
-            "Insufficient-Evidence",
+            "Unclassified",
             0.0,
             "No cells in this cluster provide sufficient evidence for a specific immune-state assignment.",
         )
@@ -666,7 +666,7 @@ def _assign_cluster_state(
     ):
 
         return (
-            "Insufficient-Evidence",
+            "Unclassified",
             dominant_fraction,
             (
                 "No specific immune state is represented by "
@@ -706,7 +706,7 @@ def _assign_cluster_state(
 
         if (
             mean_state
-            == "Insufficient-Evidence"
+            == "Unclassified"
         ):
 
             confidence = (
@@ -720,7 +720,7 @@ def _assign_cluster_state(
             ):
 
                 return (
-                    "Insufficient-Evidence",
+                    "Unclassified",
                     confidence,
                     (
                         "The dominant cell-level state is "
@@ -742,7 +742,7 @@ def _assign_cluster_state(
 
         # Conflicting biological interpretations:
         return (
-            "Insufficient-Evidence",
+            "Unclassified",
             dominant_fraction,
             (
                 "Cell-level and aggregate cluster-level "
@@ -771,7 +771,7 @@ def _assign_cluster_state(
     ):
 
         return (
-            "Insufficient-Evidence",
+            "Unclassified",
             confidence,
             (
                 "Cluster-level confidence is below the "
