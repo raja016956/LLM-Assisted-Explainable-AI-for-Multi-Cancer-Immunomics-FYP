@@ -951,6 +951,7 @@ def run_full_analysis(
         cell_states_path=cell_states_output,
         output_dir=ml_dir,
         config=ml_config,
+        cluster_labels_path=cluster_labels_output,
     )
 
     ml_model_output = Path(
