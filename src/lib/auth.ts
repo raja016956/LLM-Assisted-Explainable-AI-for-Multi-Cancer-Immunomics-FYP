@@ -10,9 +10,11 @@ import {
 import { auth } from "./firebase";
 import { createOrUpdateUserProfile } from "./firestore";
 
-// Google provider used by the "Continue with Google" button.\nconst googleProvider = new GoogleAuthProvider();
+// Google provider used by the "Continue with Google" button.
+const googleProvider = new GoogleAuthProvider();
 
-// Google authentication flow: opens the Firebase popup, saves the user profile, and returns the Firebase credential.\nexport async function signInWithGoogle(): Promise<UserCredential> {
+// Google authentication flow: opens the Firebase popup, saves the user profile, and returns the Firebase credential.
+export async function signInWithGoogle(): Promise<UserCredential> {
   try {
     console.log("[Firebase Auth] Starting Google sign-in");
     console.log("[Firebase Auth] authDomain:", auth.config.authDomain);
@@ -45,7 +47,8 @@ import { createOrUpdateUserProfile } from "./firestore";
   }
 }
 
-// Email/password authentication flow used by the sign-in form.\nexport async function signInWithEmail(
+// Email/password authentication flow used by the sign-in form.
+export async function signInWithEmail(
   email: string,
   password: string,
 ): Promise<UserCredential> {
@@ -65,10 +68,12 @@ import { createOrUpdateUserProfile } from "./firestore";
   }
 }
 
-// Sends Firebase's password-reset email to the supplied address.\nexport async function resetPassword(email: string): Promise<void> {
+// Sends Firebase's password-reset email to the supplied address.
+export async function resetPassword(email: string): Promise<void> {
   await sendPasswordResetEmail(auth, email);
 }
 
-// Signs the current Firebase user out of the application.\nexport async function logout(): Promise<void> {
+// Signs the current Firebase user out of the application.
+export async function logout(): Promise<void> {
   await signOut(auth);
 }
