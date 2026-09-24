@@ -7,7 +7,6 @@ import json
 
 import numpy as np
 
-
 # ============================================================
 # CONFIGURATION
 # ============================================================
@@ -18,11 +17,11 @@ class XAIConfig:
     max_explanation_cells: int = 200
     random_state: int = 42
 
-
 # ============================================================
 # HELPERS
 # ============================================================
 
+# Loads the ML/analysis metadata needed to explain model predictions.
 def _load_json(path: Path) -> Any:
     if not path.exists():
         raise FileNotFoundError(
@@ -36,7 +35,7 @@ def _load_json(path: Path) -> Any:
     ) as handle:
         return json.load(handle)
 
-
+# Saves explainability results for the Results page and PDF report.
 def _save_json(
     path: Path,
     data: Any,
@@ -60,11 +59,11 @@ def _save_json(
             ensure_ascii=False,
         )
 
-
 # ============================================================
 # FEATURE NAMES
 # ============================================================
 
+# Builds readable feature names so model features can be shown to the user.
 def _build_feature_names(
     n_features: int,
     score_names_path: Path,
@@ -110,11 +109,11 @@ def _build_feature_names(
 
     return feature_names
 
-
 # ============================================================
 # XAI
 # ============================================================
 
+# Runs the explainable-AI stage and calculates SHAP-based feature importance.
 def run_xai(
     model_path: str | Path,
     features_path: str | Path,
