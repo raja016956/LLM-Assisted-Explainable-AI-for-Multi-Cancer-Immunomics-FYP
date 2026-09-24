@@ -9,7 +9,6 @@ import math
 
 import numpy as np
 
-
 # ============================================================
 # QC CONFIGURATION
 # ============================================================
@@ -23,7 +22,6 @@ class QCConfig:
     min_umis: int = 1_000
     min_genes: int = 200
     max_mito_fraction: float = 0.20
-
 
 # ============================================================
 # FILE HANDLING
@@ -49,7 +47,6 @@ def _open_text(path: Path):
         encoding="utf-8",
     )
 
-
 # ============================================================
 # DELIMITER DETECTION
 # ============================================================
@@ -67,11 +64,11 @@ def _detect_delimiter(header: str) -> str:
 
     return "\t"
 
-
 # ============================================================
 # STREAMING QC
 # ============================================================
 
+# Calculates quality-control metrics from the expression matrix using a memory-conscious streaming approach.
 def calculate_streaming_qc(
     matrix_path: Path,
     config: QCConfig | None = None,
@@ -489,7 +486,6 @@ def calculate_streaming_qc(
         # Original cell names.
         "cell_names": cells,
     }
-
 
 # ============================================================
 # REPORT
