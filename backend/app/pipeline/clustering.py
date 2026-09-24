@@ -23,6 +23,7 @@ class ClusteringConfig:
 # CLUSTERING
 # ============================================================
 
+# Handles the run clustering step in cell clustering.
 def run_clustering(
     pca_coordinates_path: str | Path,
     output_dir: str | Path,
