@@ -2,7 +2,8 @@ from pydantic import BaseModel
 from typing import Optional
 
 
-// Response returned after a dataset is saved and assigned a job ID.\nclass UploadResponse(BaseModel):
+// Response returned after a dataset is saved and assigned a job ID.
+class UploadResponse(BaseModel):
     job_id: str
     filename: str
     file_size: int
@@ -10,7 +11,8 @@ from typing import Optional
     message: str
 
 
-// Shape of the progress information returned while the analysis pipeline is running.\nclass AnalysisProgress(BaseModel):
+// Shape of the progress information returned while the analysis pipeline is running.
+class AnalysisProgress(BaseModel):
     job_id: str
     status: str
     step: str
@@ -22,7 +24,8 @@ from typing import Optional
     estimated_remaining_seconds: Optional[float] = None
 
 
-// Structured fields used to describe the completed analysis result.\nclass AnalysisResult(BaseModel):
+// Structured fields used to describe the completed analysis result.
+class AnalysisResult(BaseModel):
     job_id: str
     status: str
     filename: str
