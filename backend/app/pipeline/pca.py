@@ -23,6 +23,7 @@ class PCAConfig:
 # PCA
 # ============================================================
 
+# Handles the run pca step in PCA dimensionality reduction.
 def run_pca(
     feature_matrix_path: str | Path,
     output_dir: str | Path,
