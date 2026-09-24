@@ -62,7 +62,7 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 // Formats analysis timestamps for display in the history table.
-  function formatDate(value?: string | null) {
+function formatDate(value?: string | null) {
   if (!value) return "—";
 
   const date = new Date(value);
@@ -77,7 +77,7 @@ export const Route = createFileRoute("/dashboard")({
 }
 
 // Converts stored byte counts into readable file sizes.
-  function formatFileSize(bytes?: number | null) {
+function formatFileSize(bytes?: number | null) {
   if (!bytes || bytes <= 0) return "—";
 
   const units = ["B", "KB", "MB", "GB"];
@@ -93,7 +93,7 @@ export const Route = createFileRoute("/dashboard")({
 }
 
 // Selects the Tailwind styling used for each analysis status.
-  function statusStyle(status: string) {
+function statusStyle(status: string) {
   if (status === "completed") {
     return "bg-[oklch(0.95_0.06_155)] text-[oklch(0.35_0.12_155)]";
   }
@@ -110,13 +110,13 @@ export const Route = createFileRoute("/dashboard")({
 }
 
 // Converts backend status values into user-friendly labels.
-  function prettyStatus(status: string) {
+function prettyStatus(status: string) {
   if (!status) return "Unknown";
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
 // Dashboard page: loads the user's completed analysis history and displays summary metrics.
-  function Dashboard() {
+function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(auth.currentUser);
   const [jobs, setJobs] = useState<AnalysisHistoryItem[]>([]);
