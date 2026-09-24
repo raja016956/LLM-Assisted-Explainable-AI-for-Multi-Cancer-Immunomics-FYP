@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 
-// Describes one public dataset that can be selected from the Upload page.
+# Describes one public dataset that can be selected from the Upload page.
 @dataclass(frozen=True)
 class PreloadedDataset:
     id: str
@@ -17,7 +17,7 @@ class PreloadedDataset:
 
 # Curated public GEO expression matrices. Files are cached locally
 # after the first selection so subsequent analyses do not redownload them.
-// Curated datasets exposed to the frontend. The files are downloaded and cached on first use.
+# Curated datasets exposed to the frontend. The files are downloaded and cached on first use.
 PRELOADED_DATASETS = (
     PreloadedDataset(
         id="brca-gse180286-p1",
@@ -49,5 +49,5 @@ PRELOADED_DATASETS = (
 )
 
 
-// Fast lookup used by the preloaded-dataset API when the frontend sends a dataset ID.
+# Fast lookup used by the preloaded-dataset API when the frontend sends a dataset ID.
 PRELOADED_BY_ID = {dataset.id: dataset for dataset in PRELOADED_DATASETS}
