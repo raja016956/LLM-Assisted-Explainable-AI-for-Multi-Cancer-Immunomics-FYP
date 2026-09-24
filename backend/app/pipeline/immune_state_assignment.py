@@ -7,7 +7,6 @@ import json
 
 import numpy as np
 
-
 # ============================================================
 # CONFIGURATION
 # ============================================================
@@ -57,7 +56,6 @@ class ImmuneStateAssignmentConfig:
     # cluster state.
     cluster_min_confidence: float = 0.50
 
-
 # ============================================================
 # CONSTANTS
 # ============================================================
@@ -71,11 +69,11 @@ REQUIRED_SCORE_NAMES = [
     "antigen_presentation",
 ]
 
-
 # ============================================================
 # FILE HELPERS
 # ============================================================
 
+# Loads a previously generated JSON file from the analysis pipeline.
 def _load_json(path: Path) -> Any:
 
     if not path.exists():
@@ -91,7 +89,7 @@ def _load_json(path: Path) -> Any:
 
         return json.load(handle)
 
-
+# Reads the names of immune-related scores used by the state-assignment logic.
 def _load_score_names(
     path: Path,
 ) -> list[str]:
@@ -115,7 +113,7 @@ def _load_score_names(
 
     return score_names
 
-
+# Loads cluster assignments produced by the clustering stage.
 def _load_cluster_labels(
     path: Path,
 ) -> np.ndarray:
@@ -139,7 +137,7 @@ def _load_cluster_labels(
 
     return labels
 
-
+# Loads calculated immune/pathway scores used as evidence for state assignment.
 def _load_scores(
     path: Path,
 ) -> np.ndarray:
@@ -173,11 +171,11 @@ def _load_scores(
         dtype=np.float64,
     )
 
-
 # ============================================================
 # NUMERICAL HELPERS
 # ============================================================
 
+# Calculates a ratio while protecting against invalid or zero denominators.
 def _safe_ratio(
     numerator: float,
     denominator: float,
@@ -192,7 +190,7 @@ def _safe_ratio(
         numerator / denominator
     )
 
-
+# Keeps the calculated confidence value inside the valid confidence range.
 def _clip_confidence(
     value: float,
 ) -> float:
@@ -205,7 +203,7 @@ def _clip_confidence(
         )
     )
 
-
+# Counts how many expected biological signatures are supported by the available evidence.
 def _supported_signature_count(
     scores: dict[str, float],
     config: ImmuneStateAssignmentConfig,
@@ -218,11 +216,11 @@ def _supported_signature_count(
         )
     )
 
-
 # ============================================================
 # CELL-LEVEL ASSIGNMENT
 # ============================================================
 
+# Assigns an immune state to an individual cell using the available score evidence.
 def _assign_cell_state(
     scores: dict[str, float],
     config: ImmuneStateAssignmentConfig,
@@ -581,11 +579,11 @@ def _assign_cell_state(
         "Available immune signatures do not provide sufficient evidence for a specific immune-state assignment.",
     )
 
-
 # ============================================================
 # CLUSTER-LEVEL ASSIGNMENT
 # ============================================================
 
+# Assigns a state at cluster level when cluster-level evidence is used.
 def _assign_cluster_state(
     cluster_state_counts: dict[str, int],
     cluster_size: int,
@@ -790,11 +788,11 @@ def _assign_cluster_state(
         ),
     )
 
-
 # ============================================================
 # MAIN PIPELINE
 # ============================================================
 
+# Runs immune-state assignment for all retained cells and saves the resulting labels/confidence information.
 def run_immune_state_assignment(
     immune_scores_path: str | Path,
     score_names_path: str | Path,
