@@ -23,6 +23,7 @@ class PathwayImmuneIntegrationConfig:
 # HELPERS
 # ============================================================
 
+# Handles the  load json step that combines pathway and immune-state evidence.
 def _load_json(path: Path):
     if not path.exists():
         raise FileNotFoundError(f"JSON file not found: {path}")
@@ -31,6 +32,7 @@ def _load_json(path: Path):
         return json.load(handle)
 
 
+# Handles the  load array step that combines pathway and immune-state evidence.
 def _load_array(path: Path, description: str) -> np.ndarray:
     if not path.exists():
         raise FileNotFoundError(
@@ -48,6 +50,7 @@ def _load_array(path: Path, description: str) -> np.ndarray:
     return array.astype(np.float32, copy=False)
 
 
+# Handles the  load cluster labels step that combines pathway and immune-state evidence.
 def _load_cluster_labels(path: Path) -> np.ndarray:
     if not path.exists():
         raise FileNotFoundError(
@@ -64,6 +67,7 @@ def _load_cluster_labels(path: Path) -> np.ndarray:
     return labels
 
 
+# Handles the  mean step that combines pathway and immune-state evidence.
 def _mean(values: np.ndarray) -> float:
     if values.size == 0:
         return 0.0
@@ -71,6 +75,7 @@ def _mean(values: np.ndarray) -> float:
     return float(np.mean(values))
 
 
+# Handles the  median step that combines pathway and immune-state evidence.
 def _median(values: np.ndarray) -> float:
     if values.size == 0:
         return 0.0
@@ -78,6 +83,7 @@ def _median(values: np.ndarray) -> float:
     return float(np.median(values))
 
 
+# Handles the  std step that combines pathway and immune-state evidence.
 def _std(values: np.ndarray) -> float:
     if values.size <= 1:
         return 0.0
@@ -85,6 +91,7 @@ def _std(values: np.ndarray) -> float:
     return float(np.std(values))
 
 
+# Handles the  safe pearson step that combines pathway and immune-state evidence.
 def _safe_pearson(x: np.ndarray, y: np.ndarray) -> float:
     if x.size < 2 or y.size < 2:
         return 0.0
@@ -104,6 +111,7 @@ def _safe_pearson(x: np.ndarray, y: np.ndarray) -> float:
 # CELL STATE EXTRACTION
 # ============================================================
 
+# Handles the  extract cell states step that combines pathway and immune-state evidence.
 def _extract_cell_states(data) -> list[str]:
     """
     Supports common cell_immune_states.json structures.
@@ -207,6 +215,7 @@ def _extract_cell_states(data) -> list[str]:
 # STATE SUMMARY
 # ============================================================
 
+# Handles the  build state summary step that combines pathway and immune-state evidence.
 def _build_state_summary(
     pathway_scores: np.ndarray,
     pathway_names: list[str],
@@ -276,6 +285,7 @@ def _build_state_summary(
 # CLUSTER SUMMARY
 # ============================================================
 
+# Handles the  build cluster summary step that combines pathway and immune-state evidence.
 def _build_cluster_summary(
     pathway_scores: np.ndarray,
     pathway_names: list[str],
@@ -348,6 +358,7 @@ def _build_cluster_summary(
 # PATHWAY RANKING
 # ============================================================
 
+# Handles the  build pathway rankings step that combines pathway and immune-state evidence.
 def _build_pathway_rankings(
     state_summary: dict,
     pathway_names: list[str],
@@ -402,6 +413,7 @@ def _build_pathway_rankings(
 # PATHWAY–IMMUNE SCORE ASSOCIATIONS
 # ============================================================
 
+# Handles the  build associations step that combines pathway and immune-state evidence.
 def _build_associations(
     pathway_scores: np.ndarray,
     pathway_names: list[str],
@@ -451,6 +463,7 @@ def _build_associations(
 # STATE MATRIX
 # ============================================================
 
+# Handles the  build state matrix step that combines pathway and immune-state evidence.
 def _build_state_matrix(
     state_summary: dict,
     pathway_names: list[str],
@@ -491,6 +504,7 @@ def _build_state_matrix(
 # MAIN PIPELINE
 # ============================================================
 
+# Handles the run pathway immune integration step that combines pathway and immune-state evidence.
 def run_pathway_immune_integration(
     pathway_scores_path: str | Path,
     pathway_names_path: str | Path,
