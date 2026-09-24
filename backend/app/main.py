@@ -1,9 +1,6 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+// FastAPI creates the backend web application and exposes HTTP API endpoints.\nfrom fastapi import FastAPI\nfrom fastapi.middleware.cors import CORSMiddleware
 
-from app.routes.upload import router as upload_router
-from app.routes.analysis import router as analysis_router
-
+// Upload routes handle user datasets and preloaded dataset selection.\nfrom app.routes.upload import router as upload_router\n// Analysis routes start jobs, report results, visualizations, and PDF reports.\nfrom app.routes.analysis import router as analysis_router\n
 
 app = FastAPI(
     title="ImmunoXAI Analysis API",
@@ -12,9 +9,7 @@ app = FastAPI(
 )
 
 
-# ---------------------------------------------------------
-# CORS
-# ---------------------------------------------------------
+// Allow the frontend development and deployed origins to call this API.\n# ---------------------------------------------------------\n# CORS\n# ---------------------------------------------------------
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,9 +25,7 @@ app.add_middleware(
 )
 
 
-# ---------------------------------------------------------
-# Routes
-# ---------------------------------------------------------
+// Register the feature-specific routers under the /api prefix.\n# ---------------------------------------------------------\n# Routes\n# ---------------------------------------------------------
 
 app.include_router(
     upload_router,
@@ -45,9 +38,7 @@ app.include_router(
 )
 
 
-# ---------------------------------------------------------
-# Health check
-# ---------------------------------------------------------
+// Simple endpoints used to confirm that the backend is running.\n# ---------------------------------------------------------\n# Health check\n# ---------------------------------------------------------
 
 @app.get("/")
 async def root():
