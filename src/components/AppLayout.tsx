@@ -209,7 +209,7 @@ export function AppLayout({
           {/* Page title and optional subtitle supplied by each route. */}
           <div className="flex items-center gap-3">
             <div>
-              <h1 className="text-lg font-semibold text-red-500">{title}</h1>
+              <h1 className="text-lg font-semibold text-foreground">{title}</h1>
 
               {subtitle && (
                 <p className="text-xs text-muted-foreground">{subtitle}</p>
