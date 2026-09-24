@@ -8,11 +8,9 @@ from typing import Iterator
 
 import numpy as np
 
-
 # ============================================================
 # DATA STRUCTURES
 # ============================================================
-
 
 @dataclass
 class MatrixInfo:
@@ -24,7 +22,6 @@ class MatrixInfo:
     gene_column: str
     first_genes: list[str]
     first_cells: list[str]
-
 
 @dataclass
 class QCStats:
@@ -47,12 +44,11 @@ class QCStats:
     min_genes_per_cell: int
     max_genes_per_cell: int
 
-
 # ============================================================
 # FILE HELPERS
 # ============================================================
 
-
+# Opens a plain-text or gzip-compressed expression matrix for streaming.
 def open_expression_matrix(path: str | Path):
     """
     Open a plain-text or gzip-compressed expression matrix.
@@ -87,7 +83,7 @@ def open_expression_matrix(path: str | Path):
         newline="",
     )
 
-
+# Removes BOM characters and surrounding whitespace from an input line.
 def _clean_line(line: str) -> str:
     """
     Remove BOM and surrounding whitespace.
@@ -95,7 +91,7 @@ def _clean_line(line: str) -> str:
 
     return line.replace("\ufeff", "").strip()
 
-
+# Detects whether the matrix uses tabs, commas, semicolons, or the fallback delimiter.
 def _detect_delimiter(line: str) -> str:
     """
     Automatically detect the delimiter used by the matrix.
@@ -139,7 +135,7 @@ def _detect_delimiter(line: str) -> str:
     except csv.Error:
         return "\t"
 
-
+# Identifies blank lines and common GEO metadata/comment lines.
 def _is_comment_or_empty(line: str) -> bool:
     """
     Detect blank lines and common metadata/comment lines.
@@ -163,7 +159,7 @@ def _is_comment_or_empty(line: str) -> bool:
 
     return False
 
-
+# Filters metadata/comment rows after CSV parsing.
 def _row_is_comment_or_empty(row: list[str]) -> bool:
     """
     Detect blank rows and metadata rows after CSV parsing.
@@ -191,7 +187,7 @@ def _row_is_comment_or_empty(row: list[str]) -> bool:
 
     return False
 
-
+# Checks whether a matrix value can be interpreted as a number.
 def _looks_numeric(value: str) -> bool:
     """
     Determine whether a value looks like a numeric
@@ -210,12 +206,11 @@ def _looks_numeric(value: str) -> bool:
     except (ValueError, TypeError):
         return False
 
-
 # ============================================================
 # MATRIX LAYOUT DETECTION
 # ============================================================
 
-
+# Detects the matrix delimiter, header, and whether the file is headerless.
 def _read_matrix_layout(
     path: str | Path,
 ) -> tuple[str, int, list[str]]:
@@ -359,7 +354,7 @@ def _read_matrix_layout(
         "one or more numeric cell-expression values."
     )
 
-
+# Opens the matrix after layout detection and positions the reader at expression data.
 def _open_matrix_with_layout(
     path: str | Path,
 ):
@@ -415,12 +410,11 @@ def _open_matrix_with_layout(
         header,
     )
 
-
 # ============================================================
 # INSPECT MATRIX
 # ============================================================
 
-
+# Inspects matrix dimensions and previews gene/cell identifiers for validation.
 def inspect_expression_matrix(
     path: str | Path,
     preview_genes: int = 5,
@@ -547,12 +541,11 @@ def inspect_expression_matrix(
         first_cells=first_cells,
     )
 
-
 # ============================================================
 # GET CELL NAMES
 # ============================================================
 
-
+# Returns the cell/barcode names from the matrix header.
 def get_cell_names(
     path: str | Path,
 ) -> list[str]:
@@ -585,12 +578,11 @@ def get_cell_names(
     finally:
         handle.close()
 
-
 # ============================================================
 # STREAM EXPRESSION ROWS
 # ============================================================
 
-
+# Streams one gene row at a time to avoid loading the entire matrix into memory.
 def iter_expression_rows(
     path: str | Path,
 ) -> Iterator[tuple[str, np.ndarray]]:
@@ -709,12 +701,11 @@ def iter_expression_rows(
     finally:
         handle.close()
 
-
 # ============================================================
 # QC
 # ============================================================
 
-
+# Calculates basic per-cell QC metrics such as UMIs, detected genes, and mitochondrial fraction.
 def calculate_qc_stats(
     path: str | Path,
 ) -> QCStats:
@@ -885,12 +876,11 @@ def calculate_qc_stats(
         ),
     )
 
-
 # ============================================================
 # VALIDATION
 # ============================================================
 
-
+# Validates that the expression matrix can be read and contains usable expression data.
 def validate_expression_matrix(
     path: str | Path,
 ) -> dict:
