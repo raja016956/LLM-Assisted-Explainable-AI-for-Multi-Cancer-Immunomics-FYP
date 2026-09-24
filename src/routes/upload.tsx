@@ -230,6 +230,7 @@ type PreloadedDataset = {
 // TIME FORMATTER
 // ============================================================
 
+// Formats elapsed analysis time for the progress card.
 function formatTime(seconds: number | null) {
   if (seconds === null) {
     return "Calculating...";
@@ -260,6 +261,7 @@ function formatTime(seconds: number | null) {
 // UPLOAD PAGE
 // ============================================================
 
+// Upload page: lets the user choose a local expression matrix or a preloaded cancer dataset, start analysis, and view progress.
 function UploadPage() {
   const navigate = useNavigate();
 
@@ -298,6 +300,7 @@ function UploadPage() {
 
 
   useEffect(() => {
+    // API call: loads the available preloaded cancer datasets from the FastAPI backend.
     async function loadPreloadedDatasets() {
       try {
         const response = await fetch(
@@ -415,6 +418,7 @@ function UploadPage() {
   // FILE SELECTION
   // ==========================================================
 
+  // Handles a local file selection and stores the File object in React state.
   function handleFileChange(
     event: React.ChangeEvent<HTMLInputElement>,
   ) {
@@ -463,6 +467,7 @@ function UploadPage() {
   // CLEAR DATASET
   // ==========================================================
 
+  // Clears the selected local/preloaded dataset and resets the upload form state.
   function clearFile() {
     if (isRunning) {
       return;
@@ -485,6 +490,7 @@ function UploadPage() {
   // UPLOAD TO BACKEND
   // ==========================================================
 
+  // Uploads the selected local file to the backend and receives the analysis job ID.
   async function uploadDataset(
     selectedFile: File,
   ): Promise<UploadResponse> {
@@ -532,6 +538,7 @@ function UploadPage() {
   // START BACKEND ANALYSIS
   // ==========================================================
 
+  // Starts the backend scientific pipeline for the current job ID.
   async function startAnalysis(
     uploadedJobId: string,
   ) {
@@ -571,6 +578,7 @@ function UploadPage() {
   // POLL BACKEND STATUS
   // ==========================================================
 
+  // Polls the backend until the analysis finishes or fails, updating the progress UI.
   async function pollAnalysisStatus(
     uploadedJobId: string,
   ) {
@@ -609,6 +617,7 @@ function UploadPage() {
   // GET FINAL RESULT
   // ==========================================================
 
+  // Fetches the completed analysis result before navigating to the Results page.
   async function getAnalysisResult(
     uploadedJobId: string,
   ) {
@@ -661,6 +670,7 @@ function UploadPage() {
   // CONVERT BACKEND STEP TO UI INDEX
   // ==========================================================
 
+  // Maps the backend pipeline step name to the progress-step index shown in the UI.
   function getStepIndex(
     step: string | null | undefined,
     stepNumber?: number,
@@ -695,6 +705,7 @@ function UploadPage() {
   // RUN COMPLETE ANALYSIS
   // ==========================================================
 
+  // Stores the selected preloaded dataset and clears any local file selection.
   function selectPreloadedDataset(dataset: PreloadedDataset) {
     if (isRunning) return;
 
@@ -710,6 +721,7 @@ function UploadPage() {
     setStartedAt(null);
   }
 
+  // Main Analyze action: prepares either a local upload or preloaded dataset, starts analysis, polls progress, and loads the result.
   async function handleAnalyze() {
     if (!file && !selectedPreloaded) {
       setError(
@@ -1024,6 +1036,7 @@ function UploadPage() {
 
 
 
+// Renders the selectable preloaded cancer-dataset cards.
 function PreloadedDatasetCard({
   datasets,
   selectedId,
@@ -1092,6 +1105,7 @@ function PreloadedDatasetCard({
 // UPLOAD CARD
 // ============================================================
 
+// Renders the local dataset upload/selection area and Analyze action.
 function UploadCard({
   file,
   selectedPreloaded,
@@ -1352,6 +1366,7 @@ function UploadCard({
 // ANALYSIS PROGRESS CARD
 // ============================================================
 
+// Renders the live analysis progress and current backend pipeline step.
 function AnalysisProgressCard({
   file,
   datasetName,
@@ -1679,6 +1694,7 @@ function AnalysisProgressCard({
 // INFO ITEM
 // ============================================================
 
+// Small reusable label/value item used inside upload information cards.
 function InfoItem({
   label,
   value,
@@ -1706,6 +1722,7 @@ function InfoItem({
 // STAT BOX
 // ============================================================
 
+// Small reusable statistic display used by the upload page.
 function StatBox({
   label,
   value,
@@ -1733,6 +1750,7 @@ function StatBox({
 // FILE SIZE
 // ============================================================
 
+// Formats file sizes for display.
 function formatFileSize(
   bytes: number,
 ) {
@@ -1774,6 +1792,7 @@ function formatFileSize(
 // BACKEND ERROR EXTRACTION
 // ============================================================
 
+// Extracts a readable error message from a failed backend response.
 function extractBackendError(
   error: unknown,
 ): string | null {
@@ -1822,6 +1841,7 @@ function extractBackendError(
 // WAIT
 // ============================================================
 
+// Small delay helper used between analysis-status polling requests.
 function wait(
   ms: number,
 ) {
