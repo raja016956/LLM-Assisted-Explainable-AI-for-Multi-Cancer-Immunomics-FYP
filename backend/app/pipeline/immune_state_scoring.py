@@ -109,6 +109,7 @@ class ImmuneStateScoringConfig:
 # LOAD EXPRESSION
 # ============================================================
 
+# Handles the  load expression step in immune-state scoring.
 def _load_expression(
     expression_path: str | Path,
 ) -> sparse.spmatrix:
@@ -151,6 +152,7 @@ def _load_expression(
 # LOAD JSON
 # ============================================================
 
+# Handles the  load json step in immune-state scoring.
 def _load_json(
     path: str | Path,
 ) -> Any:
@@ -176,6 +178,7 @@ def _load_json(
 # LOAD GENES
 # ============================================================
 
+# Handles the  load genes step in immune-state scoring.
 def _load_genes(
     genes_path: str | Path,
 ) -> list[str]:
@@ -222,6 +225,7 @@ def _load_genes(
 # LOAD CLUSTER LABELS
 # ============================================================
 
+# Handles the  load cluster labels step in immune-state scoring.
 def _load_cluster_labels(
     cluster_labels_path: str | Path,
 ) -> np.ndarray:
@@ -258,6 +262,7 @@ def _load_cluster_labels(
 # ORIENTATION HANDLING
 # ============================================================
 
+# Handles the  orient expression matrix step in immune-state scoring.
 def _orient_expression_matrix(
     expression: sparse.spmatrix,
     genes: list[str],
@@ -345,6 +350,7 @@ def _orient_expression_matrix(
 # GENE INDEX
 # ============================================================
 
+# Handles the  build gene index step in immune-state scoring.
 def _build_gene_index(
     genes: list[str],
 ) -> dict[str, int]:
@@ -371,6 +377,7 @@ def _build_gene_index(
 # RESOLVE SIGNATURE
 # ============================================================
 
+# Handles the  resolve signature step in immune-state scoring.
 def _resolve_signature(
     signature: tuple[str, ...],
     gene_index: dict[str, int],
@@ -405,6 +412,7 @@ def _resolve_signature(
 # SCORE SIGNATURE
 # ============================================================
 
+# Handles the  score signature step in immune-state scoring.
 def _score_signature(
     expression: sparse.spmatrix,
     gene_indices: list[int],
@@ -440,6 +448,7 @@ def _score_signature(
 # MAIN SCORING FUNCTION
 # ============================================================
 
+# Handles the run immune state scoring step in immune-state scoring.
 def run_immune_state_scoring(
     expression_path: str | Path,
     genes_path: str | Path,
