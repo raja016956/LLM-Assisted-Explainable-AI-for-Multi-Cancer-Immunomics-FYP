@@ -27,7 +27,7 @@ export const Route = createFileRoute("/")({
   component: Login,
 });
 
-function Login() {
+// Sign-in page: provides Google and email/password authentication and routes successful sign-ins to the Dashboard.\nfunction Login() {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -39,7 +39,7 @@ function Login() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  async function handleGoogleSignIn() {
+  // Starts Firebase Google authentication from the "Continue with Google" button.\n  async function handleGoogleSignIn() {
     setError("");
     setMessage("");
     setGoogleLoading(true);
@@ -83,7 +83,7 @@ function Login() {
     }
   }
 
-  async function handleEmailSignIn(
+  // Submits the email/password form to Firebase Authentication.\n  async function handleEmailSignIn(
     event: React.FormEvent<HTMLFormElement>,
   ) {
     event.preventDefault();
@@ -110,7 +110,7 @@ function Login() {
     }
   }
 
-  async function handleForgotPassword() {
+  // Sends a Firebase password-reset email using the address entered in the form.\n  async function handleForgotPassword() {
     setError("");
     setMessage("");
 
@@ -332,7 +332,7 @@ function Login() {
   );
 }
 
-function getAuthErrorMessage(error: unknown): string {
+// Converts Firebase authentication error codes into readable messages shown on the page.\nfunction getAuthErrorMessage(error: unknown): string {
   if (
     typeof error === "object" &&
     error !== null &&
@@ -400,7 +400,7 @@ function getAuthErrorMessage(error: unknown): string {
   return `Authentication error: ${String(error)}`;
 }
 
-function GoogleIcon() {
+// Inline Google icon used by the Google sign-in button.\nfunction GoogleIcon() {
   return (
     <svg
       width="18"
