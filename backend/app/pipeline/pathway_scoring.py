@@ -112,6 +112,7 @@ PATHWAY_SIGNATURES = {
 # HELPERS
 # ============================================================
 
+# Handles the  load json list step in pathway scoring.
 def _load_json_list(path: Path) -> list[str]:
 
     if not path.exists():
@@ -167,6 +168,7 @@ def _load_json_list(path: Path) -> list[str]:
     return genes
 
 
+# Handles the  load expression step in pathway scoring.
 def _load_expression(
     path: Path,
     gene_count: int,
@@ -273,6 +275,7 @@ def _load_expression(
     return expression
 
 
+# Handles the  zscore step in pathway scoring.
 def _zscore(
     matrix: np.ndarray,
 ) -> np.ndarray:
@@ -296,6 +299,7 @@ def _zscore(
     ) / std
 
 
+# Handles the  score signature step in pathway scoring.
 def _score_signature(
     expression: np.ndarray,
     gene_to_index: dict[str, int],
@@ -365,6 +369,7 @@ def _score_signature(
 # MAIN PIPELINE
 # ============================================================
 
+# Handles the run pathway scoring step in pathway scoring.
 def run_pathway_scoring(
     expression_path: str | Path,
     genes_path: str | Path,
