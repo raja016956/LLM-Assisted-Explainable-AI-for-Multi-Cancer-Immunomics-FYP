@@ -78,7 +78,6 @@ from app.pipeline.llm_reasoning import (
     run_llm_reasoning,
 )
 
-
 # ============================================================
 # TYPES
 # ============================================================
@@ -87,7 +86,6 @@ ProgressCallback = Callable[
     [int, int, str, str],
     None,
 ]
-
 
 # ============================================================
 # PIPELINE CONFIGURATION
@@ -99,22 +97,18 @@ DEFAULT_QC_CONFIG = QCConfig(
     max_mito_fraction=0.20,
 )
 
-
 DEFAULT_NORMALIZATION_CHUNK_CELLS = 250
 DEFAULT_NORMALIZATION_TARGET_SUM = 10_000
-
 
 DEFAULT_FEATURE_SELECTION_CONFIG = FeatureSelectionConfig(
     n_top_genes=2000,
     min_cells=3,
 )
 
-
 DEFAULT_PCA_CONFIG = PCAConfig(
     n_components=50,
     random_state=42,
 )
-
 
 DEFAULT_UMAP_CONFIG = UMAPConfig(
     n_components=2,
@@ -124,16 +118,13 @@ DEFAULT_UMAP_CONFIG = UMAPConfig(
     random_state=42,
 )
 
-
 DEFAULT_CLUSTERING_CONFIG = ClusteringConfig(
     n_clusters=10,
     random_state=42,
     n_init=20,
 )
 
-
 DEFAULT_IMMUNE_SCORING_CONFIG = ImmuneStateScoringConfig()
-
 
 DEFAULT_IMMUNE_ASSIGNMENT_CONFIG = (
     ImmuneStateAssignmentConfig(
@@ -146,9 +137,7 @@ DEFAULT_IMMUNE_ASSIGNMENT_CONFIG = (
     )
 )
 
-
 DEFAULT_ML_CONFIG = MLConfig()
-
 
 DEFAULT_XAI_CONFIG = XAIConfig(
     top_n_features=20,
@@ -156,11 +145,9 @@ DEFAULT_XAI_CONFIG = XAIConfig(
     random_state=42,
 )
 
-
 DEFAULT_PATHWAY_SCORING_CONFIG = (
     PathwayScoringConfig()
 )
-
 
 DEFAULT_PATHWAY_IMMUNE_CONFIG = (
     PathwayImmuneIntegrationConfig(
@@ -171,7 +158,6 @@ DEFAULT_PATHWAY_IMMUNE_CONFIG = (
     )
 )
 
-
 DEFAULT_LLM_CONFIG = LLMReasoningConfig(
     provider="groq",
     model="openai/gpt-oss-20b",
@@ -179,12 +165,11 @@ DEFAULT_LLM_CONFIG = LLMReasoningConfig(
     max_tokens=4000,
 )
 
-
 # ============================================================
 # HELPERS
 # ============================================================
 
-
+# Sends the current pipeline step and progress information back to the analysis job.
 def _emit_progress(
     callback: ProgressCallback | None,
     step_number: int,
@@ -203,7 +188,7 @@ def _emit_progress(
         message,
     )
 
-
+# Checks that a required pipeline output file exists before the next stage uses it.
 def _require_file(
     path: str | Path,
     description: str,
@@ -225,7 +210,7 @@ def _require_file(
 
     return path
 
-
+# Writes structured pipeline output as JSON for later stages and API/report use.
 def _write_json(
     path: Path,
     data: Any,
@@ -249,12 +234,11 @@ def _write_json(
             ensure_ascii=False,
         )
 
-
 # ============================================================
 # MAIN PIPELINE
 # ============================================================
 
-
+# Main scientific workflow: runs the analysis stages in order and writes their outputs.
 def run_full_analysis(
     dataset_path: str | Path,
     analysis_dir: str | Path,
