@@ -158,6 +158,7 @@ def _table(rows: list[list[Any]], widths: list[float], styles: dict[str, Paragra
     table.setStyle(TableStyle(commands))
     return table
 
+# Builds a reusable metric card for the PDF.
 def _card(label: str, value: str, styles: dict[str, ParagraphStyle]) -> Table:
     table = Table(
         [[_p(label.upper(), styles["card_label"])], [_p(value, styles["card_value"])]],
@@ -175,12 +176,14 @@ def _card(label: str, value: str, styles: dict[str, ParagraphStyle]) -> Table:
     ]))
     return table
 
+# Saves a Matplotlib figure to the report asset directory.
 def _save_figure(fig, path: Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     return path
 
+# Creates the immune-state distribution figure.
 def _make_state_chart(data: dict[str, Any], path: Path) -> Path | None:
     items = [(label, int(value.get("cell_count", 0))) for label, value in data.items()
              if int(value.get("cell_count", 0)) > 0]
@@ -204,6 +207,7 @@ def _make_state_chart(data: dict[str, Any], path: Path) -> Path | None:
     ax.axis("equal")
     return _save_figure(fig, path)
 
+# Creates the immune activity/score comparison figure.
 def _make_score_chart(data: dict[str, Any], path: Path) -> Path | None:
     items = []
     for name, value in data.items():
@@ -225,6 +229,7 @@ def _make_score_chart(data: dict[str, Any], path: Path) -> Path | None:
         spine.set_visible(False)
     return _save_figure(fig, path)
 
+# Creates the SHAP feature-importance figure.
 def _make_shap_chart(features: list[dict[str, Any]], path: Path) -> Path | None:
     values = []
     for feature in features:
@@ -247,6 +252,7 @@ def _make_shap_chart(features: list[dict[str, Any]], path: Path) -> Path | None:
         spine.set_visible(False)
     return _save_figure(fig, path)
 
+# Creates the pathway-score figure.
 def _make_pathway_chart(data: dict[str, Any], path: Path) -> Path | None:
     items = []
     for name, value in data.items():
@@ -269,6 +275,7 @@ def _make_pathway_chart(data: dict[str, Any], path: Path) -> Path | None:
         spine.set_visible(False)
     return _save_figure(fig, path)
 
+# Creates the cluster-composition figure.
 def _make_cluster_chart(data: dict[str, Any], path: Path) -> Path | None:
     rows = []
     state_names = set()
@@ -302,6 +309,7 @@ def _make_cluster_chart(data: dict[str, Any], path: Path) -> Path | None:
         spine.set_visible(False)
     return _save_figure(fig, path)
 
+# Creates the UMAP figure from stored analysis coordinates.
 def _make_umap_chart(analysis_dir: Path, path: Path) -> Path | None:
     umap_path = analysis_dir / "umap" / "umap_coordinates.npy"
     cluster_path = analysis_dir / "clustering" / "cluster_labels.npy"
@@ -336,6 +344,7 @@ def _make_umap_chart(analysis_dir: Path, path: Path) -> Path | None:
         spine.set_visible(False)
     return _save_figure(fig, path)
 
+# Converts the LLM interpretation/report text into formatted PDF paragraphs.
 def _markdown_story(text: str, styles: dict[str, ParagraphStyle]) -> list[Any]:
     story: list[Any] = []
     lines = text.replace("\r\n", "\n").split("\n")
@@ -373,6 +382,7 @@ def _markdown_story(text: str, styles: dict[str, ParagraphStyle]) -> list[Any]:
         i += 1
     return story
 
+# Draws the PDF footer and page number on each report page.
 def _footer(canvas, doc) -> None:
     canvas.saveState()
     width, _ = A4
@@ -384,6 +394,7 @@ def _footer(canvas, doc) -> None:
     canvas.drawRightString(width - 18 * mm, 8 * mm, f"Page {doc.page}")
     canvas.restoreState()
 
+# Builds the complete PDF report from stored analysis outputs and generated figures.
 def generate_analysis_report(
     *,
     job_id: str,
