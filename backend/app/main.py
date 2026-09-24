@@ -1,6 +1,12 @@
-// FastAPI creates the backend web application and exposes HTTP API endpoints.\nfrom fastapi import FastAPI\nfrom fastapi.middleware.cors import CORSMiddleware
+// FastAPI creates the backend web application and exposes HTTP API endpoints.
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-// Upload routes handle user datasets and preloaded dataset selection.\nfrom app.routes.upload import router as upload_router\n// Analysis routes start jobs, report results, visualizations, and PDF reports.\nfrom app.routes.analysis import router as analysis_router\n
+// Upload routes handle user datasets and preloaded dataset selection.
+from app.routes.upload import router as upload_router
+// Analysis routes start jobs, report results, visualizations, and PDF reports.
+from app.routes.analysis import router as analysis_router
+
 
 app = FastAPI(
     title="ImmunoXAI Analysis API",
@@ -9,7 +15,10 @@ app = FastAPI(
 )
 
 
-// Allow the frontend development and deployed origins to call this API.\n# ---------------------------------------------------------\n# CORS\n# ---------------------------------------------------------
+// Allow the frontend development and deployed origins to call this API.
+# ---------------------------------------------------------
+# CORS
+# ---------------------------------------------------------
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,7 +34,10 @@ app.add_middleware(
 )
 
 
-// Register the feature-specific routers under the /api prefix.\n# ---------------------------------------------------------\n# Routes\n# ---------------------------------------------------------
+// Register the feature-specific routers under the /api prefix.
+# ---------------------------------------------------------
+# Routes
+# ---------------------------------------------------------
 
 app.include_router(
     upload_router,
@@ -38,7 +50,10 @@ app.include_router(
 )
 
 
-// Simple endpoints used to confirm that the backend is running.\n# ---------------------------------------------------------\n# Health check\n# ---------------------------------------------------------
+// Simple endpoints used to confirm that the backend is running.
+# ---------------------------------------------------------
+# Health check
+# ---------------------------------------------------------
 
 @app.get("/")
 async def root():
