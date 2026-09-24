@@ -19,7 +19,6 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-
 NAVY = "#172033"
 TEAL = "#147D82"
 BLUE = "#3B82F6"
@@ -31,12 +30,12 @@ MID = "#DCE3EA"
 TEXT = "#273142"
 MUTED = "#687386"
 
-
+# Loads analysis output JSON used to build the PDF report.
 def _load_json(path: Path) -> Any:
     with path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
 
-
+# Normalizes report text so generated PDF content is readable and safe.
 def _safe_text(value: Any) -> str:
     if value is None:
         return "Not available"
@@ -61,7 +60,7 @@ def _safe_text(value: Any) -> str:
         text = text.replace(old, new)
     return re.sub(r"\s+", " ", text).strip() or "Not available"
 
-
+# Removes Markdown formatting that should not appear literally in the PDF.
 def _clean_markdown(text: str) -> str:
     text = _safe_text(text)
     text = re.sub(r"!\[.*?\]\(.*?\)", "", text)
@@ -72,12 +71,12 @@ def _clean_markdown(text: str) -> str:
     text = re.sub(r"^\s*[-*]\s*", "", text)
     return text.strip()
 
-
+# Escapes text before inserting it into ReportLab Paragraph elements.
 def _escape(text: Any) -> str:
     value = _safe_text(text)
     return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
-
+# Formats numeric report values with a controlled number of decimal places.
 def _number(value: Any, digits: int = 4) -> str:
     try:
         number = float(value)
@@ -85,14 +84,14 @@ def _number(value: Any, digits: int = 4) -> str:
     except (TypeError, ValueError):
         return "-"
 
-
+# Formats decimal values as percentages for report display.
 def _percent(value: Any, digits: int = 1) -> str:
     try:
         return f"{float(value) * 100:.{digits}f}%"
     except (TypeError, ValueError):
         return "-"
 
-
+# Creates the typography styles used throughout the PDF.
 def _styles() -> dict[str, ParagraphStyle]:
     base = getSampleStyleSheet()
     return {
@@ -122,15 +121,15 @@ def _styles() -> dict[str, ParagraphStyle]:
                                      fontSize=14, leading=17, textColor=colors.HexColor(NAVY)),
     }
 
-
+# Creates a ReportLab paragraph using escaped text and a selected style.
 def _p(text: Any, style: ParagraphStyle) -> Paragraph:
     return Paragraph(_escape(text), style)
 
-
+# Creates a consistent report section heading.
 def _section(text: str, styles: dict[str, ParagraphStyle]) -> Paragraph:
     return _p(text, styles["section"])
 
-
+# Builds a styled ReportLab table from rows and column widths.
 def _table(rows: list[list[Any]], widths: list[float], styles: dict[str, ParagraphStyle], header: bool = True) -> Table:
     converted = []
     for row_index, row in enumerate(rows):
@@ -159,7 +158,6 @@ def _table(rows: list[list[Any]], widths: list[float], styles: dict[str, Paragra
     table.setStyle(TableStyle(commands))
     return table
 
-
 def _card(label: str, value: str, styles: dict[str, ParagraphStyle]) -> Table:
     table = Table(
         [[_p(label.upper(), styles["card_label"])], [_p(value, styles["card_value"])]],
@@ -177,13 +175,11 @@ def _card(label: str, value: str, styles: dict[str, ParagraphStyle]) -> Table:
     ]))
     return table
 
-
 def _save_figure(fig, path: Path) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     return path
-
 
 def _make_state_chart(data: dict[str, Any], path: Path) -> Path | None:
     items = [(label, int(value.get("cell_count", 0))) for label, value in data.items()
@@ -208,7 +204,6 @@ def _make_state_chart(data: dict[str, Any], path: Path) -> Path | None:
     ax.axis("equal")
     return _save_figure(fig, path)
 
-
 def _make_score_chart(data: dict[str, Any], path: Path) -> Path | None:
     items = []
     for name, value in data.items():
@@ -229,7 +224,6 @@ def _make_score_chart(data: dict[str, Any], path: Path) -> Path | None:
     for spine in ax.spines.values():
         spine.set_visible(False)
     return _save_figure(fig, path)
-
 
 def _make_shap_chart(features: list[dict[str, Any]], path: Path) -> Path | None:
     values = []
@@ -253,7 +247,6 @@ def _make_shap_chart(features: list[dict[str, Any]], path: Path) -> Path | None:
         spine.set_visible(False)
     return _save_figure(fig, path)
 
-
 def _make_pathway_chart(data: dict[str, Any], path: Path) -> Path | None:
     items = []
     for name, value in data.items():
@@ -275,7 +268,6 @@ def _make_pathway_chart(data: dict[str, Any], path: Path) -> Path | None:
     for spine in ax.spines.values():
         spine.set_visible(False)
     return _save_figure(fig, path)
-
 
 def _make_cluster_chart(data: dict[str, Any], path: Path) -> Path | None:
     rows = []
@@ -310,7 +302,6 @@ def _make_cluster_chart(data: dict[str, Any], path: Path) -> Path | None:
         spine.set_visible(False)
     return _save_figure(fig, path)
 
-
 def _make_umap_chart(analysis_dir: Path, path: Path) -> Path | None:
     umap_path = analysis_dir / "umap" / "umap_coordinates.npy"
     cluster_path = analysis_dir / "clustering" / "cluster_labels.npy"
@@ -344,7 +335,6 @@ def _make_umap_chart(analysis_dir: Path, path: Path) -> Path | None:
     for spine in ax.spines.values():
         spine.set_visible(False)
     return _save_figure(fig, path)
-
 
 def _markdown_story(text: str, styles: dict[str, ParagraphStyle]) -> list[Any]:
     story: list[Any] = []
@@ -383,7 +373,6 @@ def _markdown_story(text: str, styles: dict[str, ParagraphStyle]) -> list[Any]:
         i += 1
     return story
 
-
 def _footer(canvas, doc) -> None:
     canvas.saveState()
     width, _ = A4
@@ -394,7 +383,6 @@ def _footer(canvas, doc) -> None:
     canvas.drawString(18 * mm, 8 * mm, "IMMUNO-XAI | Explainable single-cell analysis")
     canvas.drawRightString(width - 18 * mm, 8 * mm, f"Page {doc.page}")
     canvas.restoreState()
-
 
 def generate_analysis_report(
     *,
