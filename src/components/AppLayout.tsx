@@ -1,4 +1,7 @@
+// React Router imports for navigation links and current route state.
 import { Link, useRouterState } from "@tanstack/react-router";
+
+// Icons used throughout the shared application layout.
 import {
   LayoutDashboard,
   Upload,
@@ -7,13 +10,19 @@ import {
   LogOut,
   Dna,
 } from "lucide-react";
+
+// Firebase authentication types and listener for the logged-in user.
 import { onAuthStateChanged, type User } from "firebase/auth";
+
+// React types and hooks used by the layout component.
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+// Firebase instance and logout helper used by the profile section.
 import { auth } from "@/lib/firebase";
 import { logout } from "@/lib/auth";
 
+// Shared sidebar navigation items and their corresponding icons.
 const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/upload", label: "Upload Dataset", icon: Upload },
@@ -53,11 +62,17 @@ export function AppLayout({
   subtitle?: string;
   children: ReactNode;
 }) {
+  // Reads the current route so the matching sidebar item can be highlighted.
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Stores the current Firebase user and profile-menu state.
   const [user, setUser] = useState<User | null>(auth.currentUser);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+
+  // Keeps a reference to the profile menu so outside clicks can close it.
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
 
+  // Subscribes to Firebase authentication changes and keeps the user state updated.
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -66,6 +81,7 @@ export function AppLayout({
     return unsubscribe;
   }, []);
 
+  // Closes the profile menu when the user clicks outside of it.
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
       if (
@@ -87,6 +103,7 @@ export function AppLayout({
     (profile) => profile.providerId === "google.com",
   );
 
+  // Builds the name, email, and photo values displayed in the profile area.
   const profileName =
     user?.displayName?.trim() ||
     googleProfile?.displayName?.trim() ||
@@ -97,6 +114,7 @@ export function AppLayout({
   const profilePhotoUrl =
     user?.photoURL || googleProfile?.photoURL || null;
 
+  // Generates initials for the profile avatar when a profile image is unavailable.
   const initials = useMemo(() => {
     if (profileName && profileName !== "User") {
       const parts = profileName.split(/\s+/).filter(Boolean);
@@ -122,9 +140,12 @@ export function AppLayout({
     }
   }
 
+  // Main shared layout containing the sidebar and the page content area.
   return (
     <div className="flex min-h-screen w-full bg-background">
+      {/* Sidebar: branding, navigation links, and logout action. */}
       <aside className="hidden w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
+        {/* Application branding and dashboard link. */}
         <div className="border-b border-sidebar-border px-4">
           <Link
             to="/dashboard"
@@ -145,6 +166,7 @@ export function AppLayout({
           </Link>
         </div>
 
+        {/* Sidebar navigation: highlights the currently active route. */}
         <nav className="flex-1 space-y-1 p-3">
           {nav.map((n) => {
             const active = pathname === n.to;
@@ -167,6 +189,7 @@ export function AppLayout({
           })}
         </nav>
 
+        {/* Bottom sidebar section containing the logout button. */}
         <div className="border-t border-sidebar-border p-3">
           <button
             type="button"
@@ -179,8 +202,11 @@ export function AppLayout({
         </div>
       </aside>
 
+      {/* Main application column containing the header and route content. */}
       <div className="flex min-w-0 flex-1 flex-col">
+        {/* Top header: page title, subtitle, and user profile menu. */}
         <header className="flex h-16 items-center justify-between border-b border-border bg-card px-6">
+          {/* Page title and optional subtitle supplied by each route. */}
           <div className="flex items-center gap-3">
             <div>
               <h1 className="text-lg font-semibold text-foreground">{title}</h1>
@@ -191,8 +217,10 @@ export function AppLayout({
             </div>
           </div>
 
+          {/* User profile area and profile dropdown menu. */}
           <div className="flex items-center gap-4">
             <div className="relative" ref={profileMenuRef}>
+              {/* Profile button opens and closes the user menu. */}
               <button
                 type="button"
                 onClick={() => setProfileMenuOpen((open) => !open)}
@@ -201,6 +229,7 @@ export function AppLayout({
                 aria-expanded={profileMenuOpen}
                 aria-label="Open profile menu"
               >
+                {/* User name and email shown beside the avatar on larger screens. */}
                 <div className="hidden min-w-0 text-right leading-tight sm:block">
                   <div className="max-w-48 truncate text-sm font-medium text-foreground">
                     {profileName}
@@ -213,6 +242,7 @@ export function AppLayout({
                   )}
                 </div>
 
+                {/* Firebase profile photo, with initials used as a fallback. */}
                 {profilePhotoUrl ? (
                   <img
                     src={profilePhotoUrl}
@@ -236,11 +266,13 @@ export function AppLayout({
                 </div>
               </button>
 
+              {/* Profile dropdown with dashboard navigation and logout. */}
               {profileMenuOpen && (
                 <div
                   role="menu"
                   className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-xl border border-border bg-card p-2 shadow-lg"
                 >
+                  {/* Expanded profile information shown at the top of the menu. */}
                   <div className="border-b border-border px-3 py-2.5">
                     <div className="truncate text-sm font-semibold text-foreground">
                       {profileName}
@@ -252,6 +284,7 @@ export function AppLayout({
                     )}
                   </div>
 
+                  {/* Quick link back to the dashboard. */}
                   <Link
                     to="/dashboard"
                     role="menuitem"
@@ -262,6 +295,7 @@ export function AppLayout({
                     Dashboard
                   </Link>
 
+                  {/* Logout action inside the profile menu. */}
                   <button
                     type="button"
                     role="menuitem"
@@ -277,6 +311,7 @@ export function AppLayout({
           </div>
         </header>
 
+        {/* Main content area where Dashboard, Upload, Results, or Reports are rendered. */}
         <main className="flex-1 overflow-auto p-8">{children}</main>
       </div>
     </div>
