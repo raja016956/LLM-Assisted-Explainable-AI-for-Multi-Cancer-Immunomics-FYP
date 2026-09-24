@@ -22,6 +22,7 @@ class FeatureSelectionConfig:
 # FEATURE SELECTION
 # ============================================================
 
+# Handles the select highly variable genes step in feature selection.
 def select_highly_variable_genes(
     normalized_matrix_path: str | Path,
     output_dir: str | Path,
