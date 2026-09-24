@@ -24,6 +24,7 @@ class NormalizationConfig:
 # FILE HELPERS
 # ============================================================
 
+# Handles the  open text step in the normalization stage.
 def _open_text(path: Path):
     """Open plain-text or gzip-compressed text files."""
 
@@ -43,6 +44,7 @@ def _open_text(path: Path):
     )
 
 
+# Handles the  detect delimiter step in the normalization stage.
 def _detect_delimiter(header: str) -> str:
     """Detect common expression-matrix delimiters."""
 
@@ -59,6 +61,7 @@ def _detect_delimiter(header: str) -> str:
 # MATRIX HEADER
 # ============================================================
 
+# Handles the read matrix header step in the normalization stage.
 def read_matrix_header(
     matrix_path: Path,
 ) -> dict[str, Any]:
@@ -110,6 +113,7 @@ def read_matrix_header(
 # MATRIX METADATA
 # ============================================================
 
+# Handles the  read matrix metadata step in the normalization stage.
 def _read_matrix_metadata(
     matrix_path: Path,
 ) -> tuple[str, str, list[str]]:
@@ -125,6 +129,7 @@ def _read_matrix_metadata(
     )
 
 
+# Handles the  count genes step in the normalization stage.
 def _count_genes(
     matrix_path: Path,
 ) -> int:
@@ -148,6 +153,7 @@ def _count_genes(
 # RETAINED-CELL LOOKUP
 # ============================================================
 
+# Handles the  prepare cell selection step in the normalization stage.
 def _prepare_cell_selection(
     total_cells: int,
     keep_cell_indices: Sequence[int] | None,
@@ -212,6 +218,7 @@ def _prepare_cell_selection(
 # STREAMING MATRIX CONVERSION
 # ============================================================
 
+# Handles the create disk backed matrix step in the normalization stage.
 def create_disk_backed_matrix(
     matrix_path: Path,
     output_dir: Path,
@@ -525,6 +532,7 @@ def create_disk_backed_matrix(
 # NORMALIZATION
 # ============================================================
 
+# Handles the normalize disk matrix step in the normalization stage.
 def normalize_disk_matrix(
     raw_matrix_path: Path,
     output_dir: Path,
@@ -670,6 +678,7 @@ def normalize_disk_matrix(
 # COMPLETE NORMALIZATION PIPELINE
 # ============================================================
 
+# Handles the run memory safe normalization step in the normalization stage.
 def run_memory_safe_normalization(
     matrix_path: Path,
     output_dir: Path,
