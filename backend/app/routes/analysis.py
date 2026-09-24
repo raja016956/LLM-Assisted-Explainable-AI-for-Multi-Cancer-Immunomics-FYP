@@ -20,6 +20,7 @@ from app.pipeline.report_generator import generate_analysis_report
 # ROUTER
 # ============================================================
 
+# Group all analysis-related endpoints under /analysis.
 router = APIRouter(
     prefix="/analysis",
     tags=["analysis"],
@@ -30,6 +31,8 @@ router = APIRouter(
 # PATHS
 # ============================================================
 
+# Define the main directories used for analysis outputs and uploads.
+
 # backend/
 BACKEND_DIR = Path(__file__).resolve().parents[2]
 
@@ -39,7 +42,7 @@ ANALYSIS_DATA_DIR = BACKEND_DIR / "analysis_data"
 # backend/backend_data/uploads/
 UPLOADS_DIR = BACKEND_DIR / "backend_data" / "uploads"
 
-
+# Create required directories if they do not already exist.
 ANALYSIS_DATA_DIR.mkdir(
     parents=True,
     exist_ok=True,
@@ -55,9 +58,10 @@ UPLOADS_DIR.mkdir(
 # PIPELINE CONFIGURATION
 # ============================================================
 
+# Total number of steps in the IMMUNO-XAI analysis pipeline.
 TOTAL_STEPS = 16
 
-
+# Names of the analysis stages reported to the frontend.
 STEP_NAMES = [
     "dataset_inspection",
     "validation",
@@ -787,7 +791,7 @@ def run_analysis_background(
 # START ANALYSIS
 # ============================================================
 
-// Starts the background scientific analysis for a prepared upload job.
+# Starts the background scientific analysis for a prepared upload job.
 @router.post("/run")
 def start_analysis(
     request: AnalysisRunRequest,
@@ -1033,7 +1037,7 @@ def start_analysis(
 # GET ANALYSIS STATUS
 # ============================================================
 
-// Returns the current pipeline step and progress for one analysis job.
+# Returns the current pipeline step and progress for one analysis job.
 @router.get("/{job_id}/status")
 def get_analysis_status(
     job_id: str,
@@ -1094,7 +1098,7 @@ def get_analysis_status(
 # GET ANALYSIS RESULT
 # ============================================================
 
-// Returns the completed analysis result used by the Results page.
+# Returns the completed analysis result used by the Results page.
 @router.get("/{job_id}/result")
 def get_analysis_result(
     job_id: str,
@@ -1107,7 +1111,7 @@ def get_analysis_result(
     available even after the API process restarts.
     """
 
-        # --------------------------------------------------------
+    # --------------------------------------------------------
     # TRY IN-MEMORY JOB FIRST
     # --------------------------------------------------------
 
@@ -1669,7 +1673,7 @@ def _persistent_analysis_history() -> list[Dict[str, Any]]:
     return history
 
 
-// Returns persisted analysis history used by the Dashboard and Reports pages.
+# Returns persisted analysis history used by the Dashboard and Reports pages.
 @router.get("/")
 def list_analysis_jobs():
     """
@@ -1740,7 +1744,7 @@ def list_analysis_jobs():
 # PDF REPORT
 # ============================================================
 
-// Generates/returns the PDF report for a completed analysis.
+# Generates/returns the PDF report for a completed analysis.
 @router.get("/{job_id}/report")
 def download_analysis_report(job_id: str):
     """
@@ -1825,7 +1829,7 @@ def download_analysis_report(job_id: str):
 # UMAP VISUALIZATION
 # ============================================================
 
-// Returns UMAP coordinates, cluster labels, and immune states for the frontend chart.
+# Returns UMAP coordinates, cluster labels, and immune states for the frontend chart.
 @router.get("/{job_id}/visualizations/umap")
 def get_umap_visualization(job_id: str):
     """Return UMAP coordinates with cluster and immune-state labels."""
