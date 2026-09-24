@@ -3,10 +3,10 @@ import type { User } from "firebase/auth";
 
 import { db } from "./firebase";
 
-export async function createOrUpdateUserProfile(
+// Creates or updates the signed-in user profile in Firestore using the Firebase UID as the document ID.\nexport async function createOrUpdateUserProfile(
   user: User,
 ): Promise<void> {
-  const userRef = doc(db, "users", user.uid);
+  // The UID keeps each profile tied to the authenticated Firebase account.\n  const userRef = doc(db, "users", user.uid);
 
   await setDoc(
     userRef,
