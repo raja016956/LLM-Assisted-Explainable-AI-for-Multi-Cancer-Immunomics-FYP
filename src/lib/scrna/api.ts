@@ -2,7 +2,7 @@
 // IMMUNO-XAI API CLIENT
 // ============================================================
 
-const API_BASE_URL =
+// Backend base URL. Uses VITE_API_BASE_URL in deployment and localhost during development.\nconst API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   "http://127.0.0.1:8000";
 
@@ -58,7 +58,7 @@ export interface AnalysisResultResponse {
 // ERROR HANDLING
 // ============================================================
 
-async function parseApiError(
+// Converts FastAPI error responses into readable frontend error messages.\nasync function parseApiError(
   response: Response,
 ): Promise<string> {
   try {
@@ -87,7 +87,7 @@ async function parseApiError(
 // GENERIC REQUEST
 // ============================================================
 
-async function apiRequest<T>(
+// Shared HTTP helper used by the API functions below. Sends the request and handles non-2xx responses.\nasync function apiRequest<T>(
   path: string,
   options?: RequestInit,
 ): Promise<T> {
@@ -118,7 +118,7 @@ async function apiRequest<T>(
 // UPLOAD DATASET
 // ============================================================
 
-export async function uploadDataset(
+// Sends the selected dataset file to FastAPI using multipart/form-data.\nexport async function uploadDataset(
   file: File,
 ): Promise<UploadResponse> {
   const formData = new FormData();
@@ -139,7 +139,7 @@ export async function uploadDataset(
 // START ANALYSIS
 // ============================================================
 
-export async function startAnalysis(
+// Starts the scientific analysis for an uploaded job ID.\nexport async function startAnalysis(
   jobId: string,
 ): Promise<StartAnalysisResponse> {
   return apiRequest<StartAnalysisResponse>(
@@ -161,7 +161,7 @@ export async function startAnalysis(
 // GET ANALYSIS STATUS
 // ============================================================
 
-export async function getAnalysisStatus(
+// Retrieves the current analysis step and progress for a job.\nexport async function getAnalysisStatus(
   jobId: string,
 ): Promise<AnalysisStatusResponse> {
   return apiRequest<AnalysisStatusResponse>(
@@ -174,7 +174,7 @@ export async function getAnalysisStatus(
 // GET ANALYSIS RESULT
 // ============================================================
 
-export async function getAnalysisResult(
+// Retrieves the completed analysis JSON used by the Results page.\nexport async function getAnalysisResult(
   jobId: string,
 ): Promise<AnalysisResultResponse> {
   return apiRequest<AnalysisResultResponse>(
@@ -187,7 +187,7 @@ export async function getAnalysisResult(
 // LIST ANALYSIS JOBS
 // ============================================================
 
-export async function listAnalysisJobs(): Promise<
+// Retrieves analysis history used by the Dashboard and Reports pages.\nexport async function listAnalysisJobs(): Promise<
   unknown
 > {
   return apiRequest(
@@ -200,7 +200,7 @@ export async function listAnalysisJobs(): Promise<
 // HEALTH CHECK
 // ============================================================
 
-export async function checkApiHealth(): Promise<{
+// Checks whether the FastAPI backend is reachable.\nexport async function checkApiHealth(): Promise<{
   status: string;
 }> {
   return apiRequest(
