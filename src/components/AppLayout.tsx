@@ -292,7 +292,7 @@ export function AppLayout({
                     className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted"
                   >
                     <LayoutDashboard className="h-4 w-4" />
-                    Dashboard - test
+                    Dashboard
                   </Link>
 
                   {/* Logout action inside the profile menu. */}
