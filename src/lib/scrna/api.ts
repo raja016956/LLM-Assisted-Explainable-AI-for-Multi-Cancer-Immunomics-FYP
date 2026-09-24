@@ -2,7 +2,8 @@
 // IMMUNO-XAI API CLIENT
 // ============================================================
 
-// Backend base URL. Uses VITE_API_BASE_URL in deployment and localhost during development.\nconst API_BASE_URL =
+// Backend base URL. Uses VITE_API_BASE_URL in deployment and localhost during development.
+const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   "http://127.0.0.1:8000";
 
@@ -58,7 +59,8 @@ export interface AnalysisResultResponse {
 // ERROR HANDLING
 // ============================================================
 
-// Converts FastAPI error responses into readable frontend error messages.\nasync function parseApiError(
+// Converts FastAPI error responses into readable frontend error messages.
+async function parseApiError(
   response: Response,
 ): Promise<string> {
   try {
@@ -87,7 +89,8 @@ export interface AnalysisResultResponse {
 // GENERIC REQUEST
 // ============================================================
 
-// Shared HTTP helper used by the API functions below. Sends the request and handles non-2xx responses.\nasync function apiRequest<T>(
+// Shared HTTP helper used by the API functions below. Sends the request and handles non-2xx responses.
+async function apiRequest<T>(
   path: string,
   options?: RequestInit,
 ): Promise<T> {
@@ -118,7 +121,8 @@ export interface AnalysisResultResponse {
 // UPLOAD DATASET
 // ============================================================
 
-// Sends the selected dataset file to FastAPI using multipart/form-data.\nexport async function uploadDataset(
+// Sends the selected dataset file to FastAPI using multipart/form-data.
+export async function uploadDataset(
   file: File,
 ): Promise<UploadResponse> {
   const formData = new FormData();
@@ -139,7 +143,8 @@ export interface AnalysisResultResponse {
 // START ANALYSIS
 // ============================================================
 
-// Starts the scientific analysis for an uploaded job ID.\nexport async function startAnalysis(
+// Starts the scientific analysis for an uploaded job ID.
+export async function startAnalysis(
   jobId: string,
 ): Promise<StartAnalysisResponse> {
   return apiRequest<StartAnalysisResponse>(
@@ -161,7 +166,8 @@ export interface AnalysisResultResponse {
 // GET ANALYSIS STATUS
 // ============================================================
 
-// Retrieves the current analysis step and progress for a job.\nexport async function getAnalysisStatus(
+// Retrieves the current analysis step and progress for a job.
+export async function getAnalysisStatus(
   jobId: string,
 ): Promise<AnalysisStatusResponse> {
   return apiRequest<AnalysisStatusResponse>(
@@ -174,7 +180,8 @@ export interface AnalysisResultResponse {
 // GET ANALYSIS RESULT
 // ============================================================
 
-// Retrieves the completed analysis JSON used by the Results page.\nexport async function getAnalysisResult(
+// Retrieves the completed analysis JSON used by the Results page.
+export async function getAnalysisResult(
   jobId: string,
 ): Promise<AnalysisResultResponse> {
   return apiRequest<AnalysisResultResponse>(
@@ -187,7 +194,8 @@ export interface AnalysisResultResponse {
 // LIST ANALYSIS JOBS
 // ============================================================
 
-// Retrieves analysis history used by the Dashboard and Reports pages.\nexport async function listAnalysisJobs(): Promise<
+// Retrieves analysis history used by the Dashboard and Reports pages.
+export async function listAnalysisJobs(): Promise<
   unknown
 > {
   return apiRequest(
@@ -200,7 +208,8 @@ export interface AnalysisResultResponse {
 // HEALTH CHECK
 // ============================================================
 
-// Checks whether the FastAPI backend is reachable.\nexport async function checkApiHealth(): Promise<{
+// Checks whether the FastAPI backend is reachable.
+export async function checkApiHealth(): Promise<{
   status: string;
 }> {
   return apiRequest(
