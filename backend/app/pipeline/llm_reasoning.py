@@ -8,7 +8,6 @@ from typing import Any
 
 from dotenv import load_dotenv
 
-
 # ============================================================
 # LOAD BACKEND ENVIRONMENT VARIABLES
 # ============================================================
@@ -37,7 +36,6 @@ print(
     bool(os.getenv("GROQ_API_KEY"))
 )
 
-
 # ============================================================
 # CONFIGURATION
 # ============================================================
@@ -58,11 +56,11 @@ class LLMReasoningConfig:
     # Maximum approximate characters sent to the LLM.
     max_input_chars: int = 45000
 
-
 # ============================================================
 # JSON LOADING
 # ============================================================
 
+# Loads structured analysis results that will be provided to the LLM as evidence.
 def _load_json(
     path: Path,
     description: str,
@@ -82,11 +80,11 @@ def _load_json(
 
         return json.load(handle)
 
-
 # ============================================================
 # EXTRACT ANALYSIS PACKAGE
 # ============================================================
 
+# Collects the important analysis outputs into the compact package sent to the reasoning prompt.
 def _extract_analysis_package(
     data: Any,
 ) -> dict:
@@ -201,11 +199,11 @@ def _extract_analysis_package(
         f"Top-level keys found: {list(data.keys())}"
     )
 
-
 # ============================================================
 # VALIDATION
 # ============================================================
 
+# Checks that the required quantitative evidence is present before asking the LLM to interpret it.
 def _validate_analysis_package(
     package: dict,
 ) -> None:
@@ -239,11 +237,11 @@ def _validate_analysis_package(
             "checked rather than the Groq API."
         )
 
-
 # ============================================================
 # COMPACT ANALYSIS PACKAGE
 # ============================================================
 
+# Reduces the analysis payload to the information needed for concise biological interpretation.
 def _compact_analysis_package(
     package: dict,
 ) -> dict:
@@ -390,7 +388,6 @@ def _compact_analysis_package(
 
     return compact
 
-
 # ============================================================
 # SYSTEM PROMPT
 # ============================================================
@@ -455,11 +452,11 @@ You MUST follow these rules:
     are not present in the supplied compact analysis package.
 """
 
-
 # ============================================================
 # USER PROMPT
 # ============================================================
 
+# Builds the LLM prompt that explains the supplied analysis evidence and requests a short biological interpretation.
 def _build_reasoning_prompt(
     package: dict,
     config: LLMReasoningConfig,
@@ -548,11 +545,11 @@ COMPUTATIONAL ANALYSIS PACKAGE
 {package_json}
 """
 
-
 # ============================================================
 # GROQ
 # ============================================================
 
+# Sends the reasoning prompt to the configured Groq model and returns the generated text.
 def _run_groq(
     system_prompt: str,
     user_prompt: str,
@@ -626,11 +623,11 @@ def _run_groq(
 
     return content.strip()
 
-
 # ============================================================
 # MAIN PIPELINE
 # ============================================================
 
+# Runs the final LLM interpretation stage and saves the generated biological interpretation and metadata.
 def run_llm_reasoning(
     analysis_input_path: str | Path,
     output_dir: str | Path,
