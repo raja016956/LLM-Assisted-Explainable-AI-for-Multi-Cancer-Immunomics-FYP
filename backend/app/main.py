@@ -1,13 +1,17 @@
-// FastAPI creates the backend web application and exposes HTTP API endpoints.
+# FastAPI provides the backend application and HTTP API functionality.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-// Upload routes handle user datasets and preloaded dataset selection.
+# Import routers that contain the upload and analysis API endpoints.
 from app.routes.upload import router as upload_router
-// Analysis routes start jobs, report results, visualizations, and PDF reports.
 from app.routes.analysis import router as analysis_router
 
 
+# ---------------------------------------------------------
+# FastAPI Application
+# ---------------------------------------------------------
+
+# Create the main FastAPI application with basic API metadata.
 app = FastAPI(
     title="ImmunoXAI Analysis API",
     description="Backend API for single-cell immune-state analysis.",
@@ -15,11 +19,12 @@ app = FastAPI(
 )
 
 
-// Allow the frontend development and deployed origins to call this API.
 # ---------------------------------------------------------
 # CORS
 # ---------------------------------------------------------
 
+# Allow the local and deployed frontend applications
+# to send requests to the FastAPI backend.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -34,11 +39,12 @@ app.add_middleware(
 )
 
 
-// Register the feature-specific routers under the /api prefix.
 # ---------------------------------------------------------
-# Routes
+# API Routes
 # ---------------------------------------------------------
 
+# Register upload and analysis routers under the /api prefix.
+# Routes inside these routers become available as /api/...
 app.include_router(
     upload_router,
     prefix="/api",
@@ -50,11 +56,11 @@ app.include_router(
 )
 
 
-// Simple endpoints used to confirm that the backend is running.
 # ---------------------------------------------------------
-# Health check
+# Health Checks
 # ---------------------------------------------------------
 
+# Root endpoint used to confirm that the backend is running.
 @app.get("/")
 async def root():
     return {
@@ -64,6 +70,7 @@ async def root():
     }
 
 
+# Health endpoint used to verify that the API is healthy.
 @app.get("/health")
 async def health():
     return {
