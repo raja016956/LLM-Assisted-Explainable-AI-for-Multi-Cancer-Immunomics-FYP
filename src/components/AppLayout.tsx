@@ -21,7 +21,7 @@ const nav = [
   { to: "/reports", label: "Reports", icon: FileText },
 ] as const;
 
-function getInitials(user: User | null): string {
+// Creates fallback initials when the Firebase profile does not have a usable photo.\nfunction getInitials(user: User | null): string {
   if (!user) return "U";
 
   const name = user.displayName?.trim();
@@ -42,7 +42,7 @@ function getInitials(user: User | null): string {
   );
 }
 
-export function AppLayout({
+// Shared application layout: sidebar navigation, top header, Firebase profile menu, and page content.\nexport function AppLayout({
   title,
   subtitle,
   children,
@@ -80,7 +80,7 @@ export function AppLayout({
     };
   }, []);
 
-  const googleProfile = user?.providerData.find(
+  // Firebase profile data: Google provider values are used as a fallback for name and photo.\n  const googleProfile = user?.providerData.find(
     (profile) => profile.providerId === "google.com",
   );
 
@@ -108,7 +108,7 @@ export function AppLayout({
     return getInitials(user);
   }, [profileName, user]);
 
-  async function handleLogout() {
+  // Signs out the current Firebase user and redirects to the sign-in page.\n  async function handleLogout() {
     try {
       await logout();
       setProfileMenuOpen(false);
