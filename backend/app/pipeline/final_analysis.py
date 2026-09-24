@@ -11,6 +11,7 @@ import numpy as np
 # HELPERS
 # ============================================================
 
+# Handles the  load json step that combines the completed analysis outputs.
 def _load_json(path: Path, description: str) -> Any:
 
     if not path.exists():
@@ -22,6 +23,7 @@ def _load_json(path: Path, description: str) -> Any:
         return json.load(handle)
 
 
+# Handles the  load numpy step that combines the completed analysis outputs.
 def _load_numpy(path: Path, description: str) -> np.ndarray:
 
     if not path.exists():
@@ -43,6 +45,7 @@ def _load_numpy(path: Path, description: str) -> np.ndarray:
 # CELL STATE EXTRACTION
 # ============================================================
 
+# Handles the  extract cell states step that combines the completed analysis outputs.
 def _extract_cell_states(data: Any) -> list[dict[str, Any]]:
 
     # --------------------------------------------------------
@@ -101,6 +104,7 @@ def _extract_cell_states(data: Any) -> list[dict[str, Any]]:
 # STATE SUMMARY
 # ============================================================
 
+# Handles the  build state summary step that combines the completed analysis outputs.
 def _build_state_summary(
     cell_states: list[dict[str, Any]],
 ) -> dict[str, Any]:
@@ -167,6 +171,7 @@ def _build_state_summary(
 # CLUSTER SUMMARY
 # ============================================================
 
+# Handles the  build cluster summary step that combines the completed analysis outputs.
 def _build_cluster_summary(
     cell_states: list[dict[str, Any]],
 ) -> dict[str, Any]:
@@ -268,6 +273,7 @@ def _build_cluster_summary(
 # LOAD CLUSTER STATES
 # ============================================================
 
+# Handles the  extract cluster states step that combines the completed analysis outputs.
 def _extract_cluster_states(
     data: Any,
 ) -> dict[str, Any]:
@@ -302,6 +308,7 @@ def _extract_cluster_states(
 # IMMUNE SCORE SUMMARY
 # ============================================================
 
+# Handles the  summarize scores step that combines the completed analysis outputs.
 def _summarize_scores(
     scores: np.ndarray,
     score_names: list[str] | None = None,
@@ -361,6 +368,7 @@ def _summarize_scores(
 # PATHWAY SUMMARY
 # ============================================================
 
+# Handles the  summarize pathways step that combines the completed analysis outputs.
 def _summarize_pathways(
     pathway_scores: np.ndarray,
     pathway_names: list[str],
@@ -405,6 +413,7 @@ def _summarize_pathways(
 # MAIN PIPELINE
 # ============================================================
 
+# Handles the run final analysis step that combines the completed analysis outputs.
 def run_final_analysis(
     cell_states_path: str | Path,
     cluster_states_path: str | Path,
