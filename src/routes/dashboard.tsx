@@ -61,7 +61,8 @@ export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
 });
 
-function formatDate(value?: string | null) {
+// Formats analysis timestamps for display in the history table.
+  function formatDate(value?: string | null) {
   if (!value) return "—";
 
   const date = new Date(value);
@@ -75,7 +76,8 @@ function formatDate(value?: string | null) {
   }).format(date);
 }
 
-function formatFileSize(bytes?: number | null) {
+// Converts stored byte counts into readable file sizes.
+  function formatFileSize(bytes?: number | null) {
   if (!bytes || bytes <= 0) return "—";
 
   const units = ["B", "KB", "MB", "GB"];
@@ -90,7 +92,8 @@ function formatFileSize(bytes?: number | null) {
   return `${size.toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
 }
 
-function statusStyle(status: string) {
+// Selects the Tailwind styling used for each analysis status.
+  function statusStyle(status: string) {
   if (status === "completed") {
     return "bg-[oklch(0.95_0.06_155)] text-[oklch(0.35_0.12_155)]";
   }
@@ -106,12 +109,14 @@ function statusStyle(status: string) {
   return "bg-muted text-muted-foreground";
 }
 
-function prettyStatus(status: string) {
+// Converts backend status values into user-friendly labels.
+  function prettyStatus(status: string) {
   if (!status) return "Unknown";
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
-function Dashboard() {
+// Dashboard page: loads the user's completed analysis history and displays summary metrics.
+  function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(auth.currentUser);
   const [jobs, setJobs] = useState<AnalysisHistoryItem[]>([]);
@@ -128,6 +133,7 @@ function Dashboard() {
     return unsubscribe;
   }, []);
 
+  // API call: retrieves analysis history, then filters it to the signed-in Firebase user.
   async function loadHistory(showRefreshState = false) {
     try {
       if (showRefreshState) setRefreshing(true);
@@ -219,6 +225,7 @@ function Dashboard() {
     };
   }, [jobs]);
 
+  // Downloads the PDF report belonging to the selected completed analysis.
   async function downloadReport(job: AnalysisHistoryItem) {
     if (job.status !== "completed" || !job.report_available) return;
 
@@ -268,6 +275,7 @@ function Dashboard() {
     }
   }
 
+  // Fetches a completed result, stores it for the Results page, and navigates to /results.
   async function openAnalysis(job: AnalysisHistoryItem) {
     if (job.status !== "completed") return;
 
