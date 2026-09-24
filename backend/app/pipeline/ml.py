@@ -9,7 +9,6 @@ import pickle
 
 import numpy as np
 
-
 # ============================================================
 # CONFIGURATION
 # ============================================================
@@ -37,11 +36,11 @@ class MLConfig:
     # Model selection
     primary_model: str = "random_forest"
 
-
 # ============================================================
 # HELPERS
 # ============================================================
 
+# Loads a NumPy array produced by an earlier analysis stage.
 def _load_numpy(
     path: str | Path,
 ) -> np.ndarray:
@@ -57,7 +56,7 @@ def _load_numpy(
 
     return np.asarray(array)
 
-
+# Loads structured labels or metadata from a JSON output.
 def _load_json(
     path: str | Path,
 ) -> Any:
@@ -77,7 +76,7 @@ def _load_json(
 
         return json.load(handle)
 
-
+# Saves ML metadata/results so the API and report can reuse them.
 def _save_json(
     path: Path,
     data: Any,
@@ -100,11 +99,11 @@ def _save_json(
             indent=2,
         )
 
-
 # ============================================================
 # FEATURE MATRIX
 # ============================================================
 
+# Builds the numerical feature matrix used as input to the ML models.
 def _build_feature_matrix(
     pca_coordinates: np.ndarray,
     immune_scores: np.ndarray,
@@ -151,11 +150,11 @@ def _build_feature_matrix(
         copy=False,
     )
 
-
 # ============================================================
 # LABEL PREPARATION
 # ============================================================
 
+# Extracts the biological or fallback target state associated with each cell.
 def _extract_state(
     item: Any,
 ) -> str:
@@ -185,7 +184,7 @@ def _extract_state(
 
     return str(state)
 
-
+# Validates and prepares target labels for supervised learning.
 def _prepare_labels(
     cell_states: Any,
     minimum_class_size: int,
@@ -261,11 +260,11 @@ def _prepare_labels(
         keep_mask,
     )
 
-
 # ============================================================
 # METRICS
 # ============================================================
 
+# Calculates model evaluation metrics from predictions and true labels.
 def _evaluate_model(
     model,
     x_test: np.ndarray,
@@ -363,11 +362,11 @@ def _evaluate_model(
         "predictions": predictions.tolist(),
     }
 
-
 # ============================================================
 # RANDOM FOREST
 # ============================================================
 
+# Trains the Random Forest model used by the ML stage.
 def _train_random_forest(
     x_train: np.ndarray,
     y_train: np.ndarray,
@@ -394,11 +393,11 @@ def _train_random_forest(
 
     return model
 
-
 # ============================================================
 # XGBOOST
 # ============================================================
 
+# Trains the XGBoost model used by the ML stage.
 def _train_xgboost(
     x_train: np.ndarray,
     y_train: np.ndarray,
@@ -458,11 +457,11 @@ def _train_xgboost(
 
     return model, class_to_int
 
-
 # ============================================================
 # MAIN ML PIPELINE
 # ============================================================
 
+# Runs the complete machine-learning stage, including target preparation, training, evaluation, and result saving.
 def run_ml(
     pca_coordinates_path: str | Path,
     immune_scores_path: str | Path,
