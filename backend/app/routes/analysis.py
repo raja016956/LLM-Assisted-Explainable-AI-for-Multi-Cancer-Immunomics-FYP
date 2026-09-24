@@ -787,6 +787,7 @@ def run_analysis_background(
 # START ANALYSIS
 # ============================================================
 
+// Starts the background scientific analysis for a prepared upload job.
 @router.post("/run")
 def start_analysis(
     request: AnalysisRunRequest,
@@ -1032,6 +1033,7 @@ def start_analysis(
 # GET ANALYSIS STATUS
 # ============================================================
 
+// Returns the current pipeline step and progress for one analysis job.
 @router.get("/{job_id}/status")
 def get_analysis_status(
     job_id: str,
@@ -1092,6 +1094,7 @@ def get_analysis_status(
 # GET ANALYSIS RESULT
 # ============================================================
 
+// Returns the completed analysis result used by the Results page.
 @router.get("/{job_id}/result")
 def get_analysis_result(
     job_id: str,
@@ -1666,6 +1669,7 @@ def _persistent_analysis_history() -> list[Dict[str, Any]]:
     return history
 
 
+// Returns persisted analysis history used by the Dashboard and Reports pages.
 @router.get("/")
 def list_analysis_jobs():
     """
@@ -1736,6 +1740,7 @@ def list_analysis_jobs():
 # PDF REPORT
 # ============================================================
 
+// Generates/returns the PDF report for a completed analysis.
 @router.get("/{job_id}/report")
 def download_analysis_report(job_id: str):
     """
@@ -1820,6 +1825,7 @@ def download_analysis_report(job_id: str):
 # UMAP VISUALIZATION
 # ============================================================
 
+// Returns UMAP coordinates, cluster labels, and immune states for the frontend chart.
 @router.get("/{job_id}/visualizations/umap")
 def get_umap_visualization(job_id: str):
     """Return UMAP coordinates with cluster and immune-state labels."""
