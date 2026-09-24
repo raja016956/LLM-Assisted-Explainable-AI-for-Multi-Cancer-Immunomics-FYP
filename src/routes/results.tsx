@@ -78,7 +78,8 @@ type PathwaySummary = {
 
 type XAIFeature = {
   feature: string;
-  mean_absolute_shap: number;
+  mean_absolute_// Explainable-AI section: presents SHAP feature importance produced by the backend XAI stage.
+shap: number;
   feature_index: number;
 };
 
@@ -160,7 +161,8 @@ type FinalAnalysis = {
 
   xai_summary: XAISummary;
 
-  biological_interpretation?: BiologicalInterpretation;
+  // Biological interpretation section: displays the concise LLM-generated explanation from the backend result.
+biological_interpretation?: BiologicalInterpretation;
 
   [key: string]: unknown;
 };
@@ -202,6 +204,7 @@ export const Route = createFileRoute("/results")({
 // RESULTS PAGE
 // ============================================================
 
+// Results page: converts the completed backend analysis into metrics, charts, XAI information, and biological interpretation.
 function Results() {
   const navigate = useNavigate();
 
@@ -231,6 +234,7 @@ function Results() {
   useEffect(() => {
     let cancelled = false;
 
+    // API call: loads the completed analysis JSON for the current job.
     async function loadResult() {
       try {
         setLoading(true);
@@ -367,6 +371,7 @@ function Results() {
     const analysisJobId = jobId;
     let cancelled = false;
 
+    // API call: loads UMAP coordinates, clusters, and immune states used by the interactive UMAP chart.
     async function loadUmap() {
       try {
         setUmapLoading(true);
@@ -1133,7 +1138,8 @@ function Results() {
 
             <div className="mt-5 h-[520px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <ScatterChart margin={{ top: 16, right: 24, bottom: 24, left: 8 }}>
+                // UMAP chart: renders the backend-generated 2D coordinates and uses cluster/state values for point information.
+<ScatterChart margin={{ top: 16, right: 24, bottom: 24, left: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis type="number" dataKey="x" name="UMAP 1" tick={{ fontSize: 11 }} />
                   <YAxis type="number" dataKey="y" name="UMAP 2" tick={{ fontSize: 11 }} />
@@ -1309,6 +1315,7 @@ function Results() {
 // METRIC CARD
 // ============================================================
 
+// Reusable metric card used for key analysis statistics.
 function MetricCard({
   label,
   value,
@@ -1334,6 +1341,7 @@ function MetricCard({
 // FORMAT LABEL
 // ============================================================
 
+// Converts internal field/feature names into readable labels for the UI.
 function formatLabel(
   value: string,
 ): string {
