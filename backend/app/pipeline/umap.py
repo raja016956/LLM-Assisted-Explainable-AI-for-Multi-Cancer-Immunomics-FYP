@@ -24,6 +24,7 @@ class UMAPConfig:
 # UMAP
 # ============================================================
 
+# Handles the run umap step in UMAP dimensionality reduction.
 def run_umap(
     pca_coordinates_path: str | Path,
     output_dir: str | Path,
