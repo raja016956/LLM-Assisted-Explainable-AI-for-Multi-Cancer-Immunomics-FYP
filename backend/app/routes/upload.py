@@ -11,19 +11,19 @@ from app.models import UploadResponse
 from app.pipeline.preloaded_datasets import PRELOADED_BY_ID, PRELOADED_DATASETS
 
 
-router = APIRouter(
+// All dataset upload endpoints are grouped under /api/upload.\nrouter = APIRouter(
     prefix="/upload",
     tags=["Upload"],
 )
 
 
-UPLOAD_DIR = Path("backend_data/uploads")
+// Each upload job gets its own directory so the analysis pipeline can find it later.\nUPLOAD_DIR = Path("backend_data/uploads")
 UPLOAD_DIR.mkdir(
     parents=True,
     exist_ok=True,
 )
 
-PRELOADED_DIR = Path("backend_data/preloaded_datasets")
+// Cached copies of public preloaded datasets are stored here after first download.\nPRELOADED_DIR = Path("backend_data/preloaded_datasets")
 PRELOADED_DIR.mkdir(
     parents=True,
     exist_ok=True,
@@ -125,7 +125,7 @@ async def upload_dataset(
         message="Dataset uploaded successfully.",
     )
 
-@router.get("/preloaded")
+// Returns the cancer datasets shown as selectable cards on the Upload page.\n@router.get("/preloaded")
 def list_preloaded_datasets():
     """Return the curated public datasets available for one-click analysis."""
 
@@ -144,7 +144,7 @@ def list_preloaded_datasets():
     }
 
 
-@router.post("/preloaded/{dataset_id}", response_model=UploadResponse)
+// Prepares a selected public dataset as a normal analysis job so the existing pipeline can process it.\n@router.post("/preloaded/{dataset_id}", response_model=UploadResponse)
 def use_preloaded_dataset(
     dataset_id: str,
     user_id: str | None = None,
